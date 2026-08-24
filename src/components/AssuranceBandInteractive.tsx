@@ -14,8 +14,29 @@ export function AssuranceBandInteractive({
 }) {
   const [triggered, setTriggered] = useState(false);
   const restLeft = (bandPct(band, band.promisedLow) + bandPct(band, band.promisedHigh)) / 2;
-  const realizedLeft = bandPct(band, band.realized);
-  const markerLeft = triggered ? realizedLeft : restLeft;
+  const pending = band.status === "pending" || band.realized === null;
+  const realizedLeft = pending ? null : bandPct(band, band.realized as number);
+  const markerLeft = pending ? null : triggered ? realizedLeft : restLeft;
+
+  if (pending) {
+    return (
+      <div className="border border-stone-line bg-stone-raised/60 p-5 sm:p-7">
+        <div className="flex items-baseline justify-between gap-3 mb-6">
+          <span className="font-ui font-medium text-sm">{agentName}</span>
+          <span className="font-data text-xs text-ink-faint tabnum">{band.cycleLabel}</span>
+        </div>
+        <Track band={band} markerLeft={null} />
+        <div className="mt-3">
+          <Legend band={band} />
+        </div>
+        <p className="mt-6 pt-6 border-t border-stone-line text-[13px] text-ink-soft leading-relaxed max-w-md">
+          No cycle has settled yet — the promised band above is what this agent is underwritten
+          against from its first hire. Once a cycle closes, its realized outcome lands here
+          against the same manifest.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="border border-stone-line bg-stone-raised/60 p-5 sm:p-7">

@@ -25,9 +25,10 @@ export interface AssuranceBand {
   historicalHigh: number;
   promisedLow: number;
   promisedHigh: number;
-  realized: number;
+  /** null when no cycle has settled yet — nothing to plot */
+  realized: number | null;
   cycleLabel: string;
-  status: "within" | "breach";
+  status: "within" | "breach" | "pending";
   rebate?: {
     amount: string;
     clause: string;

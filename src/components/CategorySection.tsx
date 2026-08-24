@@ -1,5 +1,6 @@
 import type { CategoryMeta, Agent } from "@/lib/types";
-import { AgentRow } from "./AgentRow";
+import { CategoryAgentList } from "./CategoryAgentList";
+import { EmptyCategory } from "./EmptyCategory";
 
 export function CategorySection({
   category,
@@ -28,9 +29,11 @@ export function CategorySection({
         <p className="font-body text-ink-soft max-w-xl mb-2 italic">{category.blurb}</p>
 
         <div className="mt-8">
-          {agents.map((agent, i) => (
-            <AgentRow key={agent.id} agent={agent} folio={`§${index}${i + 1}`} />
-          ))}
+          {agents.length > 0 ? (
+            <CategoryAgentList agents={agents} index={index} />
+          ) : (
+            <EmptyCategory label={category.label} />
+          )}
         </div>
       </div>
     </section>

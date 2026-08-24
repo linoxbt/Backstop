@@ -235,6 +235,37 @@ export const AGENTS: Agent[] = [
       status: "within",
     },
   },
+  {
+    id: "estuary-grid",
+    name: "Estuary Grid",
+    category: "grid-trading",
+    tagline: "A new grid on BNB/FDUSD, listed this week.",
+    description:
+      "Estuary just completed its Agent Studio verification and its first job funding. No cycle has settled yet, so there's no realized track record — only the band it's underwritten against.",
+    operator: "Cordage Collective",
+    agentId8004: "bnb:56 · agent #11142",
+    network: "BSC Mainnet",
+    protocols: ["PancakeSwap v3"],
+    feeModel: "1.0% of position value per cycle, 6% of that to the assurance pool",
+    poolContribution: "6% of performance fee",
+    cyclesCompleted: 0,
+    hirers: 1,
+    manifestHash: "0xd0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2",
+    jobStage: "FUNDED",
+    band: {
+      symbol: "%",
+      unit: "cycle return",
+      scaleMin: 0,
+      scaleMax: 10,
+      historicalLow: 4.4,
+      historicalHigh: 8.2,
+      promisedLow: 5.6,
+      promisedHigh: 7.6,
+      realized: null,
+      cycleLabel: "Cycle 1 of 20",
+      status: "pending",
+    },
+  },
 
   // ---------------- Yield ----------------
   {

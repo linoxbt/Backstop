@@ -6,28 +6,32 @@ export const CATEGORIES: CategoryMeta[] = [
     label: "Rebalancing",
     clause: "Form A — LP Range Management",
     verb: "manages LP ranges, resets positions automatically",
-    unit: "bps",
+    blurb:
+      "LP ranges drift with price. Every agent here resets its range and writes the realized cost delta on-chain — not an APR screenshot.",
   },
   {
     id: "grid-trading",
     label: "Grid Trading",
     clause: "Form B — Grid Order Management",
     verb: "places and manages automated grid orders",
-    unit: "%",
+    blurb:
+      "Grid orders live or die on realized spread, not backtest. Every fill this cycle is in the manifest below the band.",
   },
   {
     id: "yield",
     label: "Yield Optimisation",
     clause: "Form C — Liquidity Routing",
     verb: "routes liquidity to the highest available APR",
-    unit: "% APY",
+    blurb:
+      "A yield agent is judged on what it beats, not what it chased. Every APY shown here is checked against the manifest at settlement.",
   },
   {
     id: "health-factor",
     label: "Health Factor Monitoring",
     clause: "Form D — Liquidation Defense",
     verb: "protects lending positions from liquidation",
-    unit: "HF",
+    blurb:
+      "A health-factor agent only matters in the minutes before liquidation. Every band below is measured against real drawdowns, not calm markets.",
   },
 ];
 
@@ -51,6 +55,7 @@ export const AGENTS: Agent[] = [
     manifestHash: "0x7a41c0e2f4a6c8e0f2a4b6d8f0a2c4e6f8a0b2c4d6e8f0a2c4e6f8a0b2c4d6e8",
     jobStage: "SETTLED",
     band: {
+      symbol: "",
       unit: "bps saved vs. static range",
       scaleMin: 20,
       scaleMax: 140,
@@ -81,6 +86,7 @@ export const AGENTS: Agent[] = [
     manifestHash: "0x1c3e5a7c9e0f2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c",
     jobStage: "SETTLED",
     band: {
+      symbol: "",
       unit: "bps saved vs. static range",
       scaleMin: 10,
       scaleMax: 100,
@@ -116,6 +122,7 @@ export const AGENTS: Agent[] = [
     manifestHash: "0x9d1f3b5d7f9b1d3f5b7d9f1b3d5f7b9d1f3b5d7f9b1d3f5b7d9f1b3d5f7b9d1f",
     jobStage: "SETTLED",
     band: {
+      symbol: "",
       unit: "bps saved vs. static range",
       scaleMin: 20,
       scaleMax: 150,
@@ -148,7 +155,8 @@ export const AGENTS: Agent[] = [
     manifestHash: "0x4e2a6f0c1d8b3a7e2f905c1a44e0b7d3f8c1a9e0d2b4f6a8c0e2f4a6c8e0f2a4",
     jobStage: "SUBMITTED",
     band: {
-      unit: "% cycle return",
+      symbol: "%",
+      unit: "cycle return",
       scaleMin: 0,
       scaleMax: 12,
       historicalLow: 4.6,
@@ -183,7 +191,8 @@ export const AGENTS: Agent[] = [
     manifestHash: "0x2b4d6f8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c",
     jobStage: "SETTLED",
     band: {
-      unit: "% cycle return",
+      symbol: "%",
+      unit: "cycle return",
       scaleMin: 0,
       scaleMax: 10,
       historicalLow: 4.0,
@@ -213,7 +222,8 @@ export const AGENTS: Agent[] = [
     manifestHash: "0x6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e",
     jobStage: "SETTLED",
     band: {
-      unit: "% cycle return",
+      symbol: "%",
+      unit: "cycle return",
       scaleMin: 0,
       scaleMax: 16,
       historicalLow: 5.8,
@@ -245,7 +255,8 @@ export const AGENTS: Agent[] = [
     manifestHash: "0x8f0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a",
     jobStage: "SUBMITTED",
     band: {
-      unit: "% APY",
+      symbol: "%",
+      unit: "APY",
       scaleMin: 0,
       scaleMax: 14,
       historicalLow: 6.9,
@@ -280,7 +291,8 @@ export const AGENTS: Agent[] = [
     manifestHash: "0x0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c",
     jobStage: "SETTLED",
     band: {
-      unit: "% APY",
+      symbol: "%",
+      unit: "APY",
       scaleMin: 0,
       scaleMax: 14,
       historicalLow: 7.6,
@@ -310,7 +322,8 @@ export const AGENTS: Agent[] = [
     manifestHash: "0xc4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6",
     jobStage: "SETTLED",
     band: {
-      unit: "% APY",
+      symbol: "%",
+      unit: "APY",
       scaleMin: 0,
       scaleMax: 8,
       historicalLow: 4.2,
@@ -342,6 +355,7 @@ export const AGENTS: Agent[] = [
     manifestHash: "0xe0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2",
     jobStage: "SUBMITTED",
     band: {
+      symbol: "",
       unit: "HF maintained",
       scaleMin: 1.0,
       scaleMax: 1.9,
@@ -377,6 +391,7 @@ export const AGENTS: Agent[] = [
     manifestHash: "0xa4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6",
     jobStage: "SETTLED",
     band: {
+      symbol: "",
       unit: "HF maintained",
       scaleMin: 1.0,
       scaleMax: 2.1,
@@ -407,6 +422,7 @@ export const AGENTS: Agent[] = [
     manifestHash: "0x6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c",
     jobStage: "SETTLED",
     band: {
+      symbol: "",
       unit: "HF maintained",
       scaleMin: 1.0,
       scaleMax: 1.7,

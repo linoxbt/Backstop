@@ -69,8 +69,8 @@ export function AssuranceBandInteractive({
               style={triggered ? { animationDelay: "0.85s" } : undefined}
             >
               Realized {band.realized}
-              {band.unit === "HF" ? "" : band.unit.includes("APY") ? "% APY" : band.unit} landed inside the
-              promised band. No rebate necessary — the manifest closes clean.
+              {band.symbol} {band.unit} landed inside the promised band. No rebate necessary —
+              the manifest closes clean.
             </p>
           )}
         </div>

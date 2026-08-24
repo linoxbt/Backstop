@@ -9,12 +9,15 @@ export interface CategoryMeta {
   label: string;
   clause: string; // ledger clause reference, e.g. "Form A"
   verb: string; // what the agent does, present tense
-  unit: string; // display unit for its assurance band, e.g. "%", "HF"
+  blurb: string; // category-specific framing for what its band proves
 }
 
 export type JobStage = "OPEN" | "FUNDED" | "SUBMITTED" | "SETTLED";
 
 export interface AssuranceBand {
+  /** symbol appended directly to each number, e.g. "%" or "" */
+  symbol: string;
+  /** descriptor shown after the range, e.g. "cycle return", "HF maintained" */
   unit: string;
   scaleMin: number;
   scaleMax: number;

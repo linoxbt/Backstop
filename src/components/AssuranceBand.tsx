@@ -34,9 +34,11 @@ function Track({
         <>
           <span className="absolute top-0 left-0 font-data text-[10px] text-ink-faint tabnum">
             {band.scaleMin}
+            {band.symbol}
           </span>
           <span className="absolute top-0 right-0 font-data text-[10px] text-ink-faint tabnum">
             {band.scaleMax}
+            {band.symbol}
           </span>
         </>
       )}
@@ -49,11 +51,15 @@ function Legend({ band }: { band: AssuranceBandT }) {
     <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-ink-soft">
       <span className="flex items-center gap-1.5">
         <i className="hatch-corridor inline-block w-3 h-3" />
-        Verified historical {band.historicalLow}–{band.historicalHigh} {band.unit}
+        Verified historical {band.historicalLow}
+        {band.symbol}–{band.historicalHigh}
+        {band.symbol} {band.unit}
       </span>
       <span className="flex items-center gap-1.5">
         <i className="inline-block w-3 h-3 border-t border-b border-bronze-text" />
-        Promised band {band.promisedLow}–{band.promisedHigh} {band.unit}
+        Promised band {band.promisedLow}
+        {band.symbol}–{band.promisedHigh}
+        {band.symbol} {band.unit}
       </span>
       <span className="flex items-center gap-1.5">
         <i className="wedge-marker inline-block w-2.5 h-3 bg-bronze-text" />

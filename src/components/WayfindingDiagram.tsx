@@ -2,8 +2,6 @@ import Link from "next/link";
 import { CATEGORIES, agentsByCategory } from "@/lib/agents";
 import { POOL } from "@/lib/pool";
 
-const LINE_ANGLES = [45, 135, 225, 315];
-
 export function WayfindingDiagram() {
   return (
     <div className="relative max-w-2xl mx-auto">
@@ -33,20 +31,6 @@ export function WayfindingDiagram() {
       </div>
 
       <div className="absolute inset-0 hidden sm:flex items-center justify-center pointer-events-none">
-        {LINE_ANGLES.map((deg) => (
-          <div
-            key={deg}
-            className="absolute bg-bronze/60"
-            style={{
-              left: "50%",
-              top: "50%",
-              width: 44,
-              height: 1,
-              transformOrigin: "0% 50%",
-              transform: `rotate(${deg}deg)`,
-            }}
-          />
-        ))}
         <Link
           href="/pool"
           className="pointer-events-auto relative w-[104px] h-[104px] rounded-full bg-steel border border-bronze flex flex-col items-center justify-center text-center hover:border-bronze-bright transition-colors"
@@ -57,6 +41,16 @@ export function WayfindingDiagram() {
           <span className="font-display text-sm text-paper-on-steel mt-1">{POOL.tvl}</span>
         </Link>
       </div>
+
+      <Link
+        href="/pool"
+        className="sm:hidden mt-3 flex items-center justify-between bg-steel border border-bronze px-5 py-4 hover:border-bronze-bright transition-colors"
+      >
+        <span className="font-data text-[10px] uppercase tracking-wider text-paper-on-steel/60">
+          Reserve
+        </span>
+        <span className="font-display text-base text-paper-on-steel">{POOL.tvl}</span>
+      </Link>
     </div>
   );
 }

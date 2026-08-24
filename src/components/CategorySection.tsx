@@ -23,10 +23,7 @@ export function CategorySection({
           </span>
         </div>
         <h2 className="font-display text-3xl sm:text-4xl mb-3">{category.label}</h2>
-        <p className="font-body text-ink-soft max-w-xl mb-1">
-          Every listed agent {category.verb}.
-        </p>
-        <p className="font-body text-ink-soft max-w-xl mb-2 italic">{category.blurb}</p>
+        <p className="font-body text-ink-soft max-w-xl mb-2">{category.blurb}</p>
 
         <div className="mt-8">
           {agents.length > 0 ? (

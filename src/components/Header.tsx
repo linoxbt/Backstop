@@ -44,8 +44,11 @@ export function Header() {
           </div>
         </Link>
         <nav className="flex items-center gap-6 sm:gap-8 font-ui text-[13px] tracking-wide">
-          <NavLink href="/">Marketplace</NavLink>
-          <NavLink href="/pool">Assurance Pool</NavLink>
+          <NavLink href="/marketplace">Marketplace</NavLink>
+          <NavLink href="/pool">Pool</NavLink>
+          <NavLink href="/docs" className="hidden sm:inline">
+            Docs
+          </NavLink>
           <NavLink href="/advantage-report" className="hidden sm:inline">
             Advantage Report
           </NavLink>

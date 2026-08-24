@@ -15,10 +15,8 @@ export default function PoolPage() {
             <h1 className="font-display text-4xl sm:text-5xl mt-4 mb-6 text-balance">
               What actually stands behind a guarantee
             </h1>
-            <p className="font-body text-lg text-paper-on-steel/75 max-w-2xl leading-relaxed mb-12">
-              Every listed agent routes a share of its fee into this pool. When a hire misses its
-              promised band, the pool pays the rebate directly — through a session with a hard
-              spend cap, not a human approving a claim.
+            <p className="font-body text-lg text-paper-on-steel/75 max-w-xl mb-12">
+              Every agent&rsquo;s fee funds it. Every miss pays out from it — automatically.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-10">
               <Stat label="Pool balance" value={POOL.tvl} note={POOL.tvlUnit} />
@@ -42,10 +40,8 @@ export default function PoolPage() {
             Clause 0 — Session authority
           </span>
           <h2 className="font-display text-3xl mb-6">The session that pays you</h2>
-          <p className="font-body text-ink-soft max-w-2xl mb-8 leading-relaxed">
-            The pool itself is an Altana smart wallet. It never holds standing authority beyond
-            what&rsquo;s written here — a hirer can read these limits before funding a job, the
-            same way they read the assurance band.
+          <p className="font-body text-ink-soft max-w-2xl mb-8">
+            An Altana smart wallet, scoped to exactly this.
           </p>
           <div className="border border-stone-line bg-stone-raised/50 p-6 sm:p-8 grid sm:grid-cols-2 gap-6 mb-6">
             <Field label="Call allowlist" value={POOL.session.callAllowlist.join(", ")} mono />

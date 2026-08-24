@@ -21,7 +21,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
       <Header />
       <main className="max-w-4xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
         <Link
-          href={`/#${agent.category}`}
+          href={`/marketplace#${agent.category}`}
           className="font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-bronze-text transition-colors"
         >
           ← {category.label}
@@ -54,6 +54,23 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Fee</dt>
             <dd>{agent.feeModel}</dd>
           </div>
+          {agent.providerAddress && (
+            <div>
+              <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">
+                <span className="text-verdigris">●</span> Live address
+              </dt>
+              <dd className="truncate">
+                <a
+                  href={`https://testnet.bscscan.com/address/${agent.providerAddress}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-bronze-text transition-colors"
+                >
+                  {agent.providerAddress.slice(0, 8)}…{agent.providerAddress.slice(-6)}
+                </a>
+              </dd>
+            </div>
+          )}
         </dl>
 
         <div className="grid lg:grid-cols-[1fr_360px] gap-10 lg:gap-14">
@@ -63,30 +80,12 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             </span>
             <AssuranceBandInteractive band={agent.band} agentName={agent.name} />
 
-            <div className="mt-10">
-              <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text block mb-3">
-                How the guarantee works
-              </span>
-              <ol className="space-y-4 font-body text-[15px] text-ink-soft">
-                <li>
-                  <span className="font-data text-ink text-xs mr-2">1.</span>
-                  At hire, {agent.name}&rsquo;s job is funded through an ERC-8183 job manifest —
-                  the promised band shown above is committed on-chain in the same transaction.
-                </li>
-                <li>
-                  <span className="font-data text-ink text-xs mr-2">2.</span>
-                  When the cycle settles, the agent submits its deliverable manifest. Backstop
-                  verifies the realized outcome against the on-chain hash — not a self-reported
-                  number.
-                </li>
-                <li>
-                  <span className="font-data text-ink text-xs mr-2">3.</span>
-                  If realized performance falls outside the promised band, the assurance pool
-                  pays a capped, pre-defined rebate automatically. No support ticket, no dispute
-                  committee.
-                </li>
-              </ol>
-            </div>
+            <Link
+              href="/docs#guarantee"
+              className="mt-4 inline-block font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-bronze-text transition-colors"
+            >
+              How the guarantee works →
+            </Link>
           </div>
 
           <div>

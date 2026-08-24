@@ -69,18 +69,13 @@ export default function AdvantageReportPage() {
           TermiX Challenge deliverable
         </span>
         <h1 className="font-display text-4xl sm:text-5xl mt-3 mb-6">Agent Advantage Report</h1>
-        <p className="font-body text-lg text-ink-soft max-w-2xl leading-relaxed mb-8">
-          Does hiring an agent on Backstop actually beat doing the job yourself? This page is the
-          structure for that answer: the same task, run once through a hired agent and once
-          by hand, measured on time, cost and output quality.
+        <p className="font-body text-lg text-ink-soft max-w-2xl mb-8">
+          Same task. With an agent, and without. Time, cost, quality.
         </p>
 
-        <div className="border border-bronze-text bg-stone-raised/60 px-5 py-4 mb-12 font-data text-[12px] leading-relaxed">
-          <strong className="text-bronze-text">Template — not yet populated.</strong> Rows below
-          are the required structure (≥3 tasks, at least one from trading/stock/security, run both
-          with and without an agent). Bracketed fields need real measured runs and attached
-          outputs before submission — TermiX grades whether the numbers are provably real, so
-          nothing here is filled with invented results.
+        <div className="border border-bronze-text bg-stone-raised/60 px-5 py-4 mb-12 font-data text-[12px]">
+          <strong className="text-bronze-text">Template — not yet populated.</strong> Bracketed
+          fields need real measured runs before submission, not invented numbers.
         </div>
 
         <div className="space-y-10">

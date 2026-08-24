@@ -1,10 +1,10 @@
 export const POOL = {
   tvl: "$1,842,300",
-  tvlUnit: "assurance pool, BSC Mainnet",
+  tvlUnit: "BSC Mainnet",
   payoutRatio: "3.1%",
-  payoutRatioNote: "of pool TVL paid out, trailing 90 days",
+  payoutRatioNote: "trailing 90 days",
   solvencyBuffer: "18.4×",
-  solvencyBufferNote: "largest single-day payout across all four categories, covered by current pool balance",
+  solvencyBufferNote: "worst single-day payout, covered",
   totalRebatesPaid: "$57,140",
   totalRebatesCount: 214,
   vaultAddress: "0x3F2a...9C4E",

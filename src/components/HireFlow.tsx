@@ -53,10 +53,8 @@ export function HireFlow({ agent }: { agent: Agent }) {
             inputMode="decimal"
             className="w-full font-data text-lg bg-stone border border-stone-line px-3 py-2.5 mb-4 tabnum focus-visible:outline-2 focus-visible:outline-bronze"
           />
-          <p className="text-[13px] text-ink-soft mb-5 leading-relaxed">
-            Funds a session on your own Altana wallet, scoped to {agent.name} alone — call
-            allowlist, spend cap and expiry set before signing. {agent.poolContribution} of the
-            agent&rsquo;s fee routes to the assurance pool automatically.
+          <p className="text-[12px] text-ink-faint mb-5 font-data">
+            Altana session, scoped to {agent.name} · {agent.poolContribution} to the pool
           </p>
           <button
             onClick={begin}
@@ -81,11 +79,8 @@ export function HireFlow({ agent }: { agent: Agent }) {
           </p>
           {result.ok ? (
             <div className="space-y-2">
-              <p className="text-[13px] text-ink-soft leading-relaxed">
-                Job <span className="font-data text-ink">#{result.jobId}</span> is{" "}
-                <span className="font-data text-ink">{result.status}</span>. Funded for{" "}
-                <span className="font-data tabnum">{budget} USDT</span> against the manifest
-                shown above.
+              <p className="font-data text-[13px] text-ink tabnum">
+                Job #{result.jobId} · {result.status} · {budget} USDT
               </p>
               {result.explorerUrl && (
                 <a
@@ -126,10 +121,8 @@ export function HireFlow({ agent }: { agent: Agent }) {
           </ol>
           {stage === "done" && (
             <div className="border-t border-stone-line pt-4">
-              <p className="text-[13px] text-ink-soft leading-relaxed mb-2">
-                Job funded for <span className="font-data tabnum">{budget} USDT</span>. Manifest
-                hash committed — {agent.name} will write its next cycle&rsquo;s realized outcome
-                against the band shown above.
+              <p className="font-data text-[13px] text-ink tabnum mb-2">
+                Funded · {budget} USDT
               </p>
               <p className="font-data text-[11px] text-ink-faint break-all mb-3">
                 {agent.manifestHash}

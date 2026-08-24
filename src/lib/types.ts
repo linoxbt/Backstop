@@ -53,4 +53,11 @@ export interface Agent {
   manifestHash: string;
   band: AssuranceBand;
   jobStage: JobStage;
+  /**
+   * Real on-chain ERC-8183 provider address, once this agent is actually
+   * deployed and listening (e.g. via `bag` / BNB Agent Studio). Undefined
+   * for demo-only agents — hireAgentOnChain() falls back to the simulated
+   * stepper when this is missing.
+   */
+  providerAddress?: `0x${string}`;
 }

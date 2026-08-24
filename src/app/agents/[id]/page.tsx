@@ -21,7 +21,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
       <Header />
       <main className="max-w-4xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
         <Link
-          href={`/marketplace#${agent.category}`}
+          href={`/marketplace?category=${agent.category}`}
           className="font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-bronze-text transition-colors"
         >
           ← {category.label}

@@ -11,7 +11,7 @@ export function WayfindingDiagram() {
           return (
             <Link
               key={cat.id}
-              href={`/marketplace#${cat.id}`}
+              href={`/marketplace?category=${cat.id}`}
               className="group border border-stone-line bg-stone-raised/50 hover:bg-stone-raised transition-colors p-4 sm:p-6 flex flex-col justify-between min-h-[132px] sm:min-h-[160px]"
             >
               <span className="font-data text-[10px] uppercase tracking-wider text-bronze-text">

@@ -4,7 +4,7 @@ import { POOL } from "@/lib/pool";
 
 export function WayfindingDiagram() {
   return (
-    <div className="relative max-w-2xl mx-auto">
+    <div className="relative max-w-2xl">
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {CATEGORIES.map((cat) => {
           const count = agentsByCategory(cat.id).length;

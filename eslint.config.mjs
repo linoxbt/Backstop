@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Independent bnbagent-studio agent projects, each with its own tooling.
+    "agents/**",
   ]),
 ]);
 

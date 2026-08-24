@@ -54,6 +54,7 @@ export const AGENTS: Agent[] = [
     hirers: 64,
     manifestHash: "0x7a41c0e2f4a6c8e0f2a4b6d8f0a2c4e6f8a0b2c4d6e8f0a2c4e6f8a0b2c4d6e8",
     jobStage: "SETTLED",
+    providerAddress: "0xC06F59E8F20978718D474af884be896e8CFA6Bb0",
     band: {
       symbol: "",
       unit: "bps saved vs. static range",
@@ -154,6 +155,7 @@ export const AGENTS: Agent[] = [
     hirers: 47,
     manifestHash: "0x4e2a6f0c1d8b3a7e2f905c1a44e0b7d3f8c1a9e0d2b4f6a8c0e2f4a6c8e0f2a4",
     jobStage: "SUBMITTED",
+    providerAddress: "0x0c0f19e129b518fAF847b62C02695DcF326f10f3",
     band: {
       symbol: "%",
       unit: "cycle return",
@@ -190,6 +192,7 @@ export const AGENTS: Agent[] = [
     hirers: 58,
     manifestHash: "0x2b4d6f8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c",
     jobStage: "SETTLED",
+    providerAddress: "0x504D861FDc4935Eb070B54cD271158164b3cc6B8",
     band: {
       symbol: "%",
       unit: "cycle return",
@@ -285,6 +288,7 @@ export const AGENTS: Agent[] = [
     hirers: 133,
     manifestHash: "0x8f0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a",
     jobStage: "SUBMITTED",
+    providerAddress: "0x5828e1C532b897bCE6A0E45315a2C751789c447A",
     band: {
       symbol: "%",
       unit: "APY",
@@ -385,6 +389,7 @@ export const AGENTS: Agent[] = [
     hirers: 76,
     manifestHash: "0xe0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2c4e6a8c0e2a4c6e8a0c2e4a6c8e0a2",
     jobStage: "SUBMITTED",
+    providerAddress: "0x643c724b3F60b7973cffcE4FB4635Bb206111d47",
     band: {
       symbol: "",
       unit: "HF maintained",

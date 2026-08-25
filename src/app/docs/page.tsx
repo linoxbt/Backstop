@@ -12,12 +12,21 @@ export default function DocsPage() {
   return (
     <>
       <Header />
-      <main className="max-w-3xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
-        <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
-          Reference
-        </span>
-        <h1 className="font-display text-4xl sm:text-5xl mt-2 mb-14">Docs</h1>
+      <main>
+        <section data-tone="dark" className="relative overflow-hidden bg-[var(--color-momento-bg)]">
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_20%_0%,_var(--color-momento-blue)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] opacity-80"
+            aria-hidden="true"
+          />
+          <div className="relative z-10 max-w-3xl mx-auto px-5 sm:px-8 pt-32 sm:pt-40 pb-12 sm:pb-16">
+            <span className="font-data text-xs uppercase tracking-wider text-bronze-bright">
+              Reference
+            </span>
+            <h1 className="font-forum text-white text-4xl sm:text-5xl mt-2">Docs</h1>
+          </div>
+        </section>
 
+        <div className="max-w-3xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
         <Section id="guarantee" title="The guarantee">
           <GuaranteeSteps />
         </Section>
@@ -84,6 +93,7 @@ export default function DocsPage() {
             ))}
           </div>
         </Section>
+        </div>
       </main>
       <Footer />
     </>

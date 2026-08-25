@@ -24,26 +24,39 @@ export default async function PoolPage() {
     <>
       <Header />
       <main>
-        <section className="border-b border-paper-line bg-paper-raised/40">
-          <div className="max-w-4xl mx-auto px-5 sm:px-8 py-16 sm:py-24 text-center">
-            <span className="font-data text-xs uppercase tracking-[0.2em] text-bronze-text">
+        <section data-tone="dark" className="relative overflow-hidden bg-[var(--color-momento-bg)]">
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_50%_0%,_var(--color-momento-blue)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] opacity-80"
+            aria-hidden="true"
+          />
+          <div className="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 pt-32 sm:pt-40 pb-16 sm:pb-24 text-center">
+            <span className="font-data text-xs uppercase tracking-[0.2em] text-bronze-bright">
               The reserve
             </span>
-            <div className="font-display text-5xl sm:text-6xl mt-4 mb-2 tabnum">{POOL.tvl}</div>
-            <p className="font-body text-paper-ink-soft mb-10">
+            <div className="font-forum text-white text-5xl sm:text-6xl mt-4 mb-2 tabnum">
+              {POOL.tvl}
+            </div>
+            <p className="font-body text-white/60 mb-10">
               protecting agent jobs across {AGENTS.length} agents, {CATEGORIES.length} categories
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-10 max-w-xl mx-auto text-left">
-              <Stat label="Payout ratio" value={POOL.payoutRatio} note={POOL.payoutRatioNote} />
+              <Stat
+                label="Payout ratio"
+                value={POOL.payoutRatio}
+                note={POOL.payoutRatioNote}
+                dark
+              />
               <Stat
                 label="Solvency buffer"
                 value={POOL.solvencyBuffer}
                 note={POOL.solvencyBufferNote}
+                dark
               />
               <Stat
                 label="Rebates paid"
                 value={POOL.totalRebatesPaid}
                 note={`${POOL.totalRebatesCount} payouts to date`}
+                dark
               />
             </div>
           </div>
@@ -310,14 +323,32 @@ export default async function PoolPage() {
   );
 }
 
-function Stat({ label, value, note }: { label: string; value: string; note: string }) {
+function Stat({
+  label,
+  value,
+  note,
+  dark = false,
+}: {
+  label: string;
+  value: string;
+  note: string;
+  dark?: boolean;
+}) {
   return (
     <div>
-      <div className="font-data text-[10px] uppercase tracking-wider text-paper-ink-faint mb-2">
+      <div
+        className={`font-data text-[10px] uppercase tracking-wider mb-2 ${dark ? "text-white/40" : "text-paper-ink-faint"}`}
+      >
         {label}
       </div>
-      <div className="font-display text-2xl sm:text-3xl mb-1.5 tabnum">{value}</div>
-      <div className="font-body text-xs text-paper-ink-soft leading-snug">{note}</div>
+      <div
+        className={`font-display text-2xl sm:text-3xl mb-1.5 tabnum ${dark ? "text-white" : ""}`}
+      >
+        {value}
+      </div>
+      <div className={`font-body text-xs leading-snug ${dark ? "text-white/60" : "text-paper-ink-soft"}`}>
+        {note}
+      </div>
     </div>
   );
 }

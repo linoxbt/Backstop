@@ -1,6 +1,16 @@
 "use server";
 
+import { headers } from "next/headers";
 import { ERC8183Client, EVMWalletProvider, JobStatus } from "@bnbagent/sdk";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { parseBudgetToRaw } from "@/lib/budget";
+
+// Best-effort floor against a script (or an impatient retry loop) hammering
+// this action — see src/lib/rateLimit.ts for what this does and doesn't
+// cover. Real protection for a wallet holding non-trivial funds needs
+// infrastructure this project doesn't have configured; this just closes
+// the "completely free to spam" gap.
+const HIRE_COOLDOWN_SECONDS = 15;
 
 export interface HireResult {
   ok: boolean;
@@ -35,6 +45,17 @@ export async function hireAgentOnChain(
   const privateKey = process.env.PRIVATE_KEY;
   const walletPassword = process.env.WALLET_PASSWORD;
 
+  const requestHeaders = await headers();
+  const callerKey = requestHeaders.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+  const rateLimit = checkRateLimit(`hire:${callerKey}`, HIRE_COOLDOWN_SECONDS);
+  if (!rateLimit.allowed) {
+    return {
+      ok: false,
+      mode: "simulated",
+      error: `Too many hire attempts — wait ${rateLimit.retryAfterSeconds}s and try again.`,
+    };
+  }
+
   if (!providerAddress) {
     return {
       ok: false,
@@ -58,9 +79,12 @@ export async function hireAgentOnChain(
     };
   }
 
-  const budget = Number(budgetHuman.replace(/,/g, ""));
-  if (!Number.isFinite(budget) || budget <= 0) {
-    return { ok: false, mode: "simulated", error: "Enter a valid budget." };
+  // Fast-fail on an obviously-bad budget before touching the network at
+  // all — the exact raw-unit conversion (which needs the token's real
+  // decimals) happens below once the client is created.
+  const preflight = parseBudgetToRaw(budgetHuman, 18);
+  if (!preflight.ok) {
+    return { ok: false, mode: "simulated", error: preflight.error };
   }
 
   try {
@@ -74,7 +98,11 @@ export async function hireAgentOnChain(
     });
 
     const decimals = await client.tokenDecimals();
-    const budgetRaw = BigInt(Math.round(budget * 10 ** decimals));
+    const parsed = parseBudgetToRaw(budgetHuman, decimals);
+    if (!parsed.ok) {
+      return { ok: false, mode: "simulated", error: parsed.error };
+    }
+    const budgetRaw = parsed.raw;
     const disputeWindow = await client.policy.disputeWindow();
     const expiredAt = BigInt(Math.floor(Date.now() / 1000)) + disputeWindow + BigInt(600);
 

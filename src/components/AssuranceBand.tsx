@@ -103,22 +103,4 @@ function Legend({ band, compact = false }: { band: AssuranceBandT; compact?: boo
   );
 }
 
-/** Compact, static rendering for listing rows — no animation, no trigger. */
-export function AssuranceBandCompact({ band }: { band: AssuranceBandT }) {
-  const markerLeft = band.realized === null ? null : bandPct(band, band.realized);
-  return (
-    <div>
-      <Track band={band} markerLeft={markerLeft} showTicks={false} size="compact" />
-      <div className="mt-2 space-y-1.5">
-        <Legend band={band} compact />
-        {band.status === "breach" && band.rebate && (
-          <span className="inline-block font-data text-[11px] uppercase tracking-wider text-stamp border border-stamp/50 px-2 py-1">
-            Rebate paid · {band.rebate.clause}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export { Track, Legend };

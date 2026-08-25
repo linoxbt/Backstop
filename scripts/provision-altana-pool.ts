@@ -10,7 +10,16 @@
  * Altana Keystore (default `register: true` — costs ~$0.50 in native BNB
  * from the admin wallet, paid once here).
  *
- * Prints the ALTANA_SESSION value to set in .env.local / Netlify env vars.
+ * Prints the ALTANA_SESSION value to set in .env.local / Netlify env vars,
+ * base64-encoded. Not raw JSON: Next.js's own .env loader (@next/env, via
+ * dotenv-expand) applies shell-style `$VAR` interpolation to every .env*
+ * value, and serializeSession() always encodes bigints as a literal
+ * `{"$bigint": "..."}` key — dotenv-expand silently rewrites that to
+ * `{"": "..."}`, corrupting every session's spend permission. Base64 has no
+ * `$` in its alphabet, so it survives untouched regardless of what the
+ * decoded JSON contains. src/lib/wallet/altanaPool.ts decodes it the same
+ * way on read; scripts/revoke-altana-pool.ts does too.
+ *
  * The admin key is never needed again for day-to-day payouts — only for a
  * future re-provision or revokeSession().
  */
@@ -49,8 +58,8 @@ async function main() {
   console.log("\nSession granted and registered in the Altana Keystore.");
   console.log(`Session wallet address: ${session.walletAddress}`);
   console.log(`Expires: ${new Date(expiry * 1000).toISOString()}`);
-  console.log("\nSet this in .env.local / Netlify env vars:\n");
-  console.log(`ALTANA_SESSION=${serializeSession(session)}`);
+  console.log("\nSet this in .env.local / Netlify env vars (base64-encoded — see comment above):\n");
+  console.log(`ALTANA_SESSION=${Buffer.from(serializeSession(session)).toString("base64")}`);
 }
 
 main().catch((err) => {

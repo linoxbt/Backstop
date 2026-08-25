@@ -55,6 +55,17 @@ export function AgentTable({
   initialCategory?: CategoryFilter;
 }) {
   const [category, setCategory] = useState<CategoryFilter>(initialCategory);
+  // useState's initializer only runs on mount, so if this component stays
+  // mounted across a client-side navigation that changes initialCategory
+  // (e.g. a future same-page category link), the filter would silently go
+  // stale without resyncing. Adjusting state during render (React's
+  // documented pattern for this) rather than in an effect avoids the extra
+  // commit-then-rerender pass a useEffect-based resync would cause.
+  const [prevInitialCategory, setPrevInitialCategory] = useState(initialCategory);
+  if (initialCategory !== prevInitialCategory) {
+    setPrevInitialCategory(initialCategory);
+    setCategory(initialCategory);
+  }
   const [status, setStatus] = useState<StatusFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("hirers");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");

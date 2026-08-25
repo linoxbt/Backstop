@@ -54,7 +54,9 @@ const FEE_TIERS = [100, 500, 2500, 10000] as const;
 function client() {
   return createPublicClient({
     chain: bscTestnet,
-    transport: http(process.env.RPC_URL || "https://bsc-testnet-rpc.publicnode.com"),
+    transport: http(process.env.RPC_URL || "https://bsc-testnet-rpc.publicnode.com", {
+      timeout: 8000,
+    }),
   });
 }
 
@@ -73,41 +75,60 @@ export interface PoolState {
  * Find the first live pool for `tokenA`/`tokenB` across the standard fee
  * tiers and read its current state directly from the pool contract. Real
  * on-chain data — no aggregator, no cached feed.
+ *
+ * All fee tiers are checked concurrently (both the existence check and the
+ * state reads), then reduced to the lowest fee tier with real liquidity —
+ * same result as scanning tiers one at a time, but without paying for
+ * round-trip latency four times over.
  */
 export async function getLivePoolState(tokenA: Address, tokenB: Address): Promise<PoolState | null> {
   try {
     const c = client();
-    for (const fee of FEE_TIERS) {
-      const pool = await c.readContract({
-        address: V3_FACTORY,
-        abi: FACTORY_ABI,
-        functionName: "getPool",
-        args: [tokenA, tokenB, fee],
-      });
-      if (pool === "0x0000000000000000000000000000000000000000") continue;
+    const poolAddresses = await Promise.all(
+      FEE_TIERS.map((fee) =>
+        c.readContract({
+          address: V3_FACTORY,
+          abi: FACTORY_ABI,
+          functionName: "getPool",
+          args: [tokenA, tokenB, fee],
+        }),
+      ),
+    );
 
-      const [slot0, liquidity, token0, token1] = await Promise.all([
-        c.readContract({ address: pool, abi: POOL_ABI, functionName: "slot0" }),
-        c.readContract({ address: pool, abi: POOL_ABI, functionName: "liquidity" }),
-        c.readContract({ address: pool, abi: POOL_ABI, functionName: "token0" }),
-        c.readContract({ address: pool, abi: POOL_ABI, functionName: "token1" }),
-      ]);
-      if (liquidity === BigInt(0)) continue;
+    const candidates = FEE_TIERS.map((fee, i) => ({ fee, pool: poolAddresses[i] })).filter(
+      (c) => c.pool !== "0x0000000000000000000000000000000000000000",
+    );
+    if (candidates.length === 0) return null;
 
-      const [sqrtPriceX96, tick] = slot0;
-      const price = (Number(sqrtPriceX96) / 2 ** 96) ** 2;
+    const states = await Promise.all(
+      candidates.map(async ({ fee, pool }) => {
+        const [slot0, liquidity, token0, token1] = await Promise.all([
+          c.readContract({ address: pool, abi: POOL_ABI, functionName: "slot0" }),
+          c.readContract({ address: pool, abi: POOL_ABI, functionName: "liquidity" }),
+          c.readContract({ address: pool, abi: POOL_ABI, functionName: "token0" }),
+          c.readContract({ address: pool, abi: POOL_ABI, functionName: "token1" }),
+        ]);
+        return { fee, pool, slot0, liquidity, token0, token1 };
+      }),
+    );
 
-      return {
-        poolAddress: pool,
-        feeTier: fee,
-        tick,
-        liquidity: liquidity.toString(),
-        price,
-        token0,
-        token1,
-      };
-    }
-    return null;
+    // FEE_TIERS order is preserved by Promise.all regardless of resolution
+    // order, so .find() still picks the lowest fee tier with real liquidity.
+    const live = states.find((s) => s.liquidity !== BigInt(0));
+    if (!live) return null;
+
+    const [sqrtPriceX96, tick] = live.slot0;
+    const price = (Number(sqrtPriceX96) / 2 ** 96) ** 2;
+
+    return {
+      poolAddress: live.pool,
+      feeTier: live.fee,
+      tick,
+      liquidity: live.liquidity.toString(),
+      price,
+      token0: live.token0,
+      token1: live.token1,
+    };
   } catch {
     return null;
   }

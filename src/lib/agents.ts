@@ -1,4 +1,4 @@
-import type { Agent, CategoryMeta } from "./types";
+import type { Agent, AgentCategory, CategoryMeta } from "./types";
 
 export const CATEGORIES: CategoryMeta[] = [
   {
@@ -483,4 +483,9 @@ export function agentsByCategory(category: string): Agent[] {
 
 export function categoryMeta(category: string): CategoryMeta | undefined {
   return CATEGORIES.find((c) => c.id === category);
+}
+
+/** True when `value` is a real category id — the one place that decides it. */
+export function isCategory(value: string | undefined): value is AgentCategory {
+  return CATEGORIES.some((c) => c.id === value);
 }

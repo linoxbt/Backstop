@@ -78,13 +78,25 @@ export default async function PoolPage() {
               </>
             )}
           </div>
-          <button
-            type="button"
-            className="font-data text-xs uppercase tracking-wider border border-ink px-4 py-2.5 hover:bg-ink hover:text-stone transition-colors"
-            title="Opens the pool's session in the Altana Keystore Explorer"
-          >
-            View in Altana Keystore Explorer →
-          </button>
+          {session.configured && session.walletAddress ? (
+            <a
+              href={`https://testnet.bscscan.com/address/${session.walletAddress}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block font-data text-xs uppercase tracking-wider border border-ink px-4 py-2.5 hover:bg-ink hover:text-stone transition-colors"
+            >
+              View session wallet on BscScan Testnet →
+            </a>
+          ) : (
+            <button
+              type="button"
+              disabled
+              title="No live session configured — this is illustrative data, not a real on-chain wallet to inspect"
+              className="font-data text-xs uppercase tracking-wider border border-stone-line text-ink-faint px-4 py-2.5 cursor-not-allowed"
+            >
+              View session wallet on-chain →
+            </button>
+          )}
         </section>
 
         <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-20 sm:pb-28">

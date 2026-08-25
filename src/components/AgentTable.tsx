@@ -16,6 +16,21 @@ const STATUS_META: Record<Agent["band"]["status"], { label: string; className: s
   pending: { label: "Pending", className: "text-ink-faint" },
 };
 
+/** A small square per network, Agentic Market's network-badge position in its services table. */
+const NETWORK_BADGE: Record<Agent["network"], string> = {
+  "BSC Testnet": "bg-bronze-text",
+  "BSC Mainnet": "bg-ink",
+};
+
+function NetworkBadge({ network }: { network: Agent["network"] }) {
+  return (
+    <span className="inline-flex items-center gap-1.5" title={network}>
+      <i className={`inline-block w-2 h-2 shrink-0 ${NETWORK_BADGE[network]}`} aria-hidden="true" />
+      {network}
+    </span>
+  );
+}
+
 function SortHeader({
   label,
   active,
@@ -253,6 +268,11 @@ export function AgentTable({
                       >
                         <span className="font-display text-base">{agent.name}</span>
                       </Link>
+                      {agent.providerAddress && (
+                        <span className="text-verdigris text-[11px]" title="Real on-chain identity">
+                          ✓
+                        </span>
+                      )}
                       <button
                         type="button"
                         onClick={() => setPreviewId(agent.id)}
@@ -269,7 +289,7 @@ export function AgentTable({
                     {CATEGORIES.find((c) => c.id === agent.category)?.label}
                   </td>
                   <td className="hidden lg:table-cell py-3 pr-4 font-data text-[11px] text-ink-soft whitespace-nowrap">
-                    {agent.network}
+                    <NetworkBadge network={agent.network} />
                   </td>
                   <td className="hidden md:table-cell py-3 pr-4 font-data text-[12px] text-ink-soft whitespace-nowrap tabnum">
                     {agent.band.promisedLow}

@@ -192,3 +192,21 @@ body {
 .animate-splash-zoom {
   animation: splash-zoom 1100ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Continuous horizontal ticker — the marketplace's closing "how it works"
+   banner, echoing the reference's scrolling arrow-separated phrase strip.
+   The track is the phrase list duplicated once; translating exactly -50%
+   loops seamlessly since both halves are identical. Respects the global
+   prefers-reduced-motion override above (animation-duration -> 0.01ms). */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee-scroll 22s linear infinite;
+}

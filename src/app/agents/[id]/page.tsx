@@ -80,7 +80,15 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
           </div>
           <div>
             <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Network</dt>
-            <dd>{agent.network}</dd>
+            <dd className="flex items-center gap-1.5">
+              <i
+                className={`inline-block w-2 h-2 shrink-0 ${
+                  agent.network === "BSC Testnet" ? "bg-bronze-text" : "bg-ink"
+                }`}
+                aria-hidden="true"
+              />
+              {agent.network}
+            </dd>
           </div>
           <div>
             <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Fee</dt>

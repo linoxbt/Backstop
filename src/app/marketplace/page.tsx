@@ -6,6 +6,8 @@ import { StatStrip } from "@/components/StatStrip";
 import { CatalogOverview } from "@/components/CatalogOverview";
 import { MiniStats } from "@/components/MiniStats";
 import { Territories } from "@/components/Territories";
+import { HowItWorksMarquee } from "@/components/HowItWorksMarquee";
+import { GuaranteeSteps } from "@/components/GuaranteeSteps";
 import { AGENTS, isCategory } from "@/lib/agents";
 
 export default async function MarketplacePage({
@@ -45,8 +47,18 @@ export default async function MarketplacePage({
           <Territories />
         </div>
 
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-24">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
           <AgentTable agents={AGENTS} initialCategory={initialCategory} initialQuery={initialQuery} />
+        </div>
+
+        <HowItWorksMarquee />
+
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
+          <span className="font-data text-xs uppercase tracking-wider text-bronze-text block mb-2">
+            The guarantee
+          </span>
+          <h2 className="font-display text-2xl sm:text-3xl mb-8">How every hire is backed.</h2>
+          <GuaranteeSteps />
         </div>
       </main>
       <Footer />

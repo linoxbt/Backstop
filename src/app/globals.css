@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+:root {
+  /* ground */
+  --color-stone: #e4ddc9;
+  --color-stone-raised: #d8cfb4;
+  --color-stone-line: #bcb190;
+
+  /* ink */
+  --color-ink: #201e15;
+  --color-ink-soft: #57503d;
+  --color-ink-faint: #857c62;
+
+  /* dark surfaces (vault interiors, hero, footer) */
+  --color-steel: #14171a;
+  --color-steel-raised: #1d2124;
+  --color-steel-line: #34393d;
+  --color-paper-on-steel: #e8e2cf;
+
+  /* metal accent */
+  --color-bronze: #8c6a45;
+  --color-bronze-text: #6b4f31;
+  --color-bronze-bright: #b78c52;
+
+  /* signal */
+  --color-verdigris: #4f6d5c;
+  --color-verdigris-soft: #7c8f7c;
+  --color-stamp: #9c2c1e;
+  --color-stamp-soft: #c65a49;
+
+  --font-display: var(--font-caslon), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-stix), Georgia, serif;
+  --font-ui: var(--font-public), system-ui, -apple-system, sans-serif;
+  --font-data: var(--font-courier), "Courier New", monospace;
+}
+
+@theme inline {
+  --color-stone: var(--color-stone);
+  --color-stone-raised: var(--color-stone-raised);
+  --color-stone-line: var(--color-stone-line);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-ink-faint: var(--color-ink-faint);
+  --color-steel: var(--color-steel);
+  --color-steel-raised: var(--color-steel-raised);
+  --color-steel-line: var(--color-steel-line);
+  --color-paper-on-steel: var(--color-paper-on-steel);
+  --color-bronze: var(--color-bronze);
+  --color-bronze-text: var(--color-bronze-text);
+  --color-bronze-bright: var(--color-bronze-bright);
+  --color-verdigris: var(--color-verdigris);
+  --color-verdigris-soft: var(--color-verdigris-soft);
+  --color-stamp: var(--color-stamp);
+  --color-stamp-soft: var(--color-stamp-soft);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-ui: var(--font-ui);
+  --font-data: var(--font-data);
+}
+
+* {
+  border-color: var(--color-stone-line);
+}
+
+html {
+  background: var(--color-stone);
+}
+
+body {
+  background: var(--color-stone);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-bronze);
+  color: var(--color-stone);
+}
+
+.tabnum {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-bronze);
+  outline-offset: 2px;
+}
+
+.hatch-corridor {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--color-verdigris-soft) 0,
+    var(--color-verdigris-soft) 1.5px,
+    transparent 1.5px,
+    transparent 7px
+  );
+  background-color: color-mix(in srgb, var(--color-verdigris) 10%, transparent);
+}
+
+.wedge-marker {
+  clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
+}
+
+@keyframes stamp-hit {
+  0% {
+    opacity: 0;
+    transform: rotate(-6deg) scale(2.2);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(-8deg) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-6deg) scale(1);
+  }
+}
+
+.animate-stamp-hit {
+  animation: stamp-hit 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) forwards;
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.4s ease forwards;
+}

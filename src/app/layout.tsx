@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Outfit, DM_Mono } from "next/font/google";
+import { WalletProviders } from "@/components/WalletProviders";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -30,7 +31,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${spaceGrotesk.variable} ${outfit.variable} ${dmMono.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <WalletProviders>{children}</WalletProviders>
+      </body>
     </html>
   );
 }

@@ -8,7 +8,7 @@ import { catalogStats } from "@/lib/agents";
 export function StatStrip() {
   const stats = catalogStats();
   return (
-    <div className="bg-steel-raised border-b border-steel-line">
+    <div className="bg-stone-raised border-b border-stone-line">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 flex flex-wrap items-center gap-x-8 gap-y-2 font-data text-[11px] uppercase tracking-wider">
         <Stat label="Agents underwritten" value={stats.agentCount} />
         <Stat label="Categories" value={stats.categoryCount} />
@@ -22,8 +22,8 @@ export function StatStrip() {
 function Stat({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
   return (
     <span className="flex items-baseline gap-2">
-      <span className={`tabnum ${accent ? "text-verdigris" : "text-bronze-bright"}`}>{value}</span>
-      <span className="text-paper-on-steel/55">{label}</span>
+      <span className={`tabnum ${accent ? "text-verdigris" : "text-bronze-text"}`}>{value}</span>
+      <span className="text-ink-faint">{label}</span>
     </span>
   );
 }

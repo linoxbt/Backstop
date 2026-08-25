@@ -135,6 +135,21 @@ export function AgentTable({
           className="flex-1 min-w-[180px] font-data text-[13px] bg-stone border border-stone-line px-3 py-2 placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-bronze"
         />
         <FilterSelect
+          label="Sort"
+          value={`${sortKey}-${sortDir}`}
+          onChange={(v) => {
+            const [key, dir] = v.split("-") as [SortKey, "asc" | "desc"];
+            setSortKey(key);
+            setSortDir(dir);
+          }}
+          options={[
+            { value: "hirers-desc", label: "Most hirers" },
+            { value: "cycles-desc", label: "Most cycles" },
+            { value: "name-asc", label: "Name A–Z" },
+            { value: "category-asc", label: "Category" },
+          ]}
+        />
+        <FilterSelect
           label="Category"
           value={category}
           onChange={(v) => setCategory(v as CategoryFilter)}

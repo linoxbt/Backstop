@@ -1,8 +1,10 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { POOL, REBATE_LOG } from "@/lib/pool";
+import { getPoolSessionInfo } from "@/lib/wallet/altanaPool";
 
-export default function PoolPage() {
+export default async function PoolPage() {
+  const session = await getPoolSessionInfo();
   return (
     <>
       <Header />
@@ -36,19 +38,45 @@ export default function PoolPage() {
         </section>
 
         <section className="max-w-4xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
-          <span className="font-data text-xs uppercase tracking-wider text-bronze-text block mb-3">
-            Clause 0 — Session authority
-          </span>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
+              Clause 0 — Session authority
+            </span>
+            <span
+              className={`font-data text-[10px] uppercase tracking-wider px-2 py-0.5 border ${
+                session.configured
+                  ? "border-verdigris text-verdigris"
+                  : "border-stone-line text-ink-faint"
+              }`}
+            >
+              {session.configured ? "● Live session" : "Illustrative"}
+            </span>
+          </div>
           <h2 className="font-display text-3xl mb-6">The session that pays you</h2>
           <p className="font-body text-ink-soft max-w-2xl mb-8">
             An Altana smart wallet, scoped to exactly this.
           </p>
           <div className="border border-stone-line bg-stone-raised/50 p-6 sm:p-8 grid sm:grid-cols-2 gap-6 mb-6">
-            <Field label="Call allowlist" value={POOL.session.callAllowlist.join(", ")} mono />
-            <Field label="Spend cap" value={POOL.session.spendCap} mono />
-            <Field label="Expiry" value={POOL.session.expiry} />
-            <Field label="Registered in" value={POOL.session.registeredIn} />
-            <Field label="Vault address" value={POOL.vaultAddress} mono />
+            {session.configured ? (
+              <>
+                <Field label="Call allowlist" value={(session.callAllowlist ?? []).join(", ")} mono />
+                <Field label="Spend cap" value={session.spendCap ?? "—"} mono />
+                <Field
+                  label="Expiry"
+                  value={session.expiry ? new Date(session.expiry * 1000).toISOString() : "—"}
+                />
+                <Field label="Registered in" value="Altana Keystore" />
+                <Field label="Session wallet" value={session.walletAddress ?? "—"} mono />
+              </>
+            ) : (
+              <>
+                <Field label="Call allowlist" value={POOL.session.callAllowlist.join(", ")} mono />
+                <Field label="Spend cap" value={POOL.session.spendCap} mono />
+                <Field label="Expiry" value={POOL.session.expiry} />
+                <Field label="Registered in" value={POOL.session.registeredIn} />
+                <Field label="Vault address" value={POOL.vaultAddress} mono />
+              </>
+            )}
           </div>
           <button
             type="button"

@@ -1,0 +1,13 @@
+-- The original "public insert" policy on `hires` let anyone holding the
+-- (deliberately public) publishable key insert arbitrary rows directly via
+-- the Supabase REST API -- fake agent_id/job_id/tx_hash, or even a forged
+-- auth_message/auth_signature pair -- completely bypassing the app's own
+-- viem.verifyMessage() check in src/lib/chain/hires.ts, which only guards
+-- the app's own code path, not the table itself.
+--
+-- recordHire() now writes through the service-role client (supabaseAdmin in
+-- src/lib/supabase.ts), which bypasses RLS by construction, so dropping
+-- this policy doesn't break the app -- it just closes the direct-REST-API
+-- forgery path for everyone else. Reads stay public (the "public read"
+-- policy is untouched): My Agents still needs anonymous select.
+drop policy "public insert" on hires;

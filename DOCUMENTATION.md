@@ -75,6 +75,8 @@ Derived from the product copy in `src/app/page.tsx`, `src/app/docs/page.tsx`, an
 | Agent Advantage Report | A template comparing "with agent" vs. "without agent" outcomes for three tasks, explicitly marked unpopulated | `src/app/advantage-report/page.tsx` |
 | Assurance pool provisioning scripts | Admin-only CLI scripts to grant/register and revoke the pool's Altana session key | `scripts/provision-altana-pool.ts`, `scripts/revoke-altana-pool.ts` |
 | Autonomous seller agents | Five standalone A2A servers that can negotiate a price, accept a funded ERC-8183 job, do LLM-driven work, and submit a deliverable on-chain | `agents/*/app/agent/src/*.ts` |
+| Real, wallet-signed hire records | Connecting a wallet while hiring signs a real authorization message, verified server-side and stored in Supabase; a per-wallet "My Agents" page reads them back | `src/lib/chain/hires.ts`, `src/lib/chain/hireAuthMessage.ts`, `src/app/my-agents/page.tsx` |
+| Automatic, real, per-hire rebate payouts | An authenticated cron endpoint, hit every 30 minutes, checks every real agent's actual assurance-band status and pays a real rebate — from the pool's Altana session, to the actual hirer's wallet — for every real hire against a breached agent that hasn't been rebated yet. `/pool`'s ledger shows these labeled "Real payout," distinct from the older illustrative log | `src/lib/chain/bandBreach.ts`, `src/lib/chain/autoRebate.ts`, `src/lib/chain/rebates.ts`, `src/app/api/cron/rebalance-check/route.ts`, `.github/workflows/rebalance-breach-check.yml` |
 
 ## 4. Architecture Overview
 
@@ -133,6 +135,14 @@ graph TB
     Agents5 --> BSC
 ```
 
+**Not shown in the diagram above (added after it was drawn):** a Supabase Postgres
+database now backs two real, server-only write paths — wallet-signed hire records
+(`src/lib/chain/hires.ts`) and real rebate payouts (`src/lib/chain/rebates.ts`,
+`autoRebate.ts`) — both read publicly (for `/my-agents` and `/pool`) but writable only
+through a service-role client, never the public client. A GitHub Actions cron job hits
+`src/app/api/cron/rebalance-check/route.ts` every 30 minutes, which is the actual
+trigger for `autoRebate.ts`'s real, per-hire Altana payouts. See §12.7 and §14.
+
 **Key architectural fact:** the marketplace app and the five agent projects under `agents/` are **not wired together programmatically**. The marketplace reads each real agent's on-chain `providerAddress` from `src/lib/agents.ts` and can create/fund an ERC-8183 job addressed to that agent; the agent, running as its own separate process (`bag dev`), independently watches the chain and reacts. The only coupling is the shared BSC Testnet chain state and the ERC-8183 contracts both sides call into — there is no direct API call between the two codebases.
 
 ## 5. Technology Stack
@@ -154,6 +164,8 @@ Derived from `package.json`, `agents/*/app/agent/package.json`, `next.config.ts`
 | Wallet connect | `@reown/appkit`, `@reown/appkit-adapter-wagmi`, `wagmi` | `^1.8.23` / `^1.8.23` / `^3.7.6` |
 | Data fetching (wallet UI) | `@tanstack/react-query` | `^5.102.3` |
 | Server-only guard | `server-only` | `^0.0.1` |
+| Real hire/rebate persistence | `@supabase/supabase-js` | `^2.112.4` |
+| Testing | Vitest | `^4.1.11` |
 | Linting | ESLint (`eslint-config-next`) | `^9` |
 | Deployment | Netlify (`@netlify/plugin-nextjs`, `netlify.toml`) | Node 20 |
 
@@ -189,16 +201,27 @@ Backstop/
 │   │   │   ├── page.tsx               Agent dossier (band, hire panel, live on-chain data)
 │   │   │   └── loading.tsx            Skeleton loading state
 │   │   ├── pool/page.tsx              Assurance pool page
+│   │   ├── my-agents/page.tsx         Real, wallet-signed hire records + rebate status
 │   │   ├── docs/page.tsx              Static reference/docs page
-│   │   └── advantage-report/page.tsx  TermiX "Agent Advantage Report" template
+│   │   ├── advantage-report/page.tsx  TermiX "Agent Advantage Report" template
+│   │   └── api/cron/rebalance-check/  Authenticated endpoint the auto-rebate cron hits
 │   ├── components/                    Reusable React components (see §9)
 │   └── lib/                           Server-only and shared logic (see §8)
 │       ├── types.ts                    Core TypeScript types (Agent, AssuranceBand, ...)
 │       ├── agents.ts                   The 13-agent in-memory data set
 │       ├── pool.ts                     Assurance pool mock stats + rebate log
 │       ├── band.ts                     bandPct() — the one shared band-math helper
+│       ├── budget.ts                   Exact decimal budget parsing (no float precision loss)
+│       ├── rateLimit.ts                In-memory + Postgres-backed rate limiting
+│       ├── supabase.ts                 Publishable (read) + service-role (write) clients
 │       ├── empty-module.ts             Stub for the aliased @base-org/account
 │       ├── chain/hireAgent.ts          Server Action: real ERC-8183 hire flow
+│       ├── chain/hires.ts              Server Action: wallet-signed hire records + rebate linkage
+│       ├── chain/hireAuthMessage.ts    The message a hirer's wallet signs to authorize a record
+│       ├── chain/bandBreach.ts         Real payout trigger: which real agents missed their band
+│       ├── chain/rebalanceBreach.ts    Honest, separate PancakeSwap-liquidity signal (informational only)
+│       ├── chain/autoRebate.ts         Pays a real, per-hire rebate for every breached agent's hires
+│       ├── chain/rebates.ts            Reads the real rebate ledger for /pool
 │       ├── wallet/
 │       │   ├── config.ts               Reown/wagmi client configuration
 │       │   └── altanaPool.ts           Assurance pool's Altana session payout logic
@@ -207,6 +230,8 @@ Backstop/
 ├── scripts/
 │   ├── provision-altana-pool.ts       One-time: grant + register the pool's Altana session
 │   └── revoke-altana-pool.ts          Admin-only: revoke that session immediately
+├── supabase/migrations/                hires/rebates tables, RLS policies, rate_limits fn (§12.7)
+├── .github/workflows/                  rebalance-breach-check.yml — the real auto-rebate cron trigger
 ├── agents/                             Five independent BNB Agent Studio projects (see §11)
 │   ├── meridianrebalancer/
 │   ├── tidelinegrid/
@@ -350,7 +375,86 @@ Defines every shared TypeScript type in the app: `AgentCategory`, `CategoryMeta`
 - **Used by:** `AssuranceBand.tsx`, `AssuranceBandInteractive.tsx`, `AgentTable.tsx` (in the compare-mode mini-bands).
 
 ### `src/lib/chain/hireAgent.ts`
-See [§10 Backend Architecture](#10-backend-architecture) — this is the app's one Server Action.
+See [§10 Backend Architecture](#10-backend-architecture) — this is one of the app's Server Actions.
+
+### `src/lib/budget.ts`
+- **What it does:** `parseBudgetToRaw(budgetHuman, decimals)` — strips thousands
+  separators/whitespace, validates finiteness/positivity, then converts to raw token
+  units with viem's `parseUnits` (exact string-based decimal math).
+- **Why it exists:** a real bug fix, not a refactor for its own sake — the previous
+  inline `Math.round(budget * 10**decimals)` lost precision on realistic 18-decimal
+  budgets (e.g. `2500.33` produced `2500329999999999934464`, not `2500330000000000000000`).
+  Covered by `budget.test.ts`.
+- **Used by:** `hireAgent.ts`, twice — a preflight check at a hardcoded 18 decimals
+  before any network call, then re-parsed against the real on-chain `decimals` once the
+  ERC-8183 client resolves it, rather than trusting the preflight value for the actual
+  transaction.
+
+### `src/lib/rateLimit.ts`
+- **What it does:** `checkRateLimit(key, windowSeconds)` — a process-local, in-memory
+  one-call-per-window guard. `checkRateLimitPersistent(key, windowSeconds)` — the same
+  contract, backed by a Postgres RPC function (`check_rate_limit`, see §12.7) when
+  Supabase is configured, so it actually coordinates across serverless instances and
+  survives a cold start; falls back to the in-memory version otherwise or on a database
+  error.
+- **Used by:** `hireAgent.ts` (the persistent variant, keyed on caller IP — see §18).
+
+### `src/lib/supabase.ts`
+- **What it does:** exports two Supabase clients — `supabase` (publishable key,
+  read-only in practice) and `supabaseAdmin` (service-role key, bypasses Row Level
+  Security). Guarded with `import "server-only"`.
+- **Why two clients:** `hires`/`rebates` have a public-read RLS policy but no public
+  insert policy — only `supabaseAdmin` can write a row. This is what makes the write
+  path un-forgeable by anyone holding just the (deliberately public) publishable key;
+  see §18.
+
+### `src/lib/chain/hires.ts`
+- **What it does:** `recordHire()` — verifies a wallet's signature over a hire
+  authorization message (`viem.verifyMessage`) and its embedded timestamp's freshness
+  (rejects anything older than 5 minutes, guarding against a replayed signed message),
+  then inserts via `supabaseAdmin`. `getHiresForWallet()` — public read, enriched with
+  each hire's real rebate status via a `rebates` embed. `getUnrebatedHiresForAgent()` /
+  `recordRebate()` — the query and write `autoRebate.ts` uses to pay and record a real,
+  per-hire rebate exactly once.
+- **Marked `"use server"`:** every export here is a Next.js Server Action, callable
+  directly from a client component (`my-agents/page.tsx` calls `getHiresForWallet`
+  this way) without a hand-written API route.
+
+### `src/lib/chain/hireAuthMessage.ts`
+- **What it does:** `buildHireAuthMessage()` — pure string builder for the message a
+  connected wallet signs to authorize a hire record, including an ISO 8601 timestamp
+  that `hires.ts`'s `recordHire()` later checks for staleness.
+
+### `src/lib/chain/bandBreach.ts`
+- **What it does:** `checkAgentBandBreaches()` — the real payout trigger. For every
+  agent with a real `providerAddress`, checks whether its (static, illustrative)
+  `AssuranceBand.status` is `"breach"`. This reuses the exact signal `/pool`'s "clean
+  entries" list and `AssuranceBandInteractive` already treat as ground truth elsewhere
+  in the UI, rather than an unrelated proxy condition.
+- **Known caveat, stated in the module's own doc comment:** `band.status` is still
+  static data, not a live measurement of an agent's actual execution — see §14 and §23.
+
+### `src/lib/chain/rebalanceBreach.ts`
+- **What it does:** `checkRebalancerBreach()` — an honest, separate, *informational*
+  signal: whether a live PancakeSwap v3 WBNB/USDT pool with real liquidity currently
+  exists. This used to be the auto-rebate trigger; it no longer decides who gets paid
+  (see `bandBreach.ts` above) but is still shown on `/pool` as "Clause 0(b)" since it's
+  a real, honestly-checkable fact in its own right.
+
+### `src/lib/chain/autoRebate.ts`
+- **What it does:** `runAutoRebateCheck()` — calls `checkAgentBandBreaches()`; for every
+  breached real agent, calls `getUnrebatedHiresForAgent()` and, for each unrebated hire
+  found, pays that hire's own wallet a real rebate via `payRebate()` and records it via
+  `recordRebate()`. Returns which hires were paid and which agents/hires were skipped
+  (and why — e.g. "no real hires to rebate for this agent yet").
+- **Idempotency:** the `rebates.hire_id` unique database constraint, not a timer — a
+  given hire can never be rebated twice, even across a cold start. Called only from the
+  authenticated cron route handler (§10, §18), never from a page render.
+
+### `src/lib/chain/rebates.ts`
+- **What it does:** `getRecentRebates()` — public, read-only query against the real
+  `rebates` table, used by `/pool` to render actual payouts (labeled "Real payout")
+  alongside the older static `REBATE_LOG`.
 
 ### `src/lib/wallet/altanaPool.ts`, `src/lib/erc8004.ts`, `src/lib/pancakeswap.ts`
 See [§12 External Integrations](#12-external-integrations) — these are the three server-only modules that perform real, live external reads/writes, each independently gated.
@@ -395,7 +499,8 @@ The frontend is React 19 running inside Next.js 16's App Router, styled with Tai
 | `/marketplace` | Dynamic (reads `searchParams.category`) | Full sortable/filterable agent table |
 | `/agents/[id]` | Static (`generateStaticParams` over all 13 agent ids), async Server Component | Agent dossier: identity, network, fee, live PancakeSwap strip (conditional), assurance band, hire panel |
 | `/agents/[id]` (loading) | — | Skeleton UI shown while the async dossier page resolves its live data fetches |
-| `/pool` | Static, async Server Component | Reserve stats, session authority card (live or illustrative), rebate ledger |
+| `/pool` | Static, async Server Component | Reserve stats, session authority card (live or illustrative), liquidity check, real band-breach payout check, real + illustrative rebate ledger |
+| `/my-agents` | Client Component | Real, wallet-signed hire records for the connected wallet, each showing real rebate status when one exists |
 | `/docs` | Static | Guarantee steps, hire lifecycle stage list, category list, live agents, protocol stack table |
 | `/advantage-report` | Static | TermiX Agent Advantage Report template (explicitly unpopulated) |
 
@@ -442,8 +547,9 @@ graph TD
 There is no standalone backend server or REST/GraphQL API in this project. "Backend" logic exists purely as:
 
 1. **Next.js Server Components** — `async function Page()` functions that run only on the server, fetch data (from static modules or live external sources), and render HTML. Used by `agents/[id]/page.tsx`, `pool/page.tsx`, and `marketplace/page.tsx`.
-2. **One Next.js Server Action** — `hireAgentOnChain` in `src/lib/chain/hireAgent.ts`, marked `"use server"`. This is the only function the client can invoke that performs a real state-changing operation (submitting blockchain transactions). Next.js compiles this into a POST endpoint automatically; there is no hand-written route handler.
-3. **Server-only utility modules** — `src/lib/erc8004.ts`, `src/lib/pancakeswap.ts`, and `src/lib/wallet/altanaPool.ts` are marked with the `server-only` package's import guard (`import "server-only"`), which throws a build-time/runtime error if accidentally imported into client-bundled code. These are read (and in `altanaPool.ts`'s case, sometimes write) integrations invoked exclusively from Server Components.
+2. **Next.js Server Actions** — every export of `src/lib/chain/hireAgent.ts` and `src/lib/chain/hires.ts` (both marked `"use server"`). `hireAgentOnChain` performs the real state-changing on-chain operation (submitting the ERC-8183 job); `recordHire` performs the real state-changing database write (a signature-verified hire record); `getHiresForWallet`, `getUnrebatedHiresForAgent`, and `recordRebate` are the reads/writes the auto-rebate path and `/my-agents` use. Next.js compiles each into a callable endpoint automatically; there is no hand-written route handler for any of them.
+3. **One hand-written route handler** — `src/app/api/cron/rebalance-check/route.ts`, a `GET` handler (not a Server Action, since it's invoked by an external cron job, not client-side React) protected by a timing-safe bearer-token check against `CRON_SECRET`. See §18.
+4. **Server-only utility modules** — `src/lib/erc8004.ts`, `src/lib/pancakeswap.ts`, `src/lib/wallet/altanaPool.ts`, `src/lib/supabase.ts`, `src/lib/rateLimit.ts`, `src/lib/chain/bandBreach.ts`, `src/lib/chain/rebalanceBreach.ts`, and `src/lib/chain/autoRebate.ts` are marked with the `server-only` package's import guard (`import "server-only"`), which throws a build-time/runtime error if accidentally imported into client-bundled code.
 
 ### The hire flow — `hireAgentOnChain`
 
@@ -612,6 +718,16 @@ Every external integration in this codebase follows the same pattern: **attempt 
 - **Configuration:** `netlify.toml` — build command `npm run build`, publish directory `.next`, `@netlify/plugin-nextjs` plugin, Node 20.
 - **What this means:** the app is deployed as a Next.js app on Netlify's own Next.js runtime adapter (server components, server actions, and image optimization all run through Netlify's function infrastructure, not a custom server).
 
+### 12.7 Supabase — real hire/rebate persistence + a distributed rate limiter
+
+- **Used by:** `src/lib/supabase.ts` (both clients), `src/lib/chain/hires.ts`, `src/lib/chain/rebates.ts`, `src/lib/chain/autoRebate.ts`, `src/lib/rateLimit.ts`.
+- **Schema (`supabase/migrations/`):**
+  - `hires` — one row per wallet-signed hire authorization. Public-read RLS policy; **no** public-insert policy (dropped in `*_restrict_hires_insert.sql` — the original policy let anyone holding the publishable key insert a forged row directly against the Supabase REST API, bypassing the app's own signature check entirely). Writes happen only via `supabaseAdmin` (the service-role client, which bypasses RLS by construction).
+  - `rebates` — one row per real rebate payout, `hire_id` a `unique` foreign key into `hires`. Public-read; no insert policy at all (service-role-only, from `autoRebate.ts`). The `unique` constraint is what actually prevents a hire from being rebated twice, including across a cold start.
+  - `unrebated_hires` — a view (`hires` left-joined against `rebates`, filtered to unmatched rows) that `getUnrebatedHiresForAgent()` queries.
+  - `rate_limits` + `check_rate_limit(key, window_seconds)` — a single-statement, atomic Postgres function (`insert ... on conflict ... do update ... where ... returning`) that `checkRateLimitPersistent()` calls via RPC.
+- **Gating:** every read/write here follows the same honest-gating shape as every other integration in this app — `supabase`/`supabaseAdmin` are `null` when their respective env vars are unset, and every caller (`recordHire`, `getHiresForWallet`, `checkRateLimitPersistent`, etc.) checks for that and returns a typed empty/fallback result rather than throwing.
+
 ## 13. User Flows
 
 ### 13.1 Browsing and hiring an agent
@@ -676,7 +792,16 @@ function bandPct(band: AssuranceBand, value: number): number {
 ```
 Every visual element (the historical corridor's left/width, the promised band's left/width, the realized marker's left offset) is this same formula applied to different values against the same `[scaleMin, scaleMax]` axis — this guarantees all three elements are drawn to a consistent scale.
 
-**Where the pool comes in:** the narrative (landing page, `/pool`, `GuaranteeSteps`) states that every agent's fee contributes a percentage (`Agent.poolContribution`, e.g. "6% of performance fee") to a shared assurance pool, and that a breach's rebate is paid automatically out of that pool. **In the current codebase, this payment is only demonstrably real on the pool side** — `payRebate()` in `altanaPool.ts` is a real, callable function capable of executing the on-chain transfer — but there is no code path in the running application that *automatically* invokes `payRebate()` when a band's `status` becomes `"breach"`. The `REBATE_LOG` shown on `/pool` is static illustrative data, and the "Settle cycle" interaction on the dossier page is a client-side visualization only, not a trigger for a real payout. This gap is stated explicitly here per this document's own accuracy standard — it is not visible as a caveat anywhere in the product UI itself.
+**Where the pool comes in:** the narrative (landing page, `/pool`, `GuaranteeSteps`) states that every agent's fee contributes a percentage (`Agent.poolContribution`, e.g. "6% of performance fee") to a shared assurance pool, and that a breach's rebate is paid automatically out of that pool. **This is now real, per-hire, and automatic** — every 30 minutes, `src/app/api/cron/rebalance-check/route.ts` calls `runAutoRebateCheck()` (`autoRebate.ts`), which:
+1. Calls `checkAgentBandBreaches()` (`bandBreach.ts`) — for every real, on-chain agent (`providerAddress` set), checks whether its `AssuranceBand.status` is `"breach"`.
+2. For each breached agent, looks up every real hire against it that hasn't been rebated yet (`getUnrebatedHiresForAgent`, backed by the `unrebated_hires` view).
+3. Pays each such hire's own wallet a real, fixed rebate (5 U) from the Altana pool session (`payRebate`), and records it in the `rebates` table (`recordRebate`) — a `unique` constraint on `hire_id` guarantees a given hire is never rebated twice.
+
+`/pool`'s ledger now renders these real payouts, each labeled "● Real payout," reading from `getRecentRebates()` (`src/lib/chain/rebates.ts`) — separately from the older, still-static `REBATE_LOG` array, which remains and is now explicitly labeled "Illustrative" in the same ledger so the two are never visually ambiguous.
+
+**One honesty caveat remains, by design, not oversight:** the `AssuranceBand.status` this whole mechanism keys off is still static, hand-written data in `src/lib/agents.ts` — nothing in this app observes an agent's actual execution and derives `status` from it. What changed is that the payout now honestly tracks the *same* number the product's UI already treats as ground truth everywhere else (the dossier page's band visualization, `/pool`'s own "clean entries" list), rather than the unrelated PancakeSwap-liquidity proxy it replaced. Turning `band.status` itself into a real, measured value is the next layer of this gap — tracked in §23/§24.
+
+The "Settle cycle" interaction on the dossier page remains a client-side visualization only (of this same static `realized`/`rebate` data) — it does not trigger a network request or a real payout; only the cron path does.
 
 ## 15. State Management
 
@@ -694,7 +819,7 @@ Server-rendered data (agent lists, pool stats, live external reads) is not "stat
 
 ## 16. Error Handling Strategy — the "honest gating" pattern
 
-Every module in this codebase that touches an external system (the blockchain, the Altana relay, the 8004scan API, PancakeSwap contracts) follows one consistent pattern, visible in `hireAgentOnChain`, `payRebate`, `getPoolSessionInfo`, `lookupAgentByOwner`, and `getLivePoolState`:
+Every module in this codebase that touches an external system (the blockchain, the Altana relay, the 8004scan API, PancakeSwap contracts, Supabase) follows one consistent pattern, visible in `hireAgentOnChain`, `payRebate`, `getPoolSessionInfo`, `lookupAgentByOwner`, `getLivePoolState`, `recordHire`, `getUnrebatedHiresForAgent`, and `checkRateLimitPersistent`:
 
 1. **Check preconditions explicitly** (is a required env var set? is a wallet configured? is a provider address available?) and return a typed, clearly-labeled "not configured" / "illustrative" result *before* attempting any network call, if a precondition fails.
 2. **Attempt the real operation** if preconditions are met.
@@ -715,7 +840,9 @@ flowchart TD
     Caught --> UI
 ```
 
-This pattern is the reason the UI can always distinguish real from illustrative data: `/pool`'s session card has an explicit "● Live session" vs. "Illustrative" badge; the dossier page's identity field has three explicit states (registered / "Not yet registered" / "Illustrative"); `HireFlow` branches its entire rendering on `result.mode`.
+This pattern is the reason the UI can always distinguish real from illustrative data: `/pool`'s session card has an explicit "● Live session" vs. "Illustrative" badge; `/pool`'s ledger now has an explicit "● Real payout" vs. "Illustrative" badge per entry (§14); the dossier page's identity field has three explicit states (registered / "Not yet registered" / "Illustrative"); `HireFlow` branches its entire rendering on `result.mode`.
+
+**A related, narrower discipline in the newest code:** the read/write split between `supabase` (publishable key) and `supabaseAdmin` (service-role key, `src/lib/supabase.ts`) is the same "never let something less-trusted do something it shouldn't" instinct applied to data integrity rather than UI honesty — `hires`/`rebates` are publicly readable but writable only through the service-role client, so the app's own signature/idempotency checks in `hires.ts` can't be bypassed by a direct call against the Supabase REST API with just the public key. See §18.
 
 **Client-side error handling** is comparatively minimal because there is so little client-side logic that can fail: `HireFlow` has no explicit `try/catch` around its Server Action call (a network-level failure calling a Server Action would surface as a Next.js framework-level error boundary, not something this component handles itself). No `error.tsx` boundary file exists in `src/app/` — an unhandled render error at the App Router level falls through to Next.js's default error UI, which is not customized in this codebase.
 
@@ -742,8 +869,11 @@ Observations grounded in the actual code, not general advice:
 - **Wallet keystores are excluded from deploy artifacts by construction**, not by convention: each agent's `AGENTS.md` states the invariant that `.studio/wallets/` lives at the workspace root, *outside* the `app/agent` directory that `bag deploy` packages, "so that no packaging path can bundle it into an artifact." `.gitignore` files at both the agent-workspace and `app/agent` level additionally keep the keystore and `.env.local` out of version control.
 - **Never logging private key material:** the agent scaffold's own `AGENTS.md` states this as a hard invariant ("Never print, log, or export private key material") and `signing.ts`'s doc comments repeatedly emphasize that all signing operations are fixed, non-LLM-callable code — the LLM that produces an agent's deliverable text never has access to anything that can move funds or sign a transaction.
 - **`.env.example` contains no real values** — only variable names and explanatory comments, consistent with the standard practice of never committing secrets, and consistent with this documentation's own constraint of not repeating any secret values.
-- **Client-supplied input into the hire flow:** `hireAgentOnChain`'s `budgetHuman` parameter is parsed with `Number(budgetHuman.replace(/,/g, ""))` and validated as finite and positive before use; an invalid budget returns a "simulated" error result rather than being passed through to a chain call.
-- **No rate limiting or abuse protection was found** anywhere in the codebase (no middleware, no per-IP throttling) — the hire Server Action, if fully configured with real credentials, could in principle be invoked repeatedly by any visitor to spend the configured hirer wallet's funds on job creation. This is acceptable for a testnet demo with a dedicated, purpose-funded wallet, but would need addressing before any production/mainnet use with a wallet holding meaningful value.
+- **Client-supplied input into the hire flow:** `hireAgentOnChain`'s `budgetHuman` parameter is parsed and validated by `parseBudgetToRaw` (`src/lib/budget.ts`) — finite, positive, exact-decimal (not float) — before use; an invalid budget returns a "simulated" error result rather than being passed through to a chain call.
+- **Rate limiting exists and is now cross-instance for the action that matters most.** `hireAgentOnChain` uses `checkRateLimitPersistent` (`src/lib/rateLimit.ts`), backed by a Postgres RPC function when Supabase is configured (falling back to the original in-memory limiter otherwise), keyed on Netlify's edge-set `x-nf-client-connection-ip` header rather than the client-spoofable `x-forwarded-for`. This closes what was previously an open gap: a script could no longer rotate a spoofed IP to bypass the cooldown on a real on-chain-spending action, and the limiter now survives a cold start/multi-instance deployment. `autoRebate.ts`'s payout path no longer needs a cooldown at all — see the next point.
+- **The `hires`/`rebates` tables can no longer be forged via a direct Supabase REST call.** The original `hires` RLS policy (`with check (true)` on insert) let anyone holding the public publishable key insert an arbitrary row — including a fabricated `auth_message`/`auth_signature` pair — completely bypassing the app's own `viem.verifyMessage` check, which only guarded the app's own code path, not the table itself. The `*_restrict_hires_insert.sql` migration drops that policy; writes now happen only through `supabaseAdmin` (`src/lib/supabase.ts`'s service-role client, which bypasses RLS by construction). `rebates` was designed with no public insert policy from the start. Reads remain public on both tables (required for `/my-agents` and `/pool`).
+- **Hire-authorization replay protection.** `recordHire()` now rejects a signed hire-authorization message whose embedded `Time:` timestamp is more than 5 minutes old (or in the future) — a previously signed message could otherwise be replayed to create duplicate/stale hire records indefinitely. Bounded in scope to what this table actually risks (it has no fund custody — see the migration's own comment), not a general nonce/session system.
+- **Remaining, known-open gap:** the auto-rebate cron endpoint's authorization is a single, non-rotating shared secret (`CRON_SECRET`, timing-safe compared) with no expiry model — acceptable for a testnet demo triggered by one known GitHub Actions workflow, but worth rotating/scoping further before any production use.
 
 ## 19. Performance Optimizations
 
@@ -769,7 +899,8 @@ Documented for completeness since it materially shapes how every module above is
 
 - **Two combined art directions**, per `README.md`: **"The Vault"** governs structural chrome (the stone/steel/bronze palette, the "chambers around a reserve" logic connecting the four categories to the pool), and **"The Ledger"** governs the assurance band itself, which reads as a verified document rather than a dashboard widget.
 - **Color tokens** (`globals.css` `:root`): a light "stone" ground (`--color-stone`, `--color-stone-raised`, `--color-stone-line`) and "ink" text scale for most pages; a dark "steel" surface (`--color-steel`, `--color-steel-raised`) for the hero/footer/pool-reserve sections; a bronze metal accent for emphasis/links; and two reserved signal colors — **verdigris** (`--color-verdigris`) for "verified"/"live"/"within band" states, and **stamp red** (`--color-stamp`) reserved for exactly one meaning across the entire product: a rebate being paid.
-- **Typography** (current, per `layout.tsx` and `globals.css` — note this supersedes the older font names still mentioned in `README.md`'s prose): **Space Grotesk** (`--font-display`, headlines), **Outfit** (`--font-body`/`--font-ui`, body copy and UI chrome), **DM Mono** (`--font-data`, all numeric/ledger data — with `.tabnum` applying `font-variant-numeric: tabular-nums` wherever figures need to align in a column).
+- **Typography** (current, per `layout.tsx` and `globals.css` — `README.md` is now kept in sync with this): **Space Grotesk** (`--font-display`, headlines), **Outfit** (`--font-body`/`--font-ui`, body copy and UI chrome), **DM Mono** (`--font-data`, all numeric/ledger data — with `.tabnum` applying `font-variant-numeric: tabular-nums` wherever figures need to align in a column), plus **Forum** (`--font-forum-serif`/`font-forum`) — a serif reserved exclusively for the landing page's dark "Momento" hero sections (`MomentoHero.tsx`, `GuaranteeReveal.tsx`), never used elsewhere in the app.
+- **Landing-only dark tokens:** `--color-momento-bg`/`--color-momento-bg-deep`, scoped to the same Momento-referenced landing sections — the rest of the app stays on the light stone/ink/bronze palette described above. The landing page is therefore a deliberate two-register composite: a moody dark cinematic intro for its first ~3 screens, then Backstop's own document-like light UI for everything below it.
 - **Signature visual motifs:** the `.hatch-corridor` diagonal-stripe pattern (verdigris, low opacity) for the *historical* range; a plain bordered rectangle for the *promised* range; a clipped-polygon "wedge" (`.wedge-marker`) for the realized-value marker and the logo mark itself (`Logo.tsx`'s `Seal`); and the red ink-stamp keyframe animation (`stamp-hit`) reserved exclusively for a rebate event.
 
 ## 22. Important Design Decisions
@@ -787,29 +918,27 @@ Documented for completeness since it materially shapes how every module above is
 
 Stated plainly, per this document's accuracy standard:
 
-- **No automatic rebate payout on a band breach.** `payRebate()` is real and callable, but nothing in the running application currently invokes it when an `AssuranceBand.status` is `"breach"`. The rebate ledger on `/pool` (`REBATE_LOG`) is static illustrative data, not a live record of `payRebate()` calls.
-- **The Altana session-key payout path has a known, currently-unresolved integration issue against the live Altana testnet relay.** A session can be granted and correctly registered on-chain (verified independently via the account contract's `getKeys()` and the relay's own `wallet_getKeys` response, both showing the correct permissions), but an actual `transfer()` execution through that session currently fails against the relay with a `NoSpendPermissions` error. This was root-caused as an issue on the relay/SDK-version side (the installed `@altananetwork/sdk@0.7.1` vs. what the live relay expects), not a configuration error in this repository — but it means the "live" rebate-payout path is not currently functional end-to-end, even though every other piece of the vault (session grant, on-chain permissions, pool funding) is genuinely real.
+- **`AssuranceBand.status` — the signal both the UI and the now-real auto-rebate trigger key off — is still static, hand-written data**, not a live measurement of an agent's actual execution. This is the one honesty gap the rebate-automation work in §14 didn't (and structurally couldn't, without a real performance-measurement pipeline) resolve — it made the payout honestly track this number, not made this number itself real.
+- **The Altana session-key payout path has a known, previously-diagnosed integration issue against the live Altana testnet relay** (a `NoSpendPermissions` error from `transfer()` execution, traced to the installed `@altananetwork/sdk@0.7.1` vs. what the live relay expects — not a configuration error in this repository). This predates the rebate-automation work in §14 and was not re-verified as part of it; if still present, it would mean `payRebate()` — and therefore every real per-hire rebate in the new `autoRebate.ts` path — fails at the final on-chain step even though the breach detection, hire lookup, and idempotency logic around it are all real and correctly wired.
 - **None of the five autonomous agents has a persistent, always-on deployment.** They are correct, runnable scaffolds with real funded wallets, verified capable of a full negotiate → fund → LLM-driven-delivery cycle when run locally (`bag dev`) — but publishing a deliverable to a URL reachable by a third party (required for the ERC-8183 `submit()` step to complete honestly) needs either real IPFS/Pinata storage configuration or an actual managed-platform deployment (`bag deploy`, which itself requires `bag platform login`), neither of which is currently configured.
-- **The wallet-connect button is not wired into the hire transaction.** Connecting a wallet via Reown AppKit is currently cosmetic; the actual hirer wallet for `hireAgentOnChain` is a server-side `PRIVATE_KEY`, appropriate for a testnet demo but not a real end-user flow.
-- **No automated tests were found in the repository** (no `*.test.ts`, `*.spec.ts`, or test runner configuration in `package.json`). Correctness of the live-chain integrations in this codebase has been established by manually executing them against BSC Testnet, not by an automated test suite.
+- **The wallet-connect button authorizes a My Agents record, not the on-chain payment.** Connecting a wallet via Reown AppKit now does something real (§12.7, §14) — but the actual hirer wallet for `hireAgentOnChain`'s ERC-8183 transaction is still a server-side `PRIVATE_KEY`, appropriate for a testnet demo but not a real end-user flow.
 - **Eight of the thirteen listed agents are illustrative** — their performance history, hirer counts, and cycle counts are invented to populate the marketplace's category structure, and are clearly labeled as such wherever a real/illustrative distinction is rendered.
 - **The Agent Advantage Report (`/advantage-report`) is an explicitly unpopulated template**, per its own on-page banner ("Template — not yet populated").
-- **No rate limiting, no CAPTCHA, no abuse protection** on the hire Server Action (see [§18](#18-security-considerations)).
 - **No `error.tsx` boundary** exists anywhere under `src/app/` — unhandled render-time errors fall through to Next.js's default error UI rather than a product-styled one.
+- **The auto-rebate cron endpoint's authorization is a single non-rotating shared secret** — see §18's closing note.
 
 ## 24. Future Improvement Opportunities
 
 Derived from `README.md`'s own "Next steps toward submission" section plus gaps identified above:
 
-1. **Wire an automatic rebate trigger** so a real settled cycle with `status: "breach"` actually calls `payRebate()`, and have `/pool`'s rebate ledger reflect real payout transactions instead of static data.
-2. **Resolve the Altana relay integration issue** (either by upgrading past the `@bnbagent/sdk` peer-dependency ceiling once a compatible `@altananetwork/sdk` version is available, or by escalating the `NoSpendPermissions` finding to Altana directly), then flip `/pool`'s session badge to genuinely live in production.
+1. **Replace `AssuranceBand.status`'s static data with a real, measured performance signal** for the five real agents — the remaining piece that would make the now-automatic, now-per-hire rebate trigger fully honest end-to-end, not just correctly wired to what the UI already shows.
+2. **Re-verify the Altana relay `NoSpendPermissions` issue** against the current `@bnbagent/sdk`/`@altananetwork/sdk` versions now that a real payout depends on it working — either by upgrading past the peer-dependency ceiling once available, or escalating to Altana directly.
 3. **Deploy at least one agent persistently** via `bag deploy --provider bnb` (or `aws`/`azure`) with real IPFS/Pinata storage configured, so a hire against a real agent can complete the full ERC-8183 lifecycle through `SUBMITTED`/`SETTLED`, not just `FUNDED`.
 4. **Replace the eight illustrative agents' static data with a real, dynamic source of truth** as more agents come online — the natural evolution of the pattern already used for the five real agents (an optional `providerAddress` plus live lookups), extended so the marketplace listing itself is populated from on-chain/8004scan data rather than a hard-coded array.
-5. **Wire the connected browser wallet into the hire flow**, replacing the server-side `PRIVATE_KEY` hirer with a real end-user signing flow (the codebase's own `README.md` names `AltanaWalletProvider` + a passkey session as the intended direction).
+5. **Wire the connected browser wallet into the actual hire transaction**, replacing the server-side `PRIVATE_KEY` hirer with a real end-user signing flow (`AltanaWalletProvider` + a passkey session) — the wallet already signs a real authorization message today (§12.7); this closes the remaining gap between that and the transaction itself.
 6. **Populate the Agent Advantage Report** with real measured "with agent" vs. "without agent" runs once agents have accumulated real elapsed cycles.
-7. **Add automated tests** for the pure logic that's currently only manually verified — `bandPct`, the `AgentTable` sort/filter logic, and (with appropriately mocked SDK clients) the branching logic in `hireAgentOnChain`/`payRebate`.
-8. **Add an `error.tsx` boundary** styled consistently with the rest of the product for unhandled render errors.
-9. **Introduce basic abuse protection** on the hire Server Action before any deployment where the configured hirer wallet holds funds of real value.
+7. **Add an `error.tsx` boundary** styled consistently with the rest of the product for unhandled render errors.
+8. **Rotate/scope the cron endpoint's shared secret** (or move to a more granular auth scheme) before any production use beyond the one known GitHub Actions workflow.
 
 ## 25. Glossary
 
@@ -831,3 +960,5 @@ Derived from `README.md`'s own "Next steps toward submission" section plus gaps 
 | **Live agent** | One of the 5 agents in `AGENTS` with a real `providerAddress`, backed by an actual funded wallet and (when running) a real A2A seller process under `agents/` |
 | **Session key** | A narrowly-scoped Altana key, authorized by an admin key, that can only perform a pre-declared set of calls up to a spend cap before an expiry — the mechanism behind the assurance pool's payout authority |
 | **Job stage** | `OPEN → FUNDED → SUBMITTED → SETTLED`, the ERC-8183 lifecycle a hire progresses through (`JobStage` type, shown in `/docs`' "Hire lifecycle" section) |
+| **Real payout** | A `rebates` table row created by `autoRebate.ts` after a real Altana `payRebate()` transfer succeeds — shown on `/pool` labeled "● Real payout," distinct from the static, illustrative `REBATE_LOG` entries |
+| **Service-role client** | `supabaseAdmin` (`src/lib/supabase.ts`) — a Supabase client authenticated with the service-role key, which bypasses Row Level Security entirely; the only client allowed to write to `hires`/`rebates` |

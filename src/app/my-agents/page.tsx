@@ -8,13 +8,7 @@ import { Footer } from "@/components/Footer";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { getHiresForWallet, type HireRecord } from "@/lib/chain/hires";
 import { getAgent } from "@/lib/agents";
-import type { Agent } from "@/lib/types";
-
-const STATUS_META: Record<Agent["band"]["status"], { label: string; className: string }> = {
-  within: { label: "On track", className: "text-verdigris" },
-  breach: { label: "Rebate paid", className: "text-stamp" },
-  pending: { label: "Pending", className: "text-ink-faint" },
-};
+import { formatUnits } from "viem";
 
 export default function MyAgentsPage() {
   const { address, isConnected } = useAccount();
@@ -90,8 +84,12 @@ export default function MyAgentsPage() {
 function HireCard({ hire }: { hire: HireRecord }) {
   const agent = getAgent(hire.agentId);
   if (!agent) return null;
-  const meta = STATUS_META[agent.band.status];
   const hiredAt = new Date(hire.createdAt);
+  // Derived from this specific hire's real `rebates` row, never from the
+  // agent's static/illustrative band.status — a real rebate claim requires
+  // a real payout tied to *this* hire, not just this agent's demo data.
+  const statusLabel = hire.rebatePaid ? "Rebate paid" : "Hired — cycle in progress";
+  const statusClassName = hire.rebatePaid ? "text-stamp" : "text-ink-faint";
 
   return (
     <div className="border border-stone-line bg-stone-raised/50 p-6">
@@ -124,20 +122,33 @@ function HireCard({ hire }: { hire: HireRecord }) {
           <span className="block text-ink-faint text-[10px] uppercase tracking-wider mb-1">
             Current cycle
           </span>
-          <span className={`uppercase tracking-wider ${meta.className}`}>{meta.label}</span>
+          <span className={`uppercase tracking-wider ${statusClassName}`}>{statusLabel}</span>
         </div>
       </div>
 
-      {hire.txHash && (
-        <a
-          href={`https://testnet.bscscan.com/tx/${hire.txHash}`}
-          target="_blank"
-          rel="noreferrer"
-          className="font-data text-[11px] text-bronze-text underline underline-offset-2"
-        >
-          View hire transaction on BscScan →
-        </a>
-      )}
+      <div className="flex flex-wrap gap-x-5 gap-y-1">
+        {hire.txHash && (
+          <a
+            href={`https://testnet.bscscan.com/tx/${hire.txHash}`}
+            target="_blank"
+            rel="noreferrer"
+            className="font-data text-[11px] text-bronze-text underline underline-offset-2"
+          >
+            View hire transaction on BscScan →
+          </a>
+        )}
+        {hire.rebatePaid && hire.rebateTxHash && (
+          <a
+            href={`https://testnet.bscscan.com/tx/${hire.rebateTxHash}`}
+            target="_blank"
+            rel="noreferrer"
+            className="font-data text-[11px] text-stamp underline underline-offset-2"
+          >
+            View {hire.rebateAmountRaw ? `${formatUnits(BigInt(hire.rebateAmountRaw), 18)} U ` : ""}
+            rebate transaction on BscScan →
+          </a>
+        )}
+      </div>
 
       <p className="font-body text-[12px] text-ink-faint mt-4 pt-4 border-t border-stone-line leading-relaxed">
         Covered by Backstop&rsquo;s assurance pool — {agent.poolContribution} of every fee{" "}

@@ -3,10 +3,11 @@ import { runAutoRebateCheck } from "@/lib/chain/autoRebate";
 
 /**
  * Authenticated endpoint for the scheduled breach check (see
- * .github/workflows/rebalance-breach-check.yml) — evaluates the real
- * PancakeSwap v3 liquidity condition in src/lib/chain/rebalanceBreach.ts
- * and pays a real rebate from the assurance pool when it's breached. Never
- * called from a page render; only from the authenticated cron job.
+ * .github/workflows/rebalance-breach-check.yml) — evaluates every real
+ * agent's actual assurance-band status (src/lib/chain/bandBreach.ts) and
+ * pays a real, per-hire rebate from the assurance pool for every breached
+ * agent's unrebated hires. Never called from a page render; only from the
+ * authenticated cron job.
  */
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;

@@ -2,14 +2,14 @@
 
 import { headers } from "next/headers";
 import { ERC8183Client, EVMWalletProvider, JobStatus } from "@bnbagent/sdk";
-import { checkRateLimit } from "@/lib/rateLimit";
+import { checkRateLimitPersistent } from "@/lib/rateLimit";
 import { parseBudgetToRaw } from "@/lib/budget";
 
-// Best-effort floor against a script (or an impatient retry loop) hammering
-// this action — see src/lib/rateLimit.ts for what this does and doesn't
-// cover. Real protection for a wallet holding non-trivial funds needs
-// infrastructure this project doesn't have configured; this just closes
-// the "completely free to spam" gap.
+// Floor against a script (or an impatient retry loop) hammering this real
+// on-chain-spending action — see src/lib/rateLimit.ts. Backed by Postgres
+// (checkRateLimitPersistent) when Supabase is configured, so it actually
+// coordinates across serverless instances and survives a cold start; falls
+// back to the in-memory limiter otherwise.
 const HIRE_COOLDOWN_SECONDS = 15;
 
 export interface HireResult {
@@ -46,8 +46,16 @@ export async function hireAgentOnChain(
   const walletPassword = process.env.WALLET_PASSWORD;
 
   const requestHeaders = await headers();
-  const callerKey = requestHeaders.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
-  const rateLimit = checkRateLimit(`hire:${callerKey}`, HIRE_COOLDOWN_SECONDS);
+  // x-nf-client-connection-ip is set by Netlify's own edge and can't be
+  // spoofed by the client (unlike x-forwarded-for, which any caller can set
+  // to an arbitrary value to rotate past this limiter for free). Falls back
+  // to x-forwarded-for for local dev, where Netlify's header won't be
+  // present at all.
+  const callerKey =
+    requestHeaders.get("x-nf-client-connection-ip") ||
+    requestHeaders.get("x-forwarded-for")?.split(",")[0].trim() ||
+    "unknown";
+  const rateLimit = await checkRateLimitPersistent(`hire:${callerKey}`, HIRE_COOLDOWN_SECONDS);
   if (!rateLimit.allowed) {
     return {
       ok: false,

@@ -1,14 +1,22 @@
+import { formatUnits } from "viem";
 import { AGENTS, CATEGORIES } from "@/lib/agents";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { POOL, REBATE_LOG } from "@/lib/pool";
 import { getPoolSessionInfo } from "@/lib/wallet/altanaPool";
 import { checkRebalancerBreach } from "@/lib/chain/rebalanceBreach";
+import { checkAgentBandBreaches } from "@/lib/chain/bandBreach";
+import { getRecentRebates } from "@/lib/chain/rebates";
 
 const SHADE = ["bg-ink", "bg-bronze-text", "bg-verdigris", "bg-ink-soft"];
 
 export default async function PoolPage() {
-  const [session, breachCheck] = await Promise.all([getPoolSessionInfo(), checkRebalancerBreach()]);
+  const [session, liquidityCheck, bandBreachCheck, realRebates] = await Promise.all([
+    getPoolSessionInfo(),
+    checkRebalancerBreach(),
+    Promise.resolve(checkAgentBandBreaches()),
+    getRecentRebates(),
+  ]);
   const totalHirers = AGENTS.reduce((sum, a) => sum + a.hirers, 0);
   const cleanEntries = AGENTS.filter((a) => a.band.status === "within");
 
@@ -147,26 +155,48 @@ export default async function PoolPage() {
         <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-20 border-t border-stone-line pt-16 sm:pt-20">
           <div className="flex items-center gap-3 mb-3">
             <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
-              Clause 0(b) — Automated check
+              Clause 0(b) — Liquidity check
             </span>
             <span
               className={`font-data text-[10px] uppercase tracking-wider px-2 py-0.5 border ${
-                breachCheck.breached
+                liquidityCheck.breached
                   ? "border-stamp text-stamp"
                   : "border-verdigris text-verdigris"
               }`}
             >
-              {breachCheck.breached ? "● Breach condition met" : "● No breach"}
+              {liquidityCheck.breached ? "● No live pool found" : "● Pool is live"}
             </span>
           </div>
-          <h2 className="font-display text-3xl mb-4">Meridian Rebalancer, checked live</h2>
+          <h2 className="font-display text-3xl mb-4">Meridian Rebalancer&rsquo;s pool, checked live</h2>
           <p className="font-body text-ink-soft max-w-2xl mb-4">
-            Every 30 minutes, an unattended job hits this same check and pays a real rebate from
-            the session above when it finds a breach — no human clicks anything. This page runs
-            the identical read-only check on every load, so what you see here is exactly what the
-            job just saw, not a cached or illustrative number.
+            A read-only, honest signal — whether a PancakeSwap v3 WBNB/USDT pool with real
+            liquidity currently exists at all. This is informational only: it doesn&rsquo;t decide
+            who gets paid (see Clause 0(c) below for that).
           </p>
-          <p className="font-data text-xs text-ink-faint max-w-2xl">{breachCheck.reason}</p>
+          <p className="font-data text-xs text-ink-faint max-w-2xl">{liquidityCheck.reason}</p>
+        </section>
+
+        <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-20 border-t border-stone-line pt-16 sm:pt-20">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
+              Clause 0(c) — Band breach payouts
+            </span>
+            <span
+              className={`font-data text-[10px] uppercase tracking-wider px-2 py-0.5 border ${
+                bandBreachCheck.breached ? "border-stamp text-stamp" : "border-verdigris text-verdigris"
+              }`}
+            >
+              {bandBreachCheck.breached ? "● Breach condition met" : "● No breach"}
+            </span>
+          </div>
+          <h2 className="font-display text-3xl mb-4">What actually pays a rebate</h2>
+          <p className="font-body text-ink-soft max-w-2xl mb-4">
+            Every 30 minutes, an unattended job checks every real, on-chain agent&rsquo;s assurance
+            band and pays a real rebate — from the session above, to the actual hirer&rsquo;s
+            wallet — for every real hire against a breached agent that hasn&rsquo;t been rebated
+            yet. This page runs the identical check on every load.
+          </p>
+          <p className="font-data text-xs text-ink-faint max-w-2xl">{bandBreachCheck.reason}</p>
         </section>
 
         <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-20 sm:pb-28 border-t border-stone-line pt-16 sm:pt-20">
@@ -175,6 +205,43 @@ export default async function PoolPage() {
           </span>
           <h2 className="font-display text-3xl mb-8">Backstop in action</h2>
           <div className="border-t border-stone-line">
+            {realRebates.map((r) => (
+              <div
+                key={r.id}
+                className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-2 py-5 border-b border-stone-line"
+              >
+                <div className="flex gap-3">
+                  <span className="text-stamp shrink-0" aria-hidden="true">
+                    ⚠
+                  </span>
+                  <div>
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+                      <span className="font-display text-lg">{r.agentName}</span>
+                      <span className="font-data text-[10px] uppercase tracking-wider px-1.5 py-0.5 border border-verdigris text-verdigris">
+                        ● Real payout
+                      </span>
+                    </div>
+                    <p className="font-body text-sm text-ink-soft">{r.reason}</p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="font-data text-sm tabnum">{formatUnits(BigInt(r.amountRaw), 18)} U rebate</div>
+                  <div className="font-data text-[11px] text-ink-faint tabnum">
+                    {new Date(r.paidAt).toLocaleString()}
+                  </div>
+                  {r.txHash && (
+                    <a
+                      href={`https://testnet.bscscan.com/tx/${r.txHash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-data text-[11px] text-bronze-text underline underline-offset-2"
+                    >
+                      {r.txHash.slice(0, 10)}…
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
             {REBATE_LOG.map((r) => (
               <div
                 key={r.id}
@@ -192,6 +259,9 @@ export default async function PoolPage() {
                       </span>
                       <span className="font-data text-[10px] uppercase tracking-wider text-bronze-text">
                         {r.clause}
+                      </span>
+                      <span className="font-data text-[10px] uppercase tracking-wider px-1.5 py-0.5 border border-stone-line text-ink-faint">
+                        Illustrative
                       </span>
                     </div>
                     <p className="font-body text-sm text-ink-soft">{r.reason}</p>

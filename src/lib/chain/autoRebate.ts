@@ -1,73 +1,107 @@
 import "server-only";
-import { EVMWalletProvider } from "@bnbagent/sdk";
-import { checkRateLimit } from "@/lib/rateLimit";
 import { payRebate, type PayRebateResult } from "@/lib/wallet/altanaPool";
-import { checkRebalancerBreach } from "./rebalanceBreach";
+import { checkAgentBandBreaches } from "./bandBreach";
+import { getUnrebatedHiresForAgent, recordRebate } from "./hires";
 
 /**
- * Fixed per-episode payout for the automated liquidity-breach checker — a
- * deliberately small, explicit amount distinct from the illustrative
- * percentage-based rebates shown in the static REBATE_LOG. 5 U at 18
- * decimals.
+ * Fixed per-hire payout for a breached cycle — a deliberately small, explicit
+ * amount distinct from the illustrative percentage-based rebates shown in
+ * the static REBATE_LOG. 5 U at 18 decimals.
  */
-const AUTO_REBATE_AMOUNT_RAW = BigInt("5000000000000000000");
+const REBATE_AMOUNT_RAW = BigInt("5000000000000000000");
 
-// Once a breach has been paid, don't pay again for the same standing
-// condition for a full day. This is an in-memory guard (see rateLimit.ts —
-// it resets on a cold start, same caveat as everywhere else it's used in
-// this app), so the real backstop against a double-pay storm is the
-// Altana session's own on-chain daily spend cap set at provisioning time.
-const AUTO_REBATE_COOLDOWN_SECONDS = 24 * 60 * 60;
+export interface PaidRebate {
+  agentId: string;
+  agentName: string;
+  hireId: string;
+  walletAddress: string;
+  payout: PayRebateResult;
+}
+
+export interface SkippedRebate {
+  agentId: string;
+  agentName: string;
+  reason: string;
+}
 
 export interface AutoRebateResult {
   breached: boolean;
   reason: string;
-  paid: boolean;
-  skippedReason?: string;
-  payout?: PayRebateResult;
+  paid: PaidRebate[];
+  skipped: SkippedRebate[];
 }
 
 /**
- * Check the real, live breach condition and — if breached, and not already
- * paid for within the cooldown window — pay a real rebate from the
- * assurance pool's Altana session to the same wallet `hireAgentOnChain`
- * uses as the hirer, closing the loop with real components already wired
- * elsewhere in this app. Called from the authenticated cron route handler,
- * never from a page render.
+ * Check the real breach condition (does any real agent's assurance band say
+ * it missed its promise?) and, for every real hire against a breached agent
+ * that hasn't been rebated yet, pay that hirer's own wallet a real rebate
+ * from the assurance pool's Altana session and record it. Idempotency is
+ * enforced by the database (`rebates.hire_id` is unique — see
+ * getUnrebatedHiresForAgent / the create_rebates_table migration), not an
+ * in-memory cooldown, so this is safe to call repeatedly (e.g. every 30
+ * minutes from the cron workflow) without risking a double-pay across cold
+ * starts. Called from the authenticated cron route handler, never from a
+ * page render.
  */
 export async function runAutoRebateCheck(): Promise<AutoRebateResult> {
-  const check = await checkRebalancerBreach();
+  const check = checkAgentBandBreaches();
   if (!check.breached) {
-    return { breached: false, reason: check.reason, paid: false };
+    return { breached: false, reason: check.reason, paid: [], skipped: [] };
   }
 
-  const cooldown = checkRateLimit("auto-rebate:meridian-rebalancer", AUTO_REBATE_COOLDOWN_SECONDS);
-  if (!cooldown.allowed) {
-    return {
-      breached: true,
-      reason: check.reason,
-      paid: false,
-      skippedReason: `Already paid out for this breach within the last 24h — retry after ${cooldown.retryAfterSeconds}s.`,
-    };
+  const paid: PaidRebate[] = [];
+  const skipped: SkippedRebate[] = [];
+
+  for (const breach of check.breaches) {
+    const hires = await getUnrebatedHiresForAgent(breach.agentId);
+    if (hires.length === 0) {
+      skipped.push({
+        agentId: breach.agentId,
+        agentName: breach.agentName,
+        reason: "No real hires to rebate for this agent yet.",
+      });
+      continue;
+    }
+
+    for (const hire of hires) {
+      const payout = await payRebate(hire.walletAddress, REBATE_AMOUNT_RAW, breach.reason);
+      if (!payout.ok) {
+        skipped.push({
+          agentId: breach.agentId,
+          agentName: breach.agentName,
+          reason: `Payout attempt failed for hire ${hire.id}: ${payout.error ?? "unknown error"}`,
+        });
+        continue;
+      }
+
+      const recorded = await recordRebate({
+        hireId: hire.id,
+        agentId: breach.agentId,
+        amountRaw: REBATE_AMOUNT_RAW.toString(),
+        txHash: payout.txHash,
+        reason: breach.reason,
+      });
+      if (!recorded.ok) {
+        // The on-chain transfer already happened — this only means the
+        // ledger row failed to write, so surface it distinctly rather than
+        // silently dropping a real payout from the response.
+        skipped.push({
+          agentId: breach.agentId,
+          agentName: breach.agentName,
+          reason: `Paid (tx ${payout.txHash}) but failed to record: ${recorded.error}`,
+        });
+        continue;
+      }
+
+      paid.push({
+        agentId: breach.agentId,
+        agentName: breach.agentName,
+        hireId: hire.id,
+        walletAddress: hire.walletAddress,
+        payout,
+      });
+    }
   }
 
-  const privateKey = process.env.PRIVATE_KEY;
-  const walletPassword = process.env.WALLET_PASSWORD;
-  if ((!privateKey && !EVMWalletProvider.keystoreExists()) || !walletPassword) {
-    return {
-      breached: true,
-      reason: check.reason,
-      paid: false,
-      skippedReason: "No hirer wallet configured (PRIVATE_KEY/WALLET_PASSWORD) to receive the rebate.",
-    };
-  }
-
-  const wallet = new EVMWalletProvider({ password: walletPassword, privateKey: privateKey || undefined });
-  const payout = await payRebate(
-    wallet.address,
-    AUTO_REBATE_AMOUNT_RAW,
-    "Automated check: no live PancakeSwap v3 WBNB/USDT liquidity found for Meridian Rebalancer",
-  );
-
-  return { breached: true, reason: check.reason, paid: payout.ok, payout };
+  return { breached: true, reason: check.reason, paid, skipped };
 }

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <circle cx="32" cy="32" r="30" fill="#e4ddc9" stroke="#201e15" stroke-width="2.5"/>
-  <circle cx="32" cy="32" r="19" fill="none" stroke="#6b4f31" stroke-width="1.75"/>
-  <polygon points="29.2,22 34.8,22 39,42 25,42" fill="#6b4f31"/>
+  <path d="M32 5.3 L52 12.7 V28.7 C52 43.3 44 53.3 32 58.7 C20 53.3 12 43.3 12 28.7 V12.7 Z" fill="#e4ddc9" stroke="#201e15" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M32 12 L45.3 16.7 V28.7 C45.3 40 39.3 47.7 32 51.6 C24.7 47.7 18.7 40 18.7 28.7 V16.7 Z" fill="none" stroke="#6b4f31" stroke-width="1.5" stroke-linejoin="round" opacity="0.6"/>
+  <path d="M32 24.7 L38.3 32 L32 39.3 L25.7 32 Z" fill="#6b4f31"/>
 </svg>

@@ -4,6 +4,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AssuranceBandInteractive } from "@/components/AssuranceBandInteractive";
 import { HireFlow } from "@/components/HireFlow";
+import { FaqAccordion } from "@/components/FaqAccordion";
+import { SimilarAgents } from "@/components/SimilarAgents";
 import { AGENTS, getAgent, categoryMeta } from "@/lib/agents";
 import { lookupAgentByOwner } from "@/lib/erc8004";
 import { getLivePoolState, TESTNET_TOKENS } from "@/lib/pancakeswap";
@@ -26,118 +28,143 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   return (
     <>
       <Header />
-      <main className="max-w-4xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
-        <Link
-          href={`/marketplace?category=${agent.category}`}
-          className="font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-bronze-text transition-colors"
-        >
-          ← {category.label}
-        </Link>
+      <main className="bg-steel">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
+          <Link
+            href={`/marketplace?category=${agent.category}`}
+            className="font-data text-[11px] uppercase tracking-wider text-paper-on-steel/40 hover:text-bronze-bright transition-colors"
+          >
+            Marketplace / {category.label} / <span className="text-paper-on-steel/70">{agent.name}</span>
+          </Link>
 
-        <div className="mt-6 mb-10">
-          <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
-            {category.clause}
-          </span>
-          <h1 className="font-display text-4xl sm:text-5xl mt-2 mb-4">{agent.name}</h1>
-          <p className="font-body text-lg text-ink-soft max-w-2xl leading-relaxed">
-            {agent.description}
-          </p>
-        </div>
+          <div className="mt-6 mb-10">
+            <span className="font-data text-xs uppercase tracking-wider text-bronze-bright">
+              {category.clause}
+            </span>
+            <h1 className="font-display text-4xl sm:text-5xl mt-2 mb-4 text-paper-on-steel">
+              {agent.name}
+            </h1>
+            <p className="font-body text-lg text-paper-on-steel/65 max-w-2xl leading-relaxed">
+              {agent.description}
+            </p>
+          </div>
 
-        <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5 py-6 border-y border-stone-line mb-12 font-data text-[13px]">
-          <div>
-            <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Operator</dt>
-            <dd>{agent.operator}</dd>
-          </div>
-          <div>
-            <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">
-              Identity
-              {agent.providerAddress && (
-                <span className={registration ? "text-verdigris" : "text-ink-faint"}> ●</span>
-              )}
-            </dt>
-            {registration ? (
-              <dd>
-                <a
-                  href={`https://www.8004scan.io/agent/${registration.agentId}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-bronze-text transition-colors"
-                >
-                  ERC-8004 · token #{registration.tokenId}
-                </a>
-                {registration.isVerified && <span className="text-verdigris"> · verified</span>}
-              </dd>
-            ) : agent.providerAddress ? (
-              <dd className="text-ink-faint">Not yet registered on ERC-8004</dd>
-            ) : (
-              <dd className="text-ink-faint" title="No live on-chain wallet — illustrative listing">
-                Illustrative
-              </dd>
-            )}
-          </div>
-          <div>
-            <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Network</dt>
-            <dd>{agent.network}</dd>
-          </div>
-          <div>
-            <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Fee</dt>
-            <dd>{agent.feeModel}</dd>
-          </div>
-          {agent.providerAddress && (
+          <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5 py-6 border-y border-steel-line mb-12 font-data text-[13px]">
             <div>
-              <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">
-                <span className="text-verdigris">●</span> Live address
+              <dt className="text-paper-on-steel/40 text-[10px] uppercase tracking-wider mb-1">
+                Operator
               </dt>
-              <dd className="truncate">
-                <a
-                  href={`https://testnet.bscscan.com/address/${agent.providerAddress}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-bronze-text transition-colors"
+              <dd className="text-paper-on-steel">{agent.operator}</dd>
+            </div>
+            <div>
+              <dt className="text-paper-on-steel/40 text-[10px] uppercase tracking-wider mb-1">
+                Identity
+                {agent.providerAddress && (
+                  <span className={registration ? "text-verdigris-soft" : "text-paper-on-steel/30"}>
+                    {" "}
+                    ●
+                  </span>
+                )}
+              </dt>
+              {registration ? (
+                <dd className="text-paper-on-steel">
+                  <a
+                    href={`https://www.8004scan.io/agent/${registration.agentId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-bronze-bright transition-colors"
+                  >
+                    ERC-8004 · token #{registration.tokenId}
+                  </a>
+                  {registration.isVerified && <span className="text-verdigris-soft"> · verified</span>}
+                </dd>
+              ) : agent.providerAddress ? (
+                <dd className="text-paper-on-steel/40">Not yet registered on ERC-8004</dd>
+              ) : (
+                <dd
+                  className="text-paper-on-steel/40"
+                  title="No live on-chain wallet — illustrative listing"
                 >
-                  {agent.providerAddress.slice(0, 8)}…{agent.providerAddress.slice(-6)}
-                </a>
-              </dd>
+                  Illustrative
+                </dd>
+              )}
+            </div>
+            <div>
+              <dt className="text-paper-on-steel/40 text-[10px] uppercase tracking-wider mb-1">
+                Network
+              </dt>
+              <dd className="text-paper-on-steel">{agent.network}</dd>
+            </div>
+            <div>
+              <dt className="text-paper-on-steel/40 text-[10px] uppercase tracking-wider mb-1">Fee</dt>
+              <dd className="text-paper-on-steel">{agent.feeModel}</dd>
+            </div>
+            {agent.providerAddress && (
+              <div>
+                <dt className="text-paper-on-steel/40 text-[10px] uppercase tracking-wider mb-1">
+                  <span className="text-verdigris-soft">●</span> Live address
+                </dt>
+                <dd className="truncate">
+                  <a
+                    href={`https://testnet.bscscan.com/address/${agent.providerAddress}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-paper-on-steel hover:text-bronze-bright transition-colors"
+                  >
+                    {agent.providerAddress.slice(0, 8)}…{agent.providerAddress.slice(-6)}
+                  </a>
+                </dd>
+              </div>
+            )}
+          </dl>
+
+          {pool && (
+            <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 -mt-8 mb-12 font-data text-[12px] text-paper-on-steel/40">
+              <span className="text-verdigris-soft">●</span>
+              <span>
+                Live PancakeSwap v3 pool — WBNB/USDT, {(pool.feeTier / 10000).toFixed(2)}% tier, tick{" "}
+                {pool.tick}
+              </span>
+              <a
+                href={`https://testnet.bscscan.com/address/${pool.poolAddress}`}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-bronze-bright transition-colors"
+              >
+                {pool.poolAddress.slice(0, 8)}…{pool.poolAddress.slice(-6)} ↗
+              </a>
             </div>
           )}
-        </dl>
 
-        {pool && (
-          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 -mt-8 mb-12 font-data text-[12px] text-ink-faint">
-            <span className="text-verdigris">●</span>
-            <span>
-              Live PancakeSwap v3 pool — WBNB/USDT, {(pool.feeTier / 10000).toFixed(2)}% tier, tick{" "}
-              {pool.tick}
-            </span>
-            <a
-              href={`https://testnet.bscscan.com/address/${pool.poolAddress}`}
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-bronze-text transition-colors"
-            >
-              {pool.poolAddress.slice(0, 8)}…{pool.poolAddress.slice(-6)} ↗
-            </a>
-          </div>
-        )}
+          <div className="grid lg:grid-cols-[1fr_360px] gap-10 lg:gap-14">
+            <div className="space-y-14">
+              <div>
+                <span className="font-data text-[11px] uppercase tracking-wider text-bronze-bright block mb-3">
+                  The assurance band
+                </span>
+                <AssuranceBandInteractive band={agent.band} agentName={agent.name} tone="paper" />
 
-        <div className="grid lg:grid-cols-[1fr_360px] gap-10 lg:gap-14">
-          <div>
-            <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text block mb-3">
-              The assurance band
-            </span>
-            <AssuranceBandInteractive band={agent.band} agentName={agent.name} />
+                <Link
+                  href="/docs#guarantee"
+                  className="mt-4 inline-block font-data text-[11px] uppercase tracking-wider text-paper-on-steel/40 hover:text-bronze-bright transition-colors"
+                >
+                  How the guarantee works →
+                </Link>
+              </div>
 
-            <Link
-              href="/docs#guarantee"
-              className="mt-4 inline-block font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-bronze-text transition-colors"
-            >
-              How the guarantee works →
-            </Link>
-          </div>
+              <div>
+                <span className="font-data text-[11px] uppercase tracking-wider text-bronze-bright block mb-3">
+                  Questions
+                </span>
+                <FaqAccordion agent={agent} />
+              </div>
 
-          <div>
-            <HireFlow agent={agent} />
+              <SimilarAgents agent={agent} />
+            </div>
+
+            <div className="lg:sticky lg:top-24 self-start">
+              <HireFlow agent={agent} />
+            </div>
           </div>
         </div>
       </main>

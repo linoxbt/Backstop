@@ -6,6 +6,7 @@ import { AssuranceBandInteractive } from "@/components/AssuranceBandInteractive"
 import { HireFlow } from "@/components/HireFlow";
 import { AGENTS, getAgent, categoryMeta } from "@/lib/agents";
 import { lookupAgentByOwner } from "@/lib/erc8004";
+import { getLivePoolState, TESTNET_TOKENS } from "@/lib/pancakeswap";
 
 export function generateStaticParams() {
   return AGENTS.map((a) => ({ id: a.id }));
@@ -16,9 +17,11 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   const agent = getAgent(id);
   if (!agent) notFound();
   const category = categoryMeta(agent.category)!;
-  const registration = agent.providerAddress
-    ? await lookupAgentByOwner(agent.providerAddress)
-    : null;
+  const tracksPancakeV3 = Boolean(agent.providerAddress) && agent.protocols.includes("PancakeSwap v3");
+  const [registration, pool] = await Promise.all([
+    agent.providerAddress ? lookupAgentByOwner(agent.providerAddress) : Promise.resolve(null),
+    tracksPancakeV3 ? getLivePoolState(TESTNET_TOKENS.WBNB, TESTNET_TOKENS.USDT) : Promise.resolve(null),
+  ]);
 
   return (
     <>
@@ -99,6 +102,24 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             </div>
           )}
         </dl>
+
+        {pool && (
+          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 -mt-8 mb-12 font-data text-[12px] text-ink-faint">
+            <span className="text-verdigris">●</span>
+            <span>
+              Live PancakeSwap v3 pool — WBNB/USDT, {(pool.feeTier / 10000).toFixed(2)}% tier, tick{" "}
+              {pool.tick}
+            </span>
+            <a
+              href={`https://testnet.bscscan.com/address/${pool.poolAddress}`}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-bronze-text transition-colors"
+            >
+              {pool.poolAddress.slice(0, 8)}…{pool.poolAddress.slice(-6)} ↗
+            </a>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-[1fr_360px] gap-10 lg:gap-14">
           <div>

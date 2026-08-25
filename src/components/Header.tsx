@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Seal, Wordmark } from "./Logo";
+import { Seal } from "./Logo";
 import { ConnectWalletButton } from "./ConnectWalletButton";
 import { NavMenu } from "./NavMenu";
 
@@ -42,14 +42,16 @@ export function Header() {
   return (
     <header className="border-b border-stone-line bg-stone/95 backdrop-blur sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 h-[76px] flex items-center justify-between gap-6">
-        <Link href="/" className="flex items-center gap-3 group">
-          <Seal size={34} />
-          <div className="hidden sm:block">
-            <Wordmark />
-          </div>
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group min-w-0">
+          <Seal size={30} />
+          <span className="font-display text-lg sm:text-2xl tracking-tight text-ink truncate">
+            Backstop
+          </span>
         </Link>
-        <nav className="flex items-center gap-4 sm:gap-6 font-ui text-[13px] tracking-wide">
-          <NavLink href="/my-agents">My Agents</NavLink>
+        <nav className="flex items-center gap-4 sm:gap-6 font-ui text-[13px] tracking-wide shrink-0">
+          <NavLink href="/my-agents" className="hidden sm:inline-block">
+            My Agents
+          </NavLink>
           {enteredMarketplace && <ConnectWalletButton />}
           <NavMenu />
         </nav>

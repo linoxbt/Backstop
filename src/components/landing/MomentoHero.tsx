@@ -20,8 +20,12 @@ export function MomentoHero() {
   }, []);
 
   return (
-    <section className="relative w-full h-[100dvh] overflow-hidden bg-[linear-gradient(160deg,_var(--color-momento-bg)_0%,_var(--color-momento-bg-deep)_100%)] flex flex-col">
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+    <section className="relative w-full h-[100dvh] overflow-hidden bg-[var(--color-momento-bg)] flex flex-col">
+      <div
+        className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(120%_90%_at_50%_0%,_var(--color-momento-blue)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] opacity-90"
+        aria-hidden="true"
+      />
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
         <span
           className={`font-ui text-[11px] md:text-[0.85vw] uppercase tracking-[0.36em] text-white/40 mb-6 transition-opacity duration-700 ${
             revealed ? "opacity-100" : "opacity-0"
@@ -58,7 +62,7 @@ export function MomentoHero() {
         </div>
       </div>
       <div
-        className={`pb-10 md:pb-[2vw] text-center transition-opacity duration-700 delay-700 ${
+        className={`relative z-10 pb-10 md:pb-[2vw] text-center transition-opacity duration-700 delay-700 ${
           revealed ? "opacity-100" : "opacity-0"
         }`}
       >

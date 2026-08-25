@@ -21,8 +21,12 @@ export function GuaranteeReveal() {
       ref={ref}
       className="relative w-full min-h-[100dvh] overflow-hidden bg-[var(--color-momento-bg-deep)] flex flex-col justify-center py-20 md:py-0"
     >
+      <div
+        className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(80%_60%_at_85%_50%,_var(--color-momento-blue)_0%,_transparent_70%)] opacity-60"
+        aria-hidden="true"
+      />
       {/* Desktop: headline layered over a large right-hand visual */}
-      <div className="hidden md:block relative w-full h-[100dvh]">
+      <div className="hidden md:block relative z-10 w-full h-[100dvh]">
         <div className="absolute top-[16%] left-[clamp(1.6rem,3.5vw,13rem)] z-10 max-w-md">
           <span className="font-ui text-[0.75vw] uppercase tracking-[0.36em] text-white/40 block mb-4">
             Clause 0
@@ -75,7 +79,7 @@ export function GuaranteeReveal() {
       </div>
 
       {/* Mobile: stacked, simplified composition — not the same DOM reflowed */}
-      <div className="md:hidden px-6">
+      <div className="md:hidden relative z-10 px-6">
         <span className="font-ui text-[11px] uppercase tracking-[0.32em] text-white/40 block mb-4">
           Clause 0
         </span>

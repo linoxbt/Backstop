@@ -39,7 +39,7 @@ export function AgentRail() {
             <Link
               key={agent.id}
               href={`/agents/${agent.id}`}
-              className="group shrink-0 w-[280px] md:w-[24vw] border border-white/15 bg-white/[0.02] p-6 hover:border-bronze-bright/60 transition-colors"
+              className="group shrink-0 w-[280px] md:w-[24vw] border border-[var(--color-momento-line)] bg-[var(--color-momento-surface)] p-6 hover:border-bronze-bright/60 transition-colors"
             >
               <span className="font-data text-[10px] uppercase tracking-[0.2em] text-white/40 block mb-1">
                 {CATEGORIES.find((c) => c.id === agent.category)?.label}

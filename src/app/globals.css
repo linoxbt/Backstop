@@ -35,9 +35,18 @@
   --font-forum: var(--font-forum-serif), serif;
 
   /* landing-page-only dark surface (Momento Legal reference) — not used
-     anywhere else in the app, which stays on the stone/ink/bronze palette */
+     anywhere else in the app, which stays on the stone/ink/bronze palette.
+     All five values are pulled directly from momentolegal.com's own shipped
+     CSS, not approximated: momento-bg/-bg-deep are its darkest ground steps,
+     but on their own they read as near-black, not blue — the site's actual
+     depth comes from also using its lighter navy steps (momento-surface,
+     momento-line) and a genuinely visible royal blue (momento-blue) for
+     glows/gradient stops, which is what makes the reference read as blue. */
   --color-momento-bg: #000214;
   --color-momento-bg-deep: #000321;
+  --color-momento-surface: #131a2d;
+  --color-momento-line: #1e2842;
+  --color-momento-blue: #10234f;
 }
 
 @theme inline {
@@ -67,6 +76,9 @@
 
   --color-momento-bg: var(--color-momento-bg);
   --color-momento-bg-deep: var(--color-momento-bg-deep);
+  --color-momento-surface: var(--color-momento-surface);
+  --color-momento-line: var(--color-momento-line);
+  --color-momento-blue: var(--color-momento-blue);
 }
 
 * {

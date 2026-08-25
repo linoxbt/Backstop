@@ -42,7 +42,7 @@ export function SplashIntro() {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-[linear-gradient(160deg,_var(--color-momento-bg)_0%,_var(--color-momento-bg-deep)_100%)] transition-opacity duration-700 ${
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-[radial-gradient(120%_90%_at_50%_0%,_var(--color-momento-blue)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] transition-opacity duration-700 ${
         exiting ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
       aria-hidden="true"

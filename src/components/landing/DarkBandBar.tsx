@@ -18,7 +18,7 @@ export function DarkBandBar({
 
   return (
     <div className={`relative ${h}`}>
-      <div className="absolute left-0 right-0 top-1/2 h-px bg-white/15" />
+      <div className="absolute left-0 right-0 top-1/2 h-px bg-[var(--color-momento-line)]" />
       <div
         className="hatch-corridor absolute top-[38%] h-[24%]"
         style={{ left: `${histLeft}%`, width: `${histWidth}%` }}

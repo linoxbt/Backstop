@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { getAgent } from "@/lib/agents";
 import { useInView } from "@/lib/useInView";
+import { useScrollDepth } from "@/lib/useScrollDepth";
 import { DarkBandBar } from "./DarkBandBar";
 
 /**
@@ -11,10 +12,17 @@ import { DarkBandBar } from "./DarkBandBar";
  * same hatch-corridor/wedge-marker primitives from AssuranceBand.tsx, at
  * monumental scale, not a stock photo or invented illustration. Desktop and
  * mobile get genuinely different compositions, not one reflowed layout.
+ *
+ * The heading gets a genuine scroll-linked depth-of-field: it fades/sharpens
+ * in once via the one-shot `useInView` reveal below, then `.scroll-depth-blur`
+ * takes over as the user keeps scrolling past the section — a continuous
+ * blur, not another one-shot trigger (see useScrollDepth.ts / globals.css).
  */
 export function GuaranteeReveal() {
   const agent = getAgent("meridian-rebalancer")!;
   const { ref, inView } = useInView<HTMLDivElement>(0.2);
+  const { ref: headingDepthRef } = useScrollDepth<HTMLHeadingElement>();
+  const { ref: headingDepthRefMobile } = useScrollDepth<HTMLHeadingElement>();
 
   return (
     <section
@@ -33,7 +41,8 @@ export function GuaranteeReveal() {
             Clause 0
           </span>
           <h2
-            className={`font-forum uppercase text-white text-[4.1667vw] leading-[0.85] tracking-[0.02em] ${
+            ref={headingDepthRef}
+            className={`scroll-depth-blur font-forum uppercase text-white text-[4.1667vw] leading-[0.85] tracking-[0.02em] ${
               inView ? "animate-momento-reveal" : "opacity-0"
             }`}
           >
@@ -64,7 +73,7 @@ export function GuaranteeReveal() {
         </div>
 
         <div
-          className={`absolute right-[clamp(1.6rem,3.5vw,13rem)] top-1/2 -translate-y-1/2 w-[48vw] ${
+          className={`absolute right-[clamp(1.6rem,3.5vw,13rem)] top-1/2 -translate-y-1/2 w-[48vw] z-20 ${
             inView ? "animate-momento-reveal" : "opacity-0"
           }`}
           style={{ animationDelay: inView ? "250ms" : undefined }}
@@ -85,7 +94,8 @@ export function GuaranteeReveal() {
           Clause 0
         </span>
         <h2
-          className={`font-forum uppercase text-white text-[34px] leading-[1.05] tracking-[0.02em] mb-6 ${
+          ref={headingDepthRefMobile}
+          className={`scroll-depth-blur font-forum uppercase text-white text-[34px] leading-[1.05] tracking-[0.02em] mb-6 ${
             inView ? "animate-momento-reveal" : "opacity-0"
           }`}
         >

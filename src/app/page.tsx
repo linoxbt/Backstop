@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { WayfindingDiagram } from "@/components/WayfindingDiagram";
 import { GuaranteeSteps } from "@/components/GuaranteeSteps";
 import { SplashIntro } from "@/components/landing/SplashIntro";
 import { MomentoHero } from "@/components/landing/MomentoHero";
 import { GuaranteeReveal } from "@/components/landing/GuaranteeReveal";
 import { AgentRail } from "@/components/landing/AgentRail";
+import { CategoryShowcase } from "@/components/landing/CategoryShowcase";
 import { AGENTS } from "@/lib/agents";
 import { POOL } from "@/lib/pool";
 
@@ -21,33 +21,20 @@ export default function Home() {
         <MomentoHero />
         <GuaranteeReveal />
         <AgentRail />
+        <CategoryShowcase />
 
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24 border-t border-paper-line">
-          <div className="grid lg:grid-cols-[1fr_1.4fr] gap-x-12 gap-y-8 items-start">
-            <div>
-              <span className="font-data text-xs uppercase tracking-wider text-bronze-text block mb-2">
-                Four categories
-              </span>
-              <h2 className="font-display text-2xl sm:text-3xl max-w-xs">
-                One reserve standing behind all of them.
-              </h2>
-            </div>
-            <WayfindingDiagram />
-          </div>
-        </section>
-
-        <section className="border-t border-paper-line">
+        <section data-tone="dark" className="bg-[var(--color-momento-bg-deep)]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
             <div className="grid lg:grid-cols-[1fr_1.4fr] gap-x-12 gap-y-8 items-start">
               <div>
-                <span className="font-data text-xs uppercase tracking-wider text-bronze-text block mb-2">
+                <span className="font-data text-xs uppercase tracking-wider text-bronze-bright block mb-2">
                   The guarantee
                 </span>
-                <h2 className="font-display text-2xl sm:text-3xl max-w-xs">
+                <h2 className="font-forum text-white text-2xl sm:text-3xl max-w-xs">
                   Three steps, enforced on-chain.
                 </h2>
               </div>
-              <GuaranteeSteps />
+              <GuaranteeSteps tone="dark" />
             </div>
           </div>
         </section>
@@ -104,14 +91,14 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-t border-paper-line bg-paper-raised">
+        <section data-tone="dark" className="bg-[var(--color-momento-bg)]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20 flex flex-wrap items-center justify-between gap-6">
-            <h2 className="font-display text-2xl sm:text-3xl max-w-md">
+            <h2 className="font-forum text-white text-2xl sm:text-3xl max-w-md">
               Four categories, one reserve. Go hire something.
             </h2>
             <Link
               href="/marketplace"
-              className="font-data text-xs uppercase tracking-wider px-5 py-3 bg-paper-ink text-paper hover:bg-bronze-text transition-colors shrink-0"
+              className="font-data text-xs uppercase tracking-wider rounded-lg px-5 py-3 bg-white text-[var(--color-momento-bg)] hover:bg-white/85 transition-colors shrink-0"
             >
               Enter the marketplace →
             </Link>

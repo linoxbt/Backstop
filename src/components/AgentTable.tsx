@@ -4,14 +4,11 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Agent, AgentCategory } from "@/lib/types";
 import { CATEGORIES } from "@/lib/agents";
-import { Track } from "./AssuranceBand";
-import { bandPct } from "@/lib/band";
 
 type SortKey = "name" | "category" | "hirers" | "cycles";
 type CategoryFilter = "all" | AgentCategory;
 type StatusFilter = "all" | "breach" | "within" | "pending";
 type NetworkFilter = "all" | Agent["network"];
-const MAX_COMPARE = 4;
 
 const STATUS_META: Record<Agent["band"]["status"], { label: string; className: string }> = {
   within: { label: "On track", className: "text-verdigris" },
@@ -51,9 +48,11 @@ function SortHeader({
 export function AgentTable({
   agents,
   initialCategory = "all",
+  initialQuery = "",
 }: {
   agents: Agent[];
   initialCategory?: CategoryFilter;
+  initialQuery?: string;
 }) {
   const [category, setCategory] = useState<CategoryFilter>(initialCategory);
   // useState's initializer only runs on mount, so if this component stays
@@ -69,10 +68,16 @@ export function AgentTable({
   }
   const [status, setStatus] = useState<StatusFilter>("all");
   const [network, setNetwork] = useState<NetworkFilter>("all");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
+  const [prevInitialQuery, setPrevInitialQuery] = useState(initialQuery);
+  if (initialQuery !== prevInitialQuery) {
+    setPrevInitialQuery(initialQuery);
+    setQuery(initialQuery);
+  }
   const [sortKey, setSortKey] = useState<SortKey>("hirers");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [selected, setSelected] = useState<string[]>([]);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const previewAgent = agents.find((a) => a.id === previewId) ?? null;
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -83,23 +88,26 @@ export function AgentTable({
     }
   }
 
-  function toggleCompare(id: string) {
-    setSelected((prev) => {
-      if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= MAX_COMPARE) return prev;
-      return [...prev, id];
-    });
-  }
-
   const rows = useMemo(() => {
     let list = agents.filter((a) => category === "all" || a.category === category);
     if (status !== "all") list = list.filter((a) => a.band.status === status);
     if (network !== "all") list = list.filter((a) => a.network === network);
     const q = query.trim().toLowerCase();
     if (q) {
-      list = list.filter(
-        (a) => a.name.toLowerCase().includes(q) || a.operator.toLowerCase().includes(q),
-      );
+      list = list.filter((a) => {
+        const categoryMeta = CATEGORIES.find((c) => c.id === a.category);
+        const haystack = [
+          a.name,
+          a.operator,
+          a.tagline,
+          a.description,
+          categoryMeta?.label,
+          categoryMeta?.verb,
+        ]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
+      });
     }
 
     const dir = sortDir === "asc" ? 1 : -1;
@@ -119,7 +127,6 @@ export function AgentTable({
     return list;
   }, [agents, category, status, network, query, sortKey, sortDir]);
 
-  const selectedAgents = agents.filter((a) => selected.includes(a.id));
   const networks = useMemo(
     () => Array.from(new Set(agents.map((a) => a.network))).sort(),
     [agents],
@@ -127,13 +134,14 @@ export function AgentTable({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-3 mb-6">
+      <div className="mb-6">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by agent or operator…"
-          className="flex-1 min-w-[180px] font-data text-[13px] bg-stone border border-stone-line px-3 py-2 placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-bronze"
+          className="block w-full font-data text-[13px] bg-stone border border-stone-line px-3 py-2 mb-3 placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-bronze"
         />
+        <div className="flex flex-wrap items-center gap-3">
         <FilterSelect
           label="Sort"
           value={`${sortKey}-${sortDir}`}
@@ -178,6 +186,7 @@ export function AgentTable({
             { value: "pending", label: "Pending" },
           ]}
         />
+        </div>
       </div>
 
       <p className="font-data text-[11px] text-ink-faint mb-3 tabnum">
@@ -185,10 +194,9 @@ export function AgentTable({
       </p>
 
       <div className="overflow-x-auto -mx-5 px-5 sm:mx-0 sm:px-0">
-        <table className="w-full border-collapse text-sm sm:min-w-[720px]">
+        <table className="w-full border-collapse text-sm sm:min-w-[640px]">
           <thead>
             <tr className="border-b border-stone-line">
-              <th className="w-8" />
               <th className="hidden sm:table-cell w-10" />
               <SortHeader
                 label="Agent"
@@ -234,25 +242,28 @@ export function AgentTable({
               const meta = STATUS_META[agent.band.status];
               return (
                 <tr key={agent.id} className="border-b border-stone-line hover:bg-stone-raised/40">
-                  <td className="py-3">
-                    <input
-                      type="checkbox"
-                      checked={selected.includes(agent.id)}
-                      onChange={() => toggleCompare(agent.id)}
-                      aria-label={`Compare ${agent.name}`}
-                      className="w-4 h-4 accent-bronze-text cursor-pointer"
-                    />
-                  </td>
-                  <td className="hidden sm:table-cell font-data text-[11px] text-ink-faint tabnum">
+                  <td className="hidden sm:table-cell py-3 font-data text-[11px] text-ink-faint tabnum">
                     {String(i + 1).padStart(2, "0")}
                   </td>
                   <td className="py-3 pr-4">
-                    <Link href={`/agents/${agent.id}`} className="block hover:text-bronze-text transition-colors">
-                      <span className="font-display text-base">{agent.name}</span>
-                      <span className="block font-data text-[10px] uppercase tracking-wider text-ink-faint mt-0.5">
-                        {agent.operator}
-                      </span>
-                    </Link>
+                    <div className="flex items-baseline gap-2">
+                      <Link
+                        href={`/agents/${agent.id}`}
+                        className="hover:text-bronze-text transition-colors"
+                      >
+                        <span className="font-display text-base">{agent.name}</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewId(agent.id)}
+                        className="font-data text-[10px] uppercase tracking-wider text-ink-faint hover:text-bronze-text transition-colors shrink-0"
+                      >
+                        Preview
+                      </button>
+                    </div>
+                    <span className="block font-data text-[10px] uppercase tracking-wider text-ink-faint mt-0.5">
+                      {agent.operator}
+                    </span>
                   </td>
                   <td className="hidden sm:table-cell py-3 pr-4 font-data text-[11px] text-ink-soft whitespace-nowrap">
                     {CATEGORIES.find((c) => c.id === agent.category)?.label}
@@ -289,45 +300,95 @@ export function AgentTable({
         </table>
       </div>
 
-      <div
-        className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-          selectedAgents.length >= 2 ? "grid-rows-[1fr] mt-8" : "grid-rows-[0fr]"
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="border border-bronze-text bg-stone-raised/50 p-5 sm:p-6">
-            <div className="flex items-center justify-between mb-5">
-              <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text">
-                Comparing {selectedAgents.length}
-              </span>
-              <button
-                onClick={() => setSelected([])}
-                className="font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-ink transition-colors"
-              >
-                Clear
-              </button>
-            </div>
-            <div className="space-y-5">
-              {selectedAgents.map((agent) => {
-                const markerLeft =
-                  agent.band.realized === null ? null : bandPct(agent.band, agent.band.realized);
-                return (
-                  <div key={agent.id}>
-                    <div className="flex items-baseline justify-between gap-3 mb-1.5">
-                      <span className="font-ui text-sm font-medium">{agent.name}</span>
-                      <span className="font-data text-xs tabnum text-ink-faint">
-                        {agent.band.realized === null
-                          ? "no cycle yet"
-                          : `${agent.band.realized}${agent.band.symbol} realized`}
-                      </span>
-                    </div>
-                    <Track band={agent.band} markerLeft={markerLeft} size="compact" />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+      {previewAgent && <AgentPreview agent={previewAgent} onClose={() => setPreviewId(null)} />}
+    </div>
+  );
+}
+
+/**
+ * Quick intelligence panel: Promise vs. Proof, using only real fields on
+ * `agent` — no fabricated "success rate." Proof is the current cycle's
+ * actual status plus real lifetime counts, not an invented rolling metric
+ * this app has no per-job history to compute honestly.
+ */
+function AgentPreview({ agent, onClose }: { agent: Agent; onClose: () => void }) {
+  const category = CATEGORIES.find((c) => c.id === agent.category);
+  const meta = STATUS_META[agent.band.status];
+  const { band } = agent;
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <button
+        type="button"
+        aria-label="Close preview"
+        onClick={onClose}
+        className="absolute inset-0 bg-ink/40"
+      />
+      <div className="relative h-full w-full max-w-md bg-stone border-l border-stone-line overflow-y-auto p-6 sm:p-8">
+        <button
+          type="button"
+          onClick={onClose}
+          className="block font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-ink transition-colors mb-6"
+        >
+          ← Close
+        </button>
+
+        <span className="block font-data text-[10px] uppercase tracking-wider text-bronze-text">
+          {category?.label}
+        </span>
+        <h2 className="font-display text-2xl mt-1 mb-2">{agent.name}</h2>
+        <p className="font-body text-[13px] text-ink-soft leading-relaxed mb-6">{agent.tagline}</p>
+
+        <div className="border-t border-stone-line pt-4 mb-4">
+          <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-1">
+            The promise
+          </span>
+          <p className="font-body text-sm">
+            Keep {band.unit} between{" "}
+            <span className="font-data tabnum">
+              {band.promisedLow}
+              {band.symbol}–{band.promisedHigh}
+              {band.symbol}
+            </span>
+          </p>
         </div>
+
+        <div className="border-t border-stone-line pt-4 mb-4">
+          <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-1">
+            The proof
+          </span>
+          <p className={`font-data text-sm uppercase tracking-wider ${meta.className} mb-1`}>
+            {meta.label} — {band.cycleLabel}
+          </p>
+          {band.realized !== null ? (
+            <p className="font-body text-sm text-ink-soft">
+              Realized {band.realized}
+              {band.symbol} {band.unit}
+            </p>
+          ) : (
+            <p className="font-body text-sm text-ink-soft">No cycle has settled yet.</p>
+          )}
+          <p className="font-data text-[11px] text-ink-faint mt-2 tabnum">
+            {agent.cyclesCompleted} cycles completed · {agent.hirers} hirers
+          </p>
+        </div>
+
+        <div className="border-t border-stone-line pt-4 mb-8">
+          <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-1">
+            Backstop
+          </span>
+          <p className="font-body text-sm text-ink-soft">
+            Covered by the assurance pool — {agent.poolContribution} of every fee this agent earns
+            funds it.
+          </p>
+        </div>
+
+        <Link
+          href={`/agents/${agent.id}`}
+          className="block text-center font-data text-xs uppercase tracking-wider px-4 py-3 bg-ink text-stone hover:bg-bronze-text transition-colors"
+        >
+          Understand agent →
+        </Link>
       </div>
     </div>
   );

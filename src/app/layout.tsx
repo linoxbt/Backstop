@@ -1,26 +1,20 @@
 import type { Metadata } from "next";
-import { Libre_Caslon_Display, STIX_Two_Text, Public_Sans, Courier_Prime } from "next/font/google";
+import { Space_Grotesk, Outfit, DM_Mono } from "next/font/google";
 import "./globals.css";
 
-const caslon = Libre_Caslon_Display({
-  variable: "--font-caslon",
-  weight: "400",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
 
-const stix = STIX_Two_Text({
-  variable: "--font-stix",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
-const publicSans = Public_Sans({
-  variable: "--font-public",
-  subsets: ["latin"],
-});
-
-const courierPrime = Courier_Prime({
-  variable: "--font-courier",
-  weight: ["400", "700"],
+const dmMono = DM_Mono({
+  variable: "--font-dm-mono",
+  weight: ["400", "500"],
   subsets: ["latin"],
 });
 
@@ -34,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${caslon.variable} ${stix.variable} ${publicSans.variable} ${courierPrime.variable} h-full`}
+      className={`${spaceGrotesk.variable} ${outfit.variable} ${dmMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

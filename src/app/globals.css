@@ -28,10 +28,10 @@
   --color-stamp: #9c2c1e;
   --color-stamp-soft: #c65a49;
 
-  --font-display: var(--font-caslon), Georgia, "Times New Roman", serif;
-  --font-body: var(--font-stix), Georgia, serif;
-  --font-ui: var(--font-public), system-ui, -apple-system, sans-serif;
-  --font-data: var(--font-courier), "Courier New", monospace;
+  --font-display: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
+  --font-body: var(--font-outfit), system-ui, -apple-system, sans-serif;
+  --font-ui: var(--font-outfit), system-ui, -apple-system, sans-serif;
+  --font-data: var(--font-dm-mono), "SF Mono", "Courier New", monospace;
 }
 
 @theme inline {

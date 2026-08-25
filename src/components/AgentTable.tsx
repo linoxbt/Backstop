@@ -48,9 +48,11 @@ function SortHeader({
 export function AgentTable({
   agents,
   initialCategory = "all",
+  initialQuery = "",
 }: {
   agents: Agent[];
   initialCategory?: CategoryFilter;
+  initialQuery?: string;
 }) {
   const [category, setCategory] = useState<CategoryFilter>(initialCategory);
   // useState's initializer only runs on mount, so if this component stays
@@ -66,9 +68,16 @@ export function AgentTable({
   }
   const [status, setStatus] = useState<StatusFilter>("all");
   const [network, setNetwork] = useState<NetworkFilter>("all");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
+  const [prevInitialQuery, setPrevInitialQuery] = useState(initialQuery);
+  if (initialQuery !== prevInitialQuery) {
+    setPrevInitialQuery(initialQuery);
+    setQuery(initialQuery);
+  }
   const [sortKey, setSortKey] = useState<SortKey>("hirers");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const previewAgent = agents.find((a) => a.id === previewId) ?? null;
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -85,9 +94,20 @@ export function AgentTable({
     if (network !== "all") list = list.filter((a) => a.network === network);
     const q = query.trim().toLowerCase();
     if (q) {
-      list = list.filter(
-        (a) => a.name.toLowerCase().includes(q) || a.operator.toLowerCase().includes(q),
-      );
+      list = list.filter((a) => {
+        const categoryMeta = CATEGORIES.find((c) => c.id === a.category);
+        const haystack = [
+          a.name,
+          a.operator,
+          a.tagline,
+          a.description,
+          categoryMeta?.label,
+          categoryMeta?.verb,
+        ]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
+      });
     }
 
     const dir = sortDir === "asc" ? 1 : -1;
@@ -226,12 +246,24 @@ export function AgentTable({
                     {String(i + 1).padStart(2, "0")}
                   </td>
                   <td className="py-3 pr-4">
-                    <Link href={`/agents/${agent.id}`} className="block hover:text-bronze-text transition-colors">
-                      <span className="font-display text-base">{agent.name}</span>
-                      <span className="block font-data text-[10px] uppercase tracking-wider text-ink-faint mt-0.5">
-                        {agent.operator}
-                      </span>
-                    </Link>
+                    <div className="flex items-baseline gap-2">
+                      <Link
+                        href={`/agents/${agent.id}`}
+                        className="hover:text-bronze-text transition-colors"
+                      >
+                        <span className="font-display text-base">{agent.name}</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewId(agent.id)}
+                        className="font-data text-[10px] uppercase tracking-wider text-ink-faint hover:text-bronze-text transition-colors shrink-0"
+                      >
+                        Preview
+                      </button>
+                    </div>
+                    <span className="block font-data text-[10px] uppercase tracking-wider text-ink-faint mt-0.5">
+                      {agent.operator}
+                    </span>
                   </td>
                   <td className="hidden sm:table-cell py-3 pr-4 font-data text-[11px] text-ink-soft whitespace-nowrap">
                     {CATEGORIES.find((c) => c.id === agent.category)?.label}
@@ -266,6 +298,97 @@ export function AgentTable({
             })}
           </tbody>
         </table>
+      </div>
+
+      {previewAgent && <AgentPreview agent={previewAgent} onClose={() => setPreviewId(null)} />}
+    </div>
+  );
+}
+
+/**
+ * Quick intelligence panel: Promise vs. Proof, using only real fields on
+ * `agent` — no fabricated "success rate." Proof is the current cycle's
+ * actual status plus real lifetime counts, not an invented rolling metric
+ * this app has no per-job history to compute honestly.
+ */
+function AgentPreview({ agent, onClose }: { agent: Agent; onClose: () => void }) {
+  const category = CATEGORIES.find((c) => c.id === agent.category);
+  const meta = STATUS_META[agent.band.status];
+  const { band } = agent;
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <button
+        type="button"
+        aria-label="Close preview"
+        onClick={onClose}
+        className="absolute inset-0 bg-ink/40"
+      />
+      <div className="relative h-full w-full max-w-md bg-stone border-l border-stone-line overflow-y-auto p-6 sm:p-8">
+        <button
+          type="button"
+          onClick={onClose}
+          className="block font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-ink transition-colors mb-6"
+        >
+          ← Close
+        </button>
+
+        <span className="block font-data text-[10px] uppercase tracking-wider text-bronze-text">
+          {category?.label}
+        </span>
+        <h2 className="font-display text-2xl mt-1 mb-2">{agent.name}</h2>
+        <p className="font-body text-[13px] text-ink-soft leading-relaxed mb-6">{agent.tagline}</p>
+
+        <div className="border-t border-stone-line pt-4 mb-4">
+          <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-1">
+            The promise
+          </span>
+          <p className="font-body text-sm">
+            Keep {band.unit} between{" "}
+            <span className="font-data tabnum">
+              {band.promisedLow}
+              {band.symbol}–{band.promisedHigh}
+              {band.symbol}
+            </span>
+          </p>
+        </div>
+
+        <div className="border-t border-stone-line pt-4 mb-4">
+          <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-1">
+            The proof
+          </span>
+          <p className={`font-data text-sm uppercase tracking-wider ${meta.className} mb-1`}>
+            {meta.label} — {band.cycleLabel}
+          </p>
+          {band.realized !== null ? (
+            <p className="font-body text-sm text-ink-soft">
+              Realized {band.realized}
+              {band.symbol} {band.unit}
+            </p>
+          ) : (
+            <p className="font-body text-sm text-ink-soft">No cycle has settled yet.</p>
+          )}
+          <p className="font-data text-[11px] text-ink-faint mt-2 tabnum">
+            {agent.cyclesCompleted} cycles completed · {agent.hirers} hirers
+          </p>
+        </div>
+
+        <div className="border-t border-stone-line pt-4 mb-8">
+          <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-1">
+            Backstop
+          </span>
+          <p className="font-body text-sm text-ink-soft">
+            Covered by the assurance pool — {agent.poolContribution} of every fee this agent earns
+            funds it.
+          </p>
+        </div>
+
+        <Link
+          href={`/agents/${agent.id}`}
+          className="block text-center font-data text-xs uppercase tracking-wider px-4 py-3 bg-ink text-stone hover:bg-bronze-text transition-colors"
+        >
+          Understand agent →
+        </Link>
       </div>
     </div>
   );

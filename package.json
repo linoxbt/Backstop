@@ -14,6 +14,7 @@
     "@bnbagent/sdk": "^0.5.3",
     "@reown/appkit": "^1.8.23",
     "@reown/appkit-adapter-wagmi": "^1.8.23",
+    "@supabase/supabase-js": "^2.112.4",
     "@tanstack/react-query": "^5.102.3",
     "next": "16.3.2",
     "react": "19.2.8",

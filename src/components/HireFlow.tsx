@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useAccount, useSignMessage } from "wagmi";
 import type { Agent } from "@/lib/types";
 import { hireAgentOnChain, type HireResult } from "@/lib/chain/hireAgent";
+import { buildHireAuthMessage } from "@/lib/chain/hireAuthMessage";
+import { recordHire } from "@/lib/chain/hires";
 
 type Stage = "idle" | "pending" | "done";
+type TrackStatus = "idle" | "signing" | "recorded" | "skipped" | "error";
 
 const SIM_STAGES = [
   { key: "open", label: "Job opened — terms committed" },
@@ -16,7 +20,11 @@ export function HireFlow({ agent }: { agent: Agent }) {
   const [budget, setBudget] = useState("2,500");
   const [result, setResult] = useState<HireResult | null>(null);
   const [simStep, setSimStep] = useState<0 | 1 | 2>(0);
+  const [trackStatus, setTrackStatus] = useState<TrackStatus>("idle");
+  const [trackError, setTrackError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+  const { address, isConnected } = useAccount();
+  const { signMessageAsync } = useSignMessage();
 
   const started = stage !== "idle";
 
@@ -31,6 +39,44 @@ export function HireFlow({ agent }: { agent: Agent }) {
         window.setTimeout(() => setStage("done"), 1700);
       } else {
         setStage("done");
+      }
+
+      // Track the hire in "My Agents" — only for a real, confirmed hire,
+      // and only if a wallet is connected to sign the authorization.
+      if (res.mode === "live" && res.ok) {
+        if (!isConnected || !address) {
+          setTrackStatus("skipped");
+          return;
+        }
+        setTrackStatus("signing");
+        try {
+          const message = buildHireAuthMessage({
+            agentId: agent.id,
+            agentName: agent.name,
+            budgetHuman: budget,
+            walletAddress: address,
+          });
+          const signature = await signMessageAsync({ message });
+          const recorded = await recordHire({
+            walletAddress: address,
+            agentId: agent.id,
+            budgetHuman: budget,
+            jobId: res.jobId,
+            txHash: res.txHash,
+            mode: "live",
+            message,
+            signature,
+          });
+          if (recorded.ok) {
+            setTrackStatus("recorded");
+          } else {
+            setTrackStatus("error");
+            setTrackError(recorded.error ?? "Couldn't record this hire.");
+          }
+        } catch {
+          setTrackStatus("error");
+          setTrackError("Signature was declined — this hire won't appear in My Agents.");
+        }
       }
     });
   }
@@ -63,7 +109,9 @@ export function HireFlow({ agent }: { agent: Agent }) {
             Sign &amp; fund job →
           </button>
           <p className="mt-3 font-data text-[10px] text-ink-faint">
-            Passkey signature · no seed phrase · attempts BSC Testnet first
+            {isConnected
+              ? "Executed via Backstop's demo wallet · your wallet signs the My Agents record"
+              : "Passkey signature · no seed phrase · attempts BSC Testnet first"}
           </p>
         </>
       )}
@@ -92,6 +140,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
                   View transaction on BscScan Testnet →
                 </a>
               )}
+              <TrackingStatus status={trackStatus} error={trackError} />
             </div>
           ) : (
             <p className="text-[13px] text-stamp leading-relaxed">{result.error}</p>
@@ -136,4 +185,27 @@ export function HireFlow({ agent }: { agent: Agent }) {
       )}
     </div>
   );
+}
+
+function TrackingStatus({ status, error }: { status: TrackStatus; error: string | null }) {
+  switch (status) {
+    case "signing":
+      return <p className="font-data text-[11px] text-ink-faint">Awaiting wallet signature to track this hire…</p>;
+    case "recorded":
+      return (
+        <p className="font-data text-[11px] text-verdigris">
+          Added to My Agents →
+        </p>
+      );
+    case "skipped":
+      return (
+        <p className="font-data text-[11px] text-ink-faint">
+          Connect a wallet before hiring to have this show up in My Agents.
+        </p>
+      );
+    case "error":
+      return <p className="font-data text-[11px] text-stamp">{error}</p>;
+    default:
+      return null;
+  }
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Outfit, DM_Mono } from "next/font/google";
+import { Space_Grotesk, Outfit, DM_Mono, Forum } from "next/font/google";
 import { WalletProviders } from "@/components/WalletProviders";
 import "./globals.css";
 
@@ -19,6 +19,15 @@ const dmMono = DM_Mono({
   subsets: ["latin"],
 });
 
+// Landing-page-only accent serif — the same real, freely-licensed Google
+// Font used by the Momento Legal reference, reserved there (and here) for
+// select editorial headings rather than general UI text.
+const forum = Forum({
+  variable: "--font-forum-serif",
+  weight: "400",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Backstop — the BNB agent marketplace with a reserve behind it",
   description:
@@ -29,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${outfit.variable} ${dmMono.variable} h-full`}
+      className={`${spaceGrotesk.variable} ${outfit.variable} ${dmMono.variable} ${forum.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">
         <WalletProviders>{children}</WalletProviders>

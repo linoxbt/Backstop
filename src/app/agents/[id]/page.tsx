@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { AssuranceBandInteractive } from "@/components/AssuranceBandInteractive";
 import { HireFlow } from "@/components/HireFlow";
 import { AGENTS, getAgent, categoryMeta } from "@/lib/agents";
+import { lookupAgentByOwner } from "@/lib/erc8004";
 
 export function generateStaticParams() {
   return AGENTS.map((a) => ({ id: a.id }));
@@ -15,6 +16,9 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   const agent = getAgent(id);
   if (!agent) notFound();
   const category = categoryMeta(agent.category)!;
+  const registration = agent.providerAddress
+    ? await lookupAgentByOwner(agent.providerAddress)
+    : null;
 
   return (
     <>
@@ -43,8 +47,31 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             <dd>{agent.operator}</dd>
           </div>
           <div>
-            <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Identity</dt>
-            <dd>{agent.agentId8004}</dd>
+            <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">
+              Identity
+              {agent.providerAddress && (
+                <span className={registration ? "text-verdigris" : "text-ink-faint"}> ●</span>
+              )}
+            </dt>
+            {registration ? (
+              <dd>
+                <a
+                  href={`https://www.8004scan.io/agent/${registration.agentId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-bronze-text transition-colors"
+                >
+                  ERC-8004 · token #{registration.tokenId}
+                </a>
+                {registration.isVerified && <span className="text-verdigris"> · verified</span>}
+              </dd>
+            ) : agent.providerAddress ? (
+              <dd className="text-ink-faint">Not yet registered on ERC-8004</dd>
+            ) : (
+              <dd className="text-ink-faint" title="No live on-chain wallet — illustrative listing">
+                Illustrative
+              </dd>
+            )}
           </div>
           <div>
             <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Network</dt>

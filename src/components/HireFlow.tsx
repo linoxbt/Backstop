@@ -45,7 +45,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
       {!started && (
         <>
           <label className="block font-data text-[11px] uppercase tracking-wider text-ink-faint mb-1.5">
-            Position budget (USDT)
+            Position budget (U)
           </label>
           <input
             value={budget}
@@ -80,7 +80,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
           {result.ok ? (
             <div className="space-y-2">
               <p className="font-data text-[13px] text-ink tabnum">
-                Job #{result.jobId} · {result.status} · {budget} USDT
+                Job #{result.jobId} · {result.status} · {budget} U
               </p>
               {result.explorerUrl && (
                 <a
@@ -122,7 +122,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
           {stage === "done" && (
             <div className="border-t border-stone-line pt-4">
               <p className="font-data text-[13px] text-ink tabnum mb-2">
-                Funded · {budget} USDT
+                Funded · {budget} U
               </p>
               <p className="font-data text-[11px] text-ink-faint break-all mb-3">
                 {agent.manifestHash}

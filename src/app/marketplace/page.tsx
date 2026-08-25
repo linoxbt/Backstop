@@ -1,12 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AgentTable } from "@/components/AgentTable";
-import { AGENTS, CATEGORIES } from "@/lib/agents";
-import type { AgentCategory } from "@/lib/types";
-
-function isCategory(value: string | undefined): value is AgentCategory {
-  return CATEGORIES.some((c) => c.id === value);
-}
+import { AGENTS, isCategory } from "@/lib/agents";
 
 export default async function MarketplacePage({
   searchParams,

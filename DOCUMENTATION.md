@@ -379,7 +379,7 @@ The frontend is React 19 running inside Next.js 16's App Router, styled with Tai
 | `Footer.tsx` | Server | Site footer: logo, nav links, "BSC Testnet" label |
 | `Logo.tsx` | Server | `Seal` (the circular wedge-marker mark) and `Wordmark` |
 | `AgentTable.tsx` | Client | Sortable/filterable table of all agents, with a checkbox-driven multi-agent band comparison panel (max 4) |
-| `AssuranceBand.tsx` | Server | The visual band primitives: `Track` (the corridor/band/marker SVG-free div layout), `Legend`, and `AssuranceBandCompact` (used in table compare mode) |
+| `AssuranceBand.tsx` | Server | The visual band primitives: `Track` (the corridor/band/marker SVG-free div layout) and `Legend`, both re-exported and reused directly by `AssuranceBandInteractive.tsx` and `AgentTable.tsx`'s compare panel |
 | `AssuranceBandInteractive.tsx` | Client | Wraps `Track`/`Legend` with a "Settle cycle" button that animates the marker from the mid-band resting position to its realized position, then reveals a rebate stamp or a "closed clean" message |
 | `HireFlow.tsx` | Client | The hire panel on an agent's dossier page — invokes the `hireAgentOnChain` Server Action and renders either the real on-chain result or a simulated stepper |
 | `GuaranteeSteps.tsx` | Server | The three-step guarantee list, reused on the landing page and `/docs` |
@@ -420,7 +420,7 @@ graph TD
     Market --> Header
     Market --> Footer
     Market --> AgentTable
-    AgentTable --> AssuranceBandCompact["AssuranceBandCompact<br/>(from AssuranceBand.tsx)"]
+    AgentTable --> TrackCompare["Track (compact mode)<br/>(from AssuranceBand.tsx)"]
 
     Dossier --> Header
     Dossier --> Footer

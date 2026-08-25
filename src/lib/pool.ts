@@ -10,7 +10,7 @@ export const POOL = {
   vaultAddress: "0x3F2a...9C4E",
   session: {
     callAllowlist: ["payout(address,uint256,bytes32)"],
-    spendCap: "12,000 USDT / 24h",
+    spendCap: "12,000 U / 24h",
     expiry: "renews every 24h, auto-revokes on anomaly",
     registeredIn: "Altana Keystore",
   },

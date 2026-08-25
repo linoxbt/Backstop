@@ -2,9 +2,10 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { POOL, REBATE_LOG } from "@/lib/pool";
 import { getPoolSessionInfo } from "@/lib/wallet/altanaPool";
+import { checkRebalancerBreach } from "@/lib/chain/rebalanceBreach";
 
 export default async function PoolPage() {
-  const session = await getPoolSessionInfo();
+  const [session, breachCheck] = await Promise.all([getPoolSessionInfo(), checkRebalancerBreach()]);
   return (
     <>
       <Header />
@@ -78,13 +79,50 @@ export default async function PoolPage() {
               </>
             )}
           </div>
-          <button
-            type="button"
-            className="font-data text-xs uppercase tracking-wider border border-ink px-4 py-2.5 hover:bg-ink hover:text-stone transition-colors"
-            title="Opens the pool's session in the Altana Keystore Explorer"
-          >
-            View in Altana Keystore Explorer →
-          </button>
+          {session.configured && session.walletAddress ? (
+            <a
+              href={`https://testnet.bscscan.com/address/${session.walletAddress}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block font-data text-xs uppercase tracking-wider border border-ink px-4 py-2.5 hover:bg-ink hover:text-stone transition-colors"
+            >
+              View session wallet on BscScan Testnet →
+            </a>
+          ) : (
+            <button
+              type="button"
+              disabled
+              title="No live session configured — this is illustrative data, not a real on-chain wallet to inspect"
+              className="font-data text-xs uppercase tracking-wider border border-stone-line text-ink-faint px-4 py-2.5 cursor-not-allowed"
+            >
+              View session wallet on-chain →
+            </button>
+          )}
+        </section>
+
+        <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-20">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
+              Clause 0(b) — Automated check
+            </span>
+            <span
+              className={`font-data text-[10px] uppercase tracking-wider px-2 py-0.5 border ${
+                breachCheck.breached
+                  ? "border-stamp text-stamp"
+                  : "border-verdigris text-verdigris"
+              }`}
+            >
+              {breachCheck.breached ? "● Breach condition met" : "● No breach"}
+            </span>
+          </div>
+          <h2 className="font-display text-3xl mb-4">Meridian Rebalancer, checked live</h2>
+          <p className="font-body text-ink-soft max-w-2xl mb-4">
+            Every 30 minutes, an unattended job hits this same check and pays a real rebate from
+            the session above when it finds a breach — no human clicks anything. This page runs
+            the identical read-only check on every load, so what you see here is exactly what the
+            job just saw, not a cached or illustrative number.
+          </p>
+          <p className="font-data text-xs text-ink-faint max-w-2xl">{breachCheck.reason}</p>
         </section>
 
         <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-20 sm:pb-28">

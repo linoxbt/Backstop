@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Seal, Wordmark } from "./Logo";
+import { ConnectWalletButton } from "./ConnectWalletButton";
 
 function NavLink({
   href,
@@ -52,13 +53,7 @@ export function Header() {
           <NavLink href="/advantage-report" className="hidden sm:inline">
             Advantage Report
           </NavLink>
-          <button
-            type="button"
-            className="font-data text-[11px] uppercase tracking-wider border border-ink px-3 py-2 text-ink hover:bg-ink hover:text-stone transition-colors"
-            title="Passkey wallet connect — wires to Altana session creation"
-          >
-            Connect wallet
-          </button>
+          <ConnectWalletButton />
         </nav>
       </div>
     </header>

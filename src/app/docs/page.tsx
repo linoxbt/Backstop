@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { GuaranteeSteps } from "@/components/GuaranteeSteps";
 import { CATEGORIES, AGENTS } from "@/lib/agents";
 
 const STAGES = ["OPEN", "FUNDED", "SUBMITTED", "SETTLED"];
@@ -25,11 +26,7 @@ export default function DocsPage() {
         <h1 className="font-display text-4xl sm:text-5xl mt-2 mb-14">Docs</h1>
 
         <Section id="guarantee" title="The guarantee">
-          <ol className="grid sm:grid-cols-3 gap-4">
-            <Step n={1} text="Hire funds an ERC-8183 job — the promised band commits on-chain." />
-            <Step n={2} text="Cycle settles — the agent's manifest hash is verified, not self-reported." />
-            <Step n={3} text="Miss the band → the pool pays a capped rebate. Automatically." />
-          </ol>
+          <GuaranteeSteps />
         </Section>
 
         <Section title="Hire lifecycle">
@@ -114,14 +111,5 @@ function Section({
       <h2 className="font-display text-xl mb-5">{title}</h2>
       {children}
     </section>
-  );
-}
-
-function Step({ n, text }: { n: number; text: string }) {
-  return (
-    <li className="border border-stone-line p-4">
-      <span className="font-data text-xs text-bronze-text">{n}</span>
-      <p className="text-[13px] text-ink-soft mt-2">{text}</p>
-    </li>
   );
 }

@@ -128,7 +128,7 @@ export function AgentTable({
       </p>
 
       <div className="overflow-x-auto -mx-5 px-5 sm:mx-0 sm:px-0">
-        <table className="w-full border-collapse text-sm min-w-[640px]">
+        <table className="w-full border-collapse text-sm sm:min-w-[640px]">
           <thead>
             <tr className="border-b border-stone-line">
               <th className="w-8" />

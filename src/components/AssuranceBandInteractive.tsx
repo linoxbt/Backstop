@@ -53,7 +53,7 @@ export function AssuranceBandInteractive({
 
       <button
         onClick={() => setTriggered((v) => !v)}
-        className="mt-6 inline-flex items-center gap-2 font-data text-xs uppercase tracking-wider px-4 py-2.5 bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
+        className="mt-6 inline-flex items-center gap-2 font-data text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
       >
         {triggered ? "Reset ↺" : `Settle ${band.cycleLabel.toLowerCase()} →`}
       </button>

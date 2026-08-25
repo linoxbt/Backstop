@@ -405,7 +405,7 @@ function AgentPreview({ agent, onClose }: { agent: Agent; onClose: () => void })
 
         <Link
           href={`/agents/${agent.id}`}
-          className="block text-center font-data text-xs uppercase tracking-wider px-4 py-3 bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
+          className="block text-center font-data text-xs uppercase tracking-wider px-4 py-3 rounded-lg bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
         >
           Understand agent →
         </Link>

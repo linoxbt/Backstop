@@ -70,7 +70,7 @@ export default function MyAgentsPage() {
             </p>
             <Link
               href="/marketplace"
-              className="inline-block font-data text-xs uppercase tracking-wider px-5 py-3 bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
+              className="inline-block font-data text-xs uppercase tracking-wider px-5 py-3 rounded-lg bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
             >
               Enter the marketplace →
             </Link>

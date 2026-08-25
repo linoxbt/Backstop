@@ -36,7 +36,7 @@ export default function Error({
           <button
             type="button"
             onClick={reset}
-            className="font-data text-xs uppercase tracking-wider px-5 py-3 bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
+            className="font-data text-xs uppercase tracking-wider px-5 py-3 rounded-lg bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
           >
             Try again →
           </button>

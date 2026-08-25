@@ -104,7 +104,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
           </p>
           <button
             onClick={begin}
-            className="w-full font-data text-xs uppercase tracking-wider px-4 py-3 bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
+            className="w-full font-data text-xs uppercase tracking-wider px-4 py-3 rounded-lg bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
           >
             Sign &amp; fund job →
           </button>

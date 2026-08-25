@@ -88,6 +88,10 @@ export async function hireAgentOnChain(
     }
 
     await client.registerJob(created.jobId);
+    // fund()'s amount is only a confirmation against a budget the job must
+    // already carry — omitting this call reverts fund() with ZeroBudget
+    // (found by running the real flow end-to-end on BSC Testnet).
+    await client.setBudget(created.jobId, budgetRaw);
     const funded = await client.fund(created.jobId, budgetRaw);
     const job = await client.getJob(created.jobId);
     const txHash = funded.transactionHash ?? created.transactionHash;

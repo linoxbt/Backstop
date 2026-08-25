@@ -6,9 +6,9 @@ const RANKED = [...AGENTS].sort((a, b) => b.hirers - a.hirers).slice(0, 9);
 /** Top agents by hirers, Agentic Market's leaderboard-sidebar position. */
 export function Leaderboard() {
   return (
-    <div className="border border-steel-line bg-steel-raised">
-      <div className="px-4 py-3 border-b border-steel-line">
-        <span className="font-data text-[11px] uppercase tracking-wider text-bronze-bright">
+    <div className="border border-stone-line bg-stone-raised/50">
+      <div className="px-4 py-3 border-b border-stone-line">
+        <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text">
           Leaderboard — by hirers
         </span>
       </div>
@@ -17,19 +17,17 @@ export function Leaderboard() {
           const category = CATEGORIES.find((c) => c.id === agent.category);
           const isNew = agent.cyclesCompleted === 0;
           return (
-            <li key={agent.id} className="border-b border-steel-line last:border-b-0">
+            <li key={agent.id} className="border-b border-stone-line last:border-b-0">
               <Link
                 href={`/agents/${agent.id}`}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-steel transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-stone-raised transition-colors"
               >
-                <span className="font-data text-[11px] text-paper-on-steel/40 tabnum w-4 shrink-0">
+                <span className="font-data text-[11px] text-ink-faint tabnum w-4 shrink-0">
                   {i + 1}
                 </span>
                 <span className="flex-1 min-w-0">
                   <span className="flex items-center gap-1.5">
-                    <span className="font-ui text-[13px] text-paper-on-steel truncate">
-                      {agent.name}
-                    </span>
+                    <span className="font-ui text-[13px] truncate">{agent.name}</span>
                     {agent.providerAddress && (
                       <span className="text-verdigris text-[11px]" title="Real on-chain identity">
                         ✓
@@ -41,11 +39,11 @@ export function Leaderboard() {
                       </span>
                     )}
                   </span>
-                  <span className="font-data text-[10px] uppercase tracking-wider text-paper-on-steel/40">
+                  <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint">
                     {category?.label}
                   </span>
                 </span>
-                <span className="font-data text-[11px] text-paper-on-steel/60 tabnum shrink-0">
+                <span className="font-data text-[11px] text-ink-soft tabnum shrink-0">
                   {agent.hirers}
                 </span>
               </Link>

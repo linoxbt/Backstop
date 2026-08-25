@@ -9,18 +9,18 @@ export function CategoryCards() {
         <Link
           key={c.id}
           href={`/marketplace?category=${c.id}`}
-          className="group border border-steel-line bg-steel-raised p-5 flex flex-col hover:border-bronze-bright transition-colors"
+          className="group border border-stone-line bg-stone-raised/50 p-5 flex flex-col hover:border-bronze-text transition-colors"
         >
-          <span className="font-data text-[10px] uppercase tracking-wider text-bronze-bright mb-2">
+          <span className="font-data text-[10px] uppercase tracking-wider text-bronze-text mb-2">
             {c.clause}
           </span>
-          <h3 className="font-display text-lg text-paper-on-steel mb-2 group-hover:text-bronze-bright transition-colors">
+          <h3 className="font-display text-lg mb-2 group-hover:text-bronze-text transition-colors">
             {c.label}
           </h3>
-          <p className="font-body text-[13px] text-paper-on-steel/60 leading-relaxed mb-4 flex-1">
+          <p className="font-body text-[13px] text-ink-soft leading-relaxed mb-4 flex-1">
             {c.blurb}
           </p>
-          <span className="font-data text-[11px] uppercase tracking-wider text-paper-on-steel/50">
+          <span className="font-data text-[11px] uppercase tracking-wider text-ink-faint">
             {agentsByCategory(c.id).length} agents →
           </span>
         </Link>

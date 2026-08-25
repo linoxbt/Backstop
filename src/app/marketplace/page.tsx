@@ -2,8 +2,9 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AgentTable } from "@/components/AgentTable";
 import { StatStrip } from "@/components/StatStrip";
+import { CatalogOverview } from "@/components/CatalogOverview";
+import { MiniStats } from "@/components/MiniStats";
 import { CategoryCards } from "@/components/CategoryCards";
-import { Leaderboard } from "@/components/Leaderboard";
 import { AGENTS, isCategory } from "@/lib/agents";
 
 export default async function MarketplacePage({
@@ -17,23 +18,29 @@ export default async function MarketplacePage({
   return (
     <>
       <Header />
-      <main className="bg-steel">
+      <main>
         <StatStrip />
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 sm:pt-14 pb-10">
-          <span className="font-data text-xs uppercase tracking-wider text-bronze-bright">
+
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 sm:pt-12 pb-10">
+          <CatalogOverview />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-10">
+          <MiniStats />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-10">
+          <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
             Browse
           </span>
-          <h1 className="font-display text-3xl sm:text-4xl mt-2 mb-10 text-paper-on-steel">
+          <h1 className="font-display text-3xl sm:text-4xl mt-2 mb-8">
             Explore what your position can hire
           </h1>
           <CategoryCards />
         </div>
 
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-24 grid lg:grid-cols-[1fr_300px] gap-10">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-24">
           <AgentTable agents={AGENTS} initialCategory={initialCategory} />
-          <aside className="order-first lg:order-last">
-            <Leaderboard />
-          </aside>
         </div>
       </main>
       <Footer />

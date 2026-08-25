@@ -10,7 +10,7 @@ export function SimilarAgents({ agent }: { agent: Agent }) {
 
   return (
     <div>
-      <span className="font-data text-[11px] uppercase tracking-wider text-bronze-bright block mb-4">
+      <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text block mb-4">
         Similar agents
       </span>
       <div className="grid sm:grid-cols-3 gap-4">
@@ -18,15 +18,15 @@ export function SimilarAgents({ agent }: { agent: Agent }) {
           <Link
             key={a.id}
             href={`/agents/${a.id}`}
-            className="group border border-steel-line bg-steel-raised p-4 hover:border-bronze-bright transition-colors"
+            className="group border border-stone-line bg-stone-raised/50 p-4 hover:border-bronze-text transition-colors"
           >
-            <span className="font-display text-base text-paper-on-steel group-hover:text-bronze-bright transition-colors block mb-1">
+            <span className="font-display text-base group-hover:text-bronze-text transition-colors block mb-1">
               {a.name}
             </span>
-            <span className="font-data text-[10px] uppercase tracking-wider text-paper-on-steel/40 block mb-3">
+            <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-3">
               {a.operator}
             </span>
-            <span className="font-data text-[11px] text-paper-on-steel/55 tabnum">
+            <span className="font-data text-[11px] text-ink-soft tabnum">
               {a.hirers} hirers · {a.cyclesCompleted} cycles
             </span>
           </Link>

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import type { AgentCategory } from "@/lib/types";
 import { CATEGORIES, agentsByCategory } from "@/lib/agents";
+import { CategorySeal } from "@/components/landing/CategorySeal";
 
-const TERRITORY: Record<AgentCategory, { glyph: string; word: string }> = {
-  "health-factor": { glyph: "◉", word: "Protect" },
-  yield: { glyph: "↗", word: "Grow" },
-  rebalancing: { glyph: "◌", word: "Automate" },
-  "grid-trading": { glyph: "≋", word: "Trade" },
+const TERRITORY: Record<AgentCategory, { word: string }> = {
+  "health-factor": { word: "Protect" },
+  yield: { word: "Grow" },
+  rebalancing: { word: "Automate" },
+  "grid-trading": { word: "Trade" },
 };
 
 /**
@@ -30,10 +31,8 @@ export function Territories() {
             href={`/marketplace?category=${c.id}`}
             className="group border border-paper-line bg-paper-raised/50 p-5 sm:p-6 hover:border-bronze-text transition-colors"
           >
-            <div className="flex items-baseline gap-3 mb-1">
-              <span className="font-display text-2xl text-bronze-text" aria-hidden="true">
-                {territory.glyph}
-              </span>
+            <div className="flex items-center gap-3 mb-1">
+              {top && <CategorySeal band={top.band} size={40} />}
               <span className="font-data text-xs uppercase tracking-[0.2em] text-bronze-text">
                 {territory.word}
               </span>

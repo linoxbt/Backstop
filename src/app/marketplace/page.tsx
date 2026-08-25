@@ -23,9 +23,7 @@ export default async function MarketplacePage({
     <>
       <Header />
       <main>
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-10">
-          <MarketHero />
-        </div>
+        <MarketHero />
 
         <StatStrip />
 
@@ -53,12 +51,19 @@ export default async function MarketplacePage({
 
         <HowItWorksMarquee />
 
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
-          <span className="font-data text-xs uppercase tracking-wider text-bronze-text block mb-2">
-            The guarantee
-          </span>
-          <h2 className="font-display text-2xl sm:text-3xl mb-8">How every hire is backed.</h2>
-          <GuaranteeSteps />
+        <div
+          data-tone="dark"
+          className="bg-[var(--color-momento-bg-deep)] py-16 sm:py-20"
+        >
+          <div className="max-w-6xl mx-auto px-5 sm:px-8">
+            <span className="font-data text-xs uppercase tracking-wider text-bronze-bright block mb-2">
+              The guarantee
+            </span>
+            <h2 className="font-forum text-white text-2xl sm:text-3xl mb-8">
+              How every hire is backed.
+            </h2>
+            <GuaranteeSteps tone="dark" />
+          </div>
         </div>
       </main>
       <Footer />

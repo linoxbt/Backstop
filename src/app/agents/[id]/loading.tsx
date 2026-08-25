@@ -28,7 +28,7 @@ export default function Loading() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5 py-6 border-y border-stone-line mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5 py-6 border-y border-paper-line mb-12">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="space-y-2">
               <Bar w="50%" h="0.6em" />
@@ -38,7 +38,7 @@ export default function Loading() {
         </div>
 
         <div className="grid lg:grid-cols-[1fr_360px] gap-10 lg:gap-14">
-          <div className="border border-stone-line p-6 space-y-6">
+          <div className="border border-paper-line p-6 space-y-6">
             <Bar w="120px" h="0.7em" />
             <Bar w="100%" h="3.5em" />
             <div className="flex gap-5">
@@ -47,7 +47,7 @@ export default function Loading() {
               <Bar w="30%" />
             </div>
           </div>
-          <div className="border border-stone-line p-6 space-y-4">
+          <div className="border border-paper-line p-6 space-y-4">
             <Bar w="100px" h="0.7em" />
             <Bar w="70%" h="1.4em" />
             <Bar w="100%" h="4em" />

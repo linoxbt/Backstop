@@ -26,16 +26,16 @@ export function FaqAccordion({ agent }: { agent: Agent }) {
   ];
 
   return (
-    <div className="border-t border-stone-line">
+    <div className="border-t border-paper-line">
       {items.map((item) => (
-        <details key={item.q} className="group border-b border-stone-line py-4">
+        <details key={item.q} className="group border-b border-paper-line py-4">
           <summary className="flex items-center justify-between gap-4 cursor-pointer list-none font-ui text-[14px]">
             {item.q}
-            <span className="font-data text-ink-faint group-open:rotate-45 transition-transform shrink-0">
+            <span className="font-data text-paper-ink-faint group-open:rotate-45 transition-transform shrink-0">
               +
             </span>
           </summary>
-          <p className="mt-3 text-[13px] text-ink-soft leading-relaxed max-w-2xl">{item.a}</p>
+          <p className="mt-3 text-[13px] text-paper-ink-soft leading-relaxed max-w-2xl">{item.a}</p>
         </details>
       ))}
     </div>

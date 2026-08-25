@@ -4,25 +4,27 @@ import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { projectId } from "@/lib/wallet/config";
 
 const buttonClass =
-  "font-data text-[11px] uppercase tracking-wider border px-3 py-2 transition-colors";
+  "font-data text-[11px] uppercase tracking-wider border rounded-lg px-3 py-2 transition-colors";
 
-export function ConnectWalletButton() {
+export function ConnectWalletButton({ dark = false }: { dark?: boolean }) {
   if (!projectId) {
     return (
       <button
         type="button"
         disabled
         title="Wallet connect not configured — set NEXT_PUBLIC_REOWN_PROJECT_ID (get one free at dashboard.reown.com)"
-        className={`${buttonClass} border-stone-line text-ink-faint cursor-not-allowed`}
+        className={`${buttonClass} cursor-not-allowed ${
+          dark ? "border-white/20 text-white/40" : "border-paper-line text-paper-ink-faint"
+        }`}
       >
         Connect wallet
       </button>
     );
   }
-  return <ConnectedButton />;
+  return <ConnectedButton dark={dark} />;
 }
 
-function ConnectedButton() {
+function ConnectedButton({ dark }: { dark: boolean }) {
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
 
@@ -30,7 +32,11 @@ function ConnectedButton() {
     <button
       type="button"
       onClick={() => open()}
-      className={`${buttonClass} border-ink text-ink hover:bg-ink hover:text-stone`}
+      className={`${buttonClass} ${
+        dark
+          ? "border-white/40 text-white hover:bg-white hover:text-[var(--color-momento-bg)]"
+          : "border-paper-ink text-paper-ink hover:bg-paper-ink hover:text-paper"
+      }`}
     >
       {isConnected && address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "Connect wallet"}
     </button>

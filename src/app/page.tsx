@@ -22,7 +22,7 @@ export default function Home() {
         <GuaranteeReveal />
         <AgentRail />
 
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24 border-t border-stone-line">
+        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24 border-t border-paper-line">
           <div className="grid lg:grid-cols-[1fr_1.4fr] gap-x-12 gap-y-8 items-start">
             <div>
               <span className="font-data text-xs uppercase tracking-wider text-bronze-text block mb-2">
@@ -36,7 +36,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-t border-stone-line">
+        <section className="border-t border-paper-line">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
             <div className="grid lg:grid-cols-[1fr_1.4fr] gap-x-12 gap-y-8 items-start">
               <div>
@@ -52,7 +52,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-t border-stone-line">
+        <section className="border-t border-paper-line">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
             <div className="grid lg:grid-cols-[1fr_1.4fr] gap-x-12 gap-y-8 items-start">
               <div>
@@ -62,16 +62,16 @@ export default function Home() {
                 <h2 className="font-display text-2xl sm:text-3xl max-w-xs">
                   Live on BSC Testnet, right now.
                 </h2>
-                <p className="text-[13px] text-ink-soft mt-4 max-w-xs">
+                <p className="text-[13px] text-paper-ink-soft mt-4 max-w-xs">
                   Deployed via the <code className="font-data">bag</code> CLI this week —
                   real wallets, real Pieverse LLM keys.
                 </p>
               </div>
-              <div className="border-t border-stone-line">
+              <div className="border-t border-paper-line">
                 {liveAgents.map((a) => (
                   <div
                     key={a.id}
-                    className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-1 py-4 border-b border-stone-line"
+                    className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-1 py-4 border-b border-paper-line"
                   >
                     <Link
                       href={`/agents/${a.id}`}
@@ -83,7 +83,7 @@ export default function Home() {
                       href={`https://testnet.bscscan.com/address/${a.providerAddress}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="font-data text-[11px] text-ink-faint hover:text-bronze-text transition-colors tabnum"
+                      className="font-data text-[11px] text-paper-ink-faint hover:text-bronze-text transition-colors tabnum"
                     >
                       {a.providerAddress}
                     </a>
@@ -94,8 +94,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-t border-stone-line">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 flex flex-wrap gap-x-8 gap-y-2 font-data text-[12px] text-ink-faint tabnum">
+        <section className="border-t border-paper-line">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 flex flex-wrap gap-x-8 gap-y-2 font-data text-[12px] text-paper-ink-faint tabnum">
             <span>{POOL.tvl} in reserve</span>
             <span>·</span>
             <span>{POOL.payoutRatio} paid out, trailing 90d</span>
@@ -104,14 +104,14 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-t border-stone-line bg-stone-raised">
+        <section className="border-t border-paper-line bg-paper-raised">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20 flex flex-wrap items-center justify-between gap-6">
             <h2 className="font-display text-2xl sm:text-3xl max-w-md">
               Four categories, one reserve. Go hire something.
             </h2>
             <Link
               href="/marketplace"
-              className="font-data text-xs uppercase tracking-wider px-5 py-3 bg-ink text-stone hover:bg-bronze-text transition-colors shrink-0"
+              className="font-data text-xs uppercase tracking-wider px-5 py-3 bg-paper-ink text-paper hover:bg-bronze-text transition-colors shrink-0"
             >
               Enter the marketplace →
             </Link>

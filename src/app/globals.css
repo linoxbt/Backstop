@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  /* ground */
-  --color-stone: #e4ddc9;
-  --color-stone-raised: #d8cfb4;
-  --color-stone-line: #bcb190;
-
-  /* ink */
-  --color-ink: #201e15;
-  --color-ink-soft: #57503d;
-  --color-ink-faint: #857c62;
+  /* "paper" — the light register, used everywhere except each page's one
+     dark momento masthead moment. Values are the reference's own verified
+     light-mode tokens (momentolegal.com's shipped --background/--accent/
+     --border/--foreground/--muted-foreground), not approximated — note
+     paper-ink is the exact same navy as --color-momento-surface below, so
+     the two registers share one ink color across the whole site. */
+  --color-paper: #fbfcfd;
+  --color-paper-raised: #f0f2f4;
+  --color-paper-line: #e4e5e7;
+  --color-paper-ink: #131a2d;
+  --color-paper-ink-soft: #5e636f;
+  --color-paper-ink-faint: #8a8f99;
 
   /* dark surfaces (vault interiors, hero, footer) */
   --color-steel: #14171a;
@@ -23,9 +26,9 @@
   --color-bronze-bright: #b78c52;
 
   /* signal */
-  --color-verdigris: #4f6d5c;
+  --color-verdigris: #3f6153;
   --color-verdigris-soft: #7c8f7c;
-  --color-stamp: #9c2c1e;
+  --color-stamp: #8c2115;
   --color-stamp-soft: #c65a49;
 
   --font-display: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
@@ -34,28 +37,47 @@
   --font-data: var(--font-dm-mono), "SF Mono", "Courier New", monospace;
   --font-forum: var(--font-forum-serif), serif;
 
-  /* landing-page-only dark surface (Momento Legal reference) — not used
-     anywhere else in the app, which stays on the stone/ink/bronze palette.
-     All five values are pulled directly from momentolegal.com's own shipped
-     CSS, not approximated: momento-bg/-bg-deep are its darkest ground steps,
-     but on their own they read as near-black, not blue — the site's actual
-     depth comes from also using its lighter navy steps (momento-surface,
-     momento-line) and a genuinely visible royal blue (momento-blue) for
-     glows/gradient stops, which is what makes the reference read as blue. */
+  /* the dark register (Momento Legal reference) — sitewide now, one masthead
+     moment per page, not landing-only. All five values are pulled directly
+     from momentolegal.com's own shipped CSS, not approximated: momento-bg/
+     -bg-deep are its darkest ground steps, but on their own they read as
+     near-black, not blue — the site's actual depth comes from also using
+     its lighter navy steps (momento-surface, momento-line) and a genuinely
+     visible royal blue (momento-blue) for glows/gradient stops, which is
+     what makes the reference read as blue. */
   --color-momento-bg: #000214;
   --color-momento-bg-deep: #000321;
   --color-momento-surface: #131a2d;
   --color-momento-line: #1e2842;
   --color-momento-blue: #10234f;
+
+  /* fluid type scale for momento sections — the reference's own confirmed
+     5-step scale (fixed px on mobile, fluid vw above its 767.98px cutoff),
+     formalized here instead of one-off vw literals per component. */
+  --text-momento-h1: 40px;
+  --text-momento-h2: 28px;
+  --text-momento-h3: 20px;
+  --text-momento-body: 16px;
+  --text-momento-sub: 12px;
+}
+
+@media (min-width: 767.98px) {
+  :root {
+    --text-momento-h1: 3.125vw;
+    --text-momento-h2: 2.5vw;
+    --text-momento-h3: 1.5625vw;
+    --text-momento-body: 1.0417vw;
+    --text-momento-sub: 0.8333vw;
+  }
 }
 
 @theme inline {
-  --color-stone: var(--color-stone);
-  --color-stone-raised: var(--color-stone-raised);
-  --color-stone-line: var(--color-stone-line);
-  --color-ink: var(--color-ink);
-  --color-ink-soft: var(--color-ink-soft);
-  --color-ink-faint: var(--color-ink-faint);
+  --color-paper: var(--color-paper);
+  --color-paper-raised: var(--color-paper-raised);
+  --color-paper-line: var(--color-paper-line);
+  --color-paper-ink: var(--color-paper-ink);
+  --color-paper-ink-soft: var(--color-paper-ink-soft);
+  --color-paper-ink-faint: var(--color-paper-ink-faint);
   --color-steel: var(--color-steel);
   --color-steel-raised: var(--color-steel-raised);
   --color-steel-line: var(--color-steel-line);
@@ -82,23 +104,23 @@
 }
 
 * {
-  border-color: var(--color-stone-line);
+  border-color: var(--color-paper-line);
 }
 
 html {
-  background: var(--color-stone);
+  background: var(--color-paper);
 }
 
 body {
-  background: var(--color-stone);
-  color: var(--color-ink);
+  background: var(--color-paper);
+  color: var(--color-paper-ink);
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
   background: var(--color-bronze);
-  color: var(--color-stone);
+  color: var(--color-paper);
 }
 
 .tabnum {
@@ -221,4 +243,28 @@ body {
 
 .animate-marquee {
   animation: marquee-scroll 22s linear infinite;
+}
+
+/* Continuous scroll-linked depth-of-field: the reference's "About" heading
+   blurs progressively as the viewport scrolls past it, not a one-shot
+   reveal. Native scroll-driven animation (no library) — the JS fallback in
+   useScrollDepth.ts only activates where animation-timeline isn't
+   supported. Composes automatically with the reduced-motion override above
+   since it still runs through animation-duration/animation-timeline. */
+@supports (animation-timeline: view()) {
+  .scroll-depth-blur {
+    animation: momento-depth-blur linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 90%;
+  }
+}
+
+@keyframes momento-depth-blur {
+  0%,
+  40% {
+    filter: blur(0);
+  }
+  100% {
+    filter: blur(14px);
+  }
 }

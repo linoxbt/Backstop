@@ -20,16 +20,16 @@ export function AssuranceBandInteractive({
 
   if (pending) {
     return (
-      <div className="border border-stone-line bg-stone-raised/60 p-5 sm:p-7">
+      <div className="border border-paper-line bg-paper-raised/60 p-5 sm:p-7">
         <div className="flex items-baseline justify-between gap-3 mb-6">
           <span className="font-ui font-medium text-sm">{agentName}</span>
-          <span className="font-data text-xs text-ink-faint tabnum">{band.cycleLabel}</span>
+          <span className="font-data text-xs text-paper-ink-faint tabnum">{band.cycleLabel}</span>
         </div>
         <Track band={band} markerLeft={null} />
         <div className="mt-3">
           <Legend band={band} />
         </div>
-        <p className="mt-6 pt-6 border-t border-stone-line text-[13px] text-ink-soft leading-relaxed max-w-md">
+        <p className="mt-6 pt-6 border-t border-paper-line text-[13px] text-paper-ink-soft leading-relaxed max-w-md">
           No cycle has settled yet — the promised band above is what this agent is underwritten
           against from its first hire. Once a cycle closes, its realized outcome lands here
           against the same manifest.
@@ -39,10 +39,10 @@ export function AssuranceBandInteractive({
   }
 
   return (
-    <div className="border border-stone-line bg-stone-raised/60 p-5 sm:p-7">
+    <div className="border border-paper-line bg-paper-raised/60 p-5 sm:p-7">
       <div className="flex items-baseline justify-between gap-3 mb-6">
         <span className="font-ui font-medium text-sm">{agentName}</span>
-        <span className="font-data text-xs text-ink-faint tabnum">{band.cycleLabel}</span>
+        <span className="font-data text-xs text-paper-ink-faint tabnum">{band.cycleLabel}</span>
       </div>
 
       <Track band={band} markerLeft={markerLeft} />
@@ -53,14 +53,14 @@ export function AssuranceBandInteractive({
 
       <button
         onClick={() => setTriggered((v) => !v)}
-        className="mt-6 inline-flex items-center gap-2 font-data text-xs uppercase tracking-wider px-4 py-2.5 bg-ink text-stone hover:bg-bronze-text transition-colors"
+        className="mt-6 inline-flex items-center gap-2 font-data text-xs uppercase tracking-wider px-4 py-2.5 bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
       >
         {triggered ? "Reset ↺" : `Settle ${band.cycleLabel.toLowerCase()} →`}
       </button>
 
       <div
         className={`grid transition-[grid-template-rows] duration-500 ease-out ${
-          triggered ? "grid-rows-[1fr] mt-6 pt-6 border-t border-stone-line" : "grid-rows-[0fr]"
+          triggered ? "grid-rows-[1fr] mt-6 pt-6 border-t border-paper-line" : "grid-rows-[0fr]"
         }`}
       >
         <div className="overflow-hidden">
@@ -76,9 +76,9 @@ export function AssuranceBandInteractive({
                 <br />
                 ISSUED
               </div>
-              <p className="text-[13px] text-ink-soft leading-relaxed max-w-md">
+              <p className="text-[13px] text-paper-ink-soft leading-relaxed max-w-md">
                 {band.rebate.note} The pool paid{" "}
-                <span className="font-data text-ink font-bold">{band.rebate.amount}</span> under{" "}
+                <span className="font-data text-paper-ink font-bold">{band.rebate.amount}</span> under{" "}
                 {band.rebate.clause}.
               </p>
             </div>

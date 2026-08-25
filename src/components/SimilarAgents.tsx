@@ -18,15 +18,15 @@ export function SimilarAgents({ agent }: { agent: Agent }) {
           <Link
             key={a.id}
             href={`/agents/${a.id}`}
-            className="group border border-stone-line bg-stone-raised/50 p-4 hover:border-bronze-text transition-colors"
+            className="group border border-paper-line bg-paper-raised/50 p-4 hover:border-bronze-text transition-colors"
           >
             <span className="font-display text-base group-hover:text-bronze-text transition-colors block mb-1">
               {a.name}
             </span>
-            <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-3">
+            <span className="font-data text-[10px] uppercase tracking-wider text-paper-ink-faint block mb-3">
               {a.operator}
             </span>
-            <span className="font-data text-[11px] text-ink-soft tabnum">
+            <span className="font-data text-[11px] text-paper-ink-soft tabnum">
               {a.hirers} hirers · {a.cyclesCompleted} cycles
             </span>
           </Link>

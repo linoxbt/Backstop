@@ -19,6 +19,7 @@ export function GuaranteeReveal() {
   return (
     <section
       ref={ref}
+      data-tone="dark"
       className="relative w-full min-h-[100dvh] overflow-hidden bg-[var(--color-momento-bg-deep)] flex flex-col justify-center py-20 md:py-0"
     >
       <div

@@ -33,14 +33,14 @@ export default function MyAgentsPage() {
           Your workforce
         </span>
         <h1 className="font-display text-4xl sm:text-5xl mt-2 mb-4">My Agents</h1>
-        <p className="font-body text-ink-soft max-w-xl mb-10">
+        <p className="font-body text-paper-ink-soft max-w-xl mb-10">
           Real hire records, signed by your wallet — not a fabricated live feed. Each entry links
           to the actual on-chain transaction where one exists.
         </p>
 
         {!isConnected && (
-          <div className="border border-stone-line bg-stone-raised/50 p-8 text-center">
-            <p className="font-body text-ink-soft mb-5">
+          <div className="border border-paper-line bg-paper-raised/50 p-8 text-center">
+            <p className="font-body text-paper-ink-soft mb-5">
               Connect your wallet to see agents you&rsquo;ve hired.
             </p>
             <div className="flex justify-center">
@@ -50,18 +50,18 @@ export default function MyAgentsPage() {
         )}
 
         {isConnected && hires === null && (
-          <p className="font-data text-[13px] text-ink-faint">Loading…</p>
+          <p className="font-data text-[13px] text-paper-ink-faint">Loading…</p>
         )}
 
         {isConnected && hires !== null && hires.length === 0 && (
-          <div className="border border-stone-line bg-stone-raised/50 p-8 text-center">
-            <p className="font-body text-ink-soft mb-5 max-w-md mx-auto">
+          <div className="border border-paper-line bg-paper-raised/50 p-8 text-center">
+            <p className="font-body text-paper-ink-soft mb-5 max-w-md mx-auto">
               No hires recorded yet for this wallet. Hiring an agent while connected signs a real
               authorization message that lands here.
             </p>
             <Link
               href="/marketplace"
-              className="inline-block font-data text-xs uppercase tracking-wider px-5 py-3 bg-ink text-stone hover:bg-bronze-text transition-colors"
+              className="inline-block font-data text-xs uppercase tracking-wider px-5 py-3 bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
             >
               Enter the marketplace →
             </Link>
@@ -89,10 +89,10 @@ function HireCard({ hire }: { hire: HireRecord }) {
   // agent's static/illustrative band.status — a real rebate claim requires
   // a real payout tied to *this* hire, not just this agent's demo data.
   const statusLabel = hire.rebatePaid ? "Rebate paid" : "Hired — cycle in progress";
-  const statusClassName = hire.rebatePaid ? "text-stamp" : "text-ink-faint";
+  const statusClassName = hire.rebatePaid ? "text-stamp" : "text-paper-ink-faint";
 
   return (
-    <div className="border border-stone-line bg-stone-raised/50 p-6">
+    <div className="border border-paper-line bg-paper-raised/50 p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-3 mb-4">
         <Link
           href={`/agents/${agent.id}`}
@@ -100,26 +100,26 @@ function HireCard({ hire }: { hire: HireRecord }) {
         >
           {agent.name}
         </Link>
-        <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint tabnum">
+        <span className="font-data text-[10px] uppercase tracking-wider text-paper-ink-faint tabnum">
           Hired {hiredAt.toLocaleString()}
         </span>
       </div>
 
       <div className="grid grid-cols-3 gap-4 font-data text-[12px] mb-4">
         <div>
-          <span className="block text-ink-faint text-[10px] uppercase tracking-wider mb-1">
+          <span className="block text-paper-ink-faint text-[10px] uppercase tracking-wider mb-1">
             Budget
           </span>
           <span className="tabnum">{hire.budgetHuman} U</span>
         </div>
         <div>
-          <span className="block text-ink-faint text-[10px] uppercase tracking-wider mb-1">
+          <span className="block text-paper-ink-faint text-[10px] uppercase tracking-wider mb-1">
             Job
           </span>
           <span className="tabnum">{hire.jobId ? `#${hire.jobId}` : "—"}</span>
         </div>
         <div>
-          <span className="block text-ink-faint text-[10px] uppercase tracking-wider mb-1">
+          <span className="block text-paper-ink-faint text-[10px] uppercase tracking-wider mb-1">
             Current cycle
           </span>
           <span className={`uppercase tracking-wider ${statusClassName}`}>{statusLabel}</span>
@@ -150,7 +150,7 @@ function HireCard({ hire }: { hire: HireRecord }) {
         )}
       </div>
 
-      <p className="font-body text-[12px] text-ink-faint mt-4 pt-4 border-t border-stone-line leading-relaxed">
+      <p className="font-body text-[12px] text-paper-ink-faint mt-4 pt-4 border-t border-paper-line leading-relaxed">
         Covered by Backstop&rsquo;s assurance pool — {agent.poolContribution} of every fee{" "}
         {agent.name} earns funds it. Executed via Backstop&rsquo;s demo signer; your wallet
         authorized this record.

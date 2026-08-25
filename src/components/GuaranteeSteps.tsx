@@ -8,9 +8,9 @@ export function GuaranteeSteps() {
   return (
     <ol className="grid sm:grid-cols-3 gap-4">
       {STEPS.map((text, i) => (
-        <li key={text} className="border border-stone-line p-4">
+        <li key={text} className="border border-paper-line p-4">
           <span className="font-data text-xs text-bronze-text">{i + 1}</span>
-          <p className="text-[13px] text-ink-soft mt-2">{text}</p>
+          <p className="text-[13px] text-paper-ink-soft mt-2">{text}</p>
         </li>
       ))}
     </ol>

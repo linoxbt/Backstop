@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
       "@base-org/account": emptyModule,
     },
   },
+  images: {
+    // Real, properly-licensed (Unsplash License — free commercial use, no
+    // attribution required) photography for the landing page's category
+    // showcase — see CategorySeal.tsx/CategoryShowcase.tsx.
+    remotePatterns: [{ hostname: "images.unsplash.com" }],
+  },
 };
 
 export default nextConfig;

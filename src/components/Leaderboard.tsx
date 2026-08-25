@@ -6,8 +6,8 @@ const RANKED = [...AGENTS].sort((a, b) => b.hirers - a.hirers).slice(0, 9);
 /** Top agents by hirers, Agentic Market's leaderboard-sidebar position. */
 export function Leaderboard() {
   return (
-    <div className="border border-stone-line bg-stone-raised/50">
-      <div className="px-4 py-3 border-b border-stone-line">
+    <div className="border border-paper-line bg-paper-raised/50">
+      <div className="px-4 py-3 border-b border-paper-line">
         <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text">
           Leaderboard — by hirers
         </span>
@@ -17,12 +17,12 @@ export function Leaderboard() {
           const category = CATEGORIES.find((c) => c.id === agent.category);
           const isNew = agent.cyclesCompleted === 0;
           return (
-            <li key={agent.id} className="border-b border-stone-line last:border-b-0">
+            <li key={agent.id} className="border-b border-paper-line last:border-b-0">
               <Link
                 href={`/agents/${agent.id}`}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-stone-raised transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-paper-raised transition-colors"
               >
-                <span className="font-data text-[11px] text-ink-faint tabnum w-4 shrink-0">
+                <span className="font-data text-[11px] text-paper-ink-faint tabnum w-4 shrink-0">
                   {i + 1}
                 </span>
                 <span className="flex-1 min-w-0">
@@ -39,11 +39,11 @@ export function Leaderboard() {
                       </span>
                     )}
                   </span>
-                  <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint">
+                  <span className="font-data text-[10px] uppercase tracking-wider text-paper-ink-faint">
                     {category?.label}
                   </span>
                 </span>
-                <span className="font-data text-[11px] text-ink-soft tabnum shrink-0">
+                <span className="font-data text-[11px] text-paper-ink-soft tabnum shrink-0">
                   {agent.hirers}
                 </span>
               </Link>

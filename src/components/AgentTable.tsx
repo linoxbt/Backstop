@@ -13,13 +13,13 @@ type NetworkFilter = "all" | Agent["network"];
 const STATUS_META: Record<Agent["band"]["status"], { label: string; className: string }> = {
   within: { label: "On track", className: "text-verdigris" },
   breach: { label: "Rebate paid", className: "text-stamp" },
-  pending: { label: "Pending", className: "text-ink-faint" },
+  pending: { label: "Pending", className: "text-paper-ink-faint" },
 };
 
 /** A small square per network, Agentic Market's network-badge position in its services table. */
 const NETWORK_BADGE: Record<Agent["network"], string> = {
   "BSC Testnet": "bg-bronze-text",
-  "BSC Mainnet": "bg-ink",
+  "BSC Mainnet": "bg-paper-ink",
 };
 
 function NetworkBadge({ network }: { network: Agent["network"] }) {
@@ -50,7 +50,7 @@ function SortHeader({
         type="button"
         onClick={onClick}
         className={`flex items-center gap-1 font-data text-[11px] uppercase tracking-wider whitespace-nowrap transition-colors ${
-          active ? "text-ink" : "text-ink-faint hover:text-ink-soft"
+          active ? "text-paper-ink" : "text-paper-ink-faint hover:text-paper-ink-soft"
         }`}
       >
         {label}
@@ -154,7 +154,7 @@ export function AgentTable({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by agent or operator…"
-          className="block w-full font-data text-[13px] bg-stone border border-stone-line px-3 py-2 mb-3 placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-bronze"
+          className="block w-full font-data text-[13px] bg-paper border border-paper-line px-3 py-2 mb-3 placeholder:text-paper-ink-faint focus-visible:outline-2 focus-visible:outline-bronze"
         />
         <div className="flex flex-wrap items-center gap-3">
         <FilterSelect
@@ -204,14 +204,14 @@ export function AgentTable({
         </div>
       </div>
 
-      <p className="font-data text-[11px] text-ink-faint mb-3 tabnum">
+      <p className="font-data text-[11px] text-paper-ink-faint mb-3 tabnum">
         {rows.length} agent{rows.length === 1 ? "" : "s"}
       </p>
 
       <div className="overflow-x-auto -mx-5 px-5 sm:mx-0 sm:px-0">
         <table className="w-full border-collapse text-sm sm:min-w-[640px]">
           <thead>
-            <tr className="border-b border-stone-line">
+            <tr className="border-b border-paper-line">
               <th className="hidden sm:table-cell w-10" />
               <SortHeader
                 label="Agent"
@@ -227,13 +227,13 @@ export function AgentTable({
                 onClick={() => toggleSort("category")}
                 className="hidden sm:table-cell py-2 pr-4"
               />
-              <th className="hidden lg:table-cell py-2 pr-4 font-data text-[11px] uppercase tracking-wider text-ink-faint text-left">
+              <th className="hidden lg:table-cell py-2 pr-4 font-data text-[11px] uppercase tracking-wider text-paper-ink-faint text-left">
                 Network
               </th>
-              <th className="hidden md:table-cell py-2 pr-4 font-data text-[11px] uppercase tracking-wider text-ink-faint text-left">
+              <th className="hidden md:table-cell py-2 pr-4 font-data text-[11px] uppercase tracking-wider text-paper-ink-faint text-left">
                 Band
               </th>
-              <th className="py-2 pr-4 font-data text-[11px] uppercase tracking-wider text-ink-faint text-left">
+              <th className="py-2 pr-4 font-data text-[11px] uppercase tracking-wider text-paper-ink-faint text-left">
                 Status
               </th>
               <SortHeader
@@ -256,8 +256,8 @@ export function AgentTable({
             {rows.map((agent, i) => {
               const meta = STATUS_META[agent.band.status];
               return (
-                <tr key={agent.id} className="border-b border-stone-line hover:bg-stone-raised/40">
-                  <td className="hidden sm:table-cell py-3 font-data text-[11px] text-ink-faint tabnum">
+                <tr key={agent.id} className="border-b border-paper-line hover:bg-paper-raised/40">
+                  <td className="hidden sm:table-cell py-3 font-data text-[11px] text-paper-ink-faint tabnum">
                     {String(i + 1).padStart(2, "0")}
                   </td>
                   <td className="py-3 pr-4">
@@ -276,22 +276,22 @@ export function AgentTable({
                       <button
                         type="button"
                         onClick={() => setPreviewId(agent.id)}
-                        className="font-data text-[10px] uppercase tracking-wider text-ink-faint hover:text-bronze-text transition-colors shrink-0"
+                        className="font-data text-[10px] uppercase tracking-wider text-paper-ink-faint hover:text-bronze-text transition-colors shrink-0"
                       >
                         Preview
                       </button>
                     </div>
-                    <span className="block font-data text-[10px] uppercase tracking-wider text-ink-faint mt-0.5">
+                    <span className="block font-data text-[10px] uppercase tracking-wider text-paper-ink-faint mt-0.5">
                       {agent.operator}
                     </span>
                   </td>
-                  <td className="hidden sm:table-cell py-3 pr-4 font-data text-[11px] text-ink-soft whitespace-nowrap">
+                  <td className="hidden sm:table-cell py-3 pr-4 font-data text-[11px] text-paper-ink-soft whitespace-nowrap">
                     {CATEGORIES.find((c) => c.id === agent.category)?.label}
                   </td>
-                  <td className="hidden lg:table-cell py-3 pr-4 font-data text-[11px] text-ink-soft whitespace-nowrap">
+                  <td className="hidden lg:table-cell py-3 pr-4 font-data text-[11px] text-paper-ink-soft whitespace-nowrap">
                     <NetworkBadge network={agent.network} />
                   </td>
-                  <td className="hidden md:table-cell py-3 pr-4 font-data text-[12px] text-ink-soft whitespace-nowrap tabnum">
+                  <td className="hidden md:table-cell py-3 pr-4 font-data text-[12px] text-paper-ink-soft whitespace-nowrap tabnum">
                     {agent.band.promisedLow}
                     {agent.band.symbol}–{agent.band.promisedHigh}
                     {agent.band.symbol}
@@ -301,16 +301,16 @@ export function AgentTable({
                       {meta.label}
                     </span>
                     {agent.band.realized !== null && (
-                      <span className="block font-data text-[11px] text-ink-faint tabnum">
+                      <span className="block font-data text-[11px] text-paper-ink-faint tabnum">
                         {agent.band.realized}
                         {agent.band.symbol} realized
                       </span>
                     )}
                   </td>
-                  <td className="py-3 pr-4 font-data text-[12px] text-ink tabnum text-right">
+                  <td className="py-3 pr-4 font-data text-[12px] text-paper-ink tabnum text-right">
                     {agent.hirers}
                   </td>
-                  <td className="hidden sm:table-cell py-3 font-data text-[12px] text-ink-faint tabnum text-right">
+                  <td className="hidden sm:table-cell py-3 font-data text-[12px] text-paper-ink-faint tabnum text-right">
                     {agent.cyclesCompleted}
                   </td>
                 </tr>
@@ -342,13 +342,13 @@ function AgentPreview({ agent, onClose }: { agent: Agent; onClose: () => void })
         type="button"
         aria-label="Close preview"
         onClick={onClose}
-        className="absolute inset-0 bg-ink/40"
+        className="absolute inset-0 bg-paper-ink/40"
       />
-      <div className="relative h-full w-full max-w-md bg-stone border-l border-stone-line overflow-y-auto p-6 sm:p-8">
+      <div className="relative h-full w-full max-w-md bg-paper border-l border-paper-line overflow-y-auto p-6 sm:p-8">
         <button
           type="button"
           onClick={onClose}
-          className="block font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-ink transition-colors mb-6"
+          className="block font-data text-[11px] uppercase tracking-wider text-paper-ink-faint hover:text-paper-ink transition-colors mb-6"
         >
           ← Close
         </button>
@@ -357,10 +357,10 @@ function AgentPreview({ agent, onClose }: { agent: Agent; onClose: () => void })
           {category?.label}
         </span>
         <h2 className="font-display text-2xl mt-1 mb-2">{agent.name}</h2>
-        <p className="font-body text-[13px] text-ink-soft leading-relaxed mb-6">{agent.tagline}</p>
+        <p className="font-body text-[13px] text-paper-ink-soft leading-relaxed mb-6">{agent.tagline}</p>
 
-        <div className="border-t border-stone-line pt-4 mb-4">
-          <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-1">
+        <div className="border-t border-paper-line pt-4 mb-4">
+          <span className="font-data text-[10px] uppercase tracking-wider text-paper-ink-faint block mb-1">
             The promise
           </span>
           <p className="font-body text-sm">
@@ -373,31 +373,31 @@ function AgentPreview({ agent, onClose }: { agent: Agent; onClose: () => void })
           </p>
         </div>
 
-        <div className="border-t border-stone-line pt-4 mb-4">
-          <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-1">
+        <div className="border-t border-paper-line pt-4 mb-4">
+          <span className="font-data text-[10px] uppercase tracking-wider text-paper-ink-faint block mb-1">
             The proof
           </span>
           <p className={`font-data text-sm uppercase tracking-wider ${meta.className} mb-1`}>
             {meta.label} — {band.cycleLabel}
           </p>
           {band.realized !== null ? (
-            <p className="font-body text-sm text-ink-soft">
+            <p className="font-body text-sm text-paper-ink-soft">
               Realized {band.realized}
               {band.symbol} {band.unit}
             </p>
           ) : (
-            <p className="font-body text-sm text-ink-soft">No cycle has settled yet.</p>
+            <p className="font-body text-sm text-paper-ink-soft">No cycle has settled yet.</p>
           )}
-          <p className="font-data text-[11px] text-ink-faint mt-2 tabnum">
+          <p className="font-data text-[11px] text-paper-ink-faint mt-2 tabnum">
             {agent.cyclesCompleted} cycles completed · {agent.hirers} hirers
           </p>
         </div>
 
-        <div className="border-t border-stone-line pt-4 mb-8">
-          <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint block mb-1">
+        <div className="border-t border-paper-line pt-4 mb-8">
+          <span className="font-data text-[10px] uppercase tracking-wider text-paper-ink-faint block mb-1">
             Backstop
           </span>
-          <p className="font-body text-sm text-ink-soft">
+          <p className="font-body text-sm text-paper-ink-soft">
             Covered by the assurance pool — {agent.poolContribution} of every fee this agent earns
             funds it.
           </p>
@@ -405,7 +405,7 @@ function AgentPreview({ agent, onClose }: { agent: Agent; onClose: () => void })
 
         <Link
           href={`/agents/${agent.id}`}
-          className="block text-center font-data text-xs uppercase tracking-wider px-4 py-3 bg-ink text-stone hover:bg-bronze-text transition-colors"
+          className="block text-center font-data text-xs uppercase tracking-wider px-4 py-3 bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
         >
           Understand agent →
         </Link>
@@ -426,12 +426,12 @@ function FilterSelect({
   options: { value: string; label: string }[];
 }) {
   return (
-    <label className="flex items-center gap-2 font-data text-[11px] uppercase tracking-wider text-ink-faint">
+    <label className="flex items-center gap-2 font-data text-[11px] uppercase tracking-wider text-paper-ink-faint">
       {label}
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-stone border border-stone-line px-2.5 py-2 focus-visible:outline-2 focus-visible:outline-bronze"
+        className="bg-paper border border-paper-line px-2.5 py-2 focus-visible:outline-2 focus-visible:outline-bronze"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

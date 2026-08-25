@@ -26,7 +26,7 @@ function Track({
 
   return (
     <div className={`relative ${h}`}>
-      <div className={`absolute left-0 right-0 ${railTop} h-px bg-stone-line`} />
+      <div className={`absolute left-0 right-0 ${railTop} h-px bg-paper-line`} />
       <div
         className={`hatch-corridor absolute ${corridorTop} h-6`}
         style={{ left: `${histLeft}%`, width: `${histWidth}%` }}
@@ -43,11 +43,11 @@ function Track({
       )}
       {showTicks && (
         <>
-          <span className="absolute top-0 left-0 font-data text-[10px] text-ink-faint tabnum">
+          <span className="absolute top-0 left-0 font-data text-[10px] text-paper-ink-faint tabnum">
             {band.scaleMin}
             {band.symbol}
           </span>
-          <span className="absolute top-0 right-0 font-data text-[10px] text-ink-faint tabnum">
+          <span className="absolute top-0 right-0 font-data text-[10px] text-paper-ink-faint tabnum">
             {band.scaleMax}
             {band.symbol}
           </span>
@@ -73,8 +73,8 @@ function Legend({ band, compact = false }: { band: AssuranceBandT; compact?: boo
       {band.symbol} {band.unit}
     </span>,
     band.status === "pending" ? (
-      <span key="live" className="flex items-center gap-1.5 text-ink-faint">
-        <i className="inline-block w-3 h-3 shrink-0 rounded-full border border-ink-faint border-dashed" />
+      <span key="live" className="flex items-center gap-1.5 text-paper-ink-faint">
+        <i className="inline-block w-3 h-3 shrink-0 rounded-full border border-paper-ink-faint border-dashed" />
         Awaiting first cycle
       </span>
     ) : (
@@ -87,11 +87,11 @@ function Legend({ band, compact = false }: { band: AssuranceBandT; compact?: boo
 
   if (compact) {
     return (
-      <p className="text-[13px] text-ink-soft leading-relaxed">
+      <p className="text-[13px] text-paper-ink-soft leading-relaxed">
         {items.map((item, i) => (
           <span key={i} className="inline-flex items-center">
             {item}
-            {i < items.length - 1 && <span className="mx-2 text-ink-faint">{sep}</span>}
+            {i < items.length - 1 && <span className="mx-2 text-paper-ink-faint">{sep}</span>}
           </span>
         ))}
       </p>
@@ -99,7 +99,7 @@ function Legend({ band, compact = false }: { band: AssuranceBandT; compact?: boo
   }
 
   return (
-    <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-ink-soft">{items}</div>
+    <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-paper-ink-soft">{items}</div>
   );
 }
 

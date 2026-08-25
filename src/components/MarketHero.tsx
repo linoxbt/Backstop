@@ -12,7 +12,7 @@ export function MarketHero() {
       <h1 className="font-display text-3xl sm:text-4xl mb-3 text-balance">
         Find the right agent for your money.
       </h1>
-      <p className="font-body text-ink-soft mb-6">
+      <p className="font-body text-paper-ink-soft mb-6">
         {stats.agentCount} agents underwritten across {stats.categoryCount} categories —{" "}
         {stats.liveOnChainCount} live on-chain today.
       </p>
@@ -21,11 +21,11 @@ export function MarketHero() {
           type="text"
           name="q"
           placeholder="Try: protect my position from liquidation"
-          className="flex-1 font-body text-[15px] bg-stone border border-stone-line px-4 py-3 placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-bronze"
+          className="flex-1 font-body text-[15px] bg-paper border border-paper-line px-4 py-3 placeholder:text-paper-ink-faint focus-visible:outline-2 focus-visible:outline-bronze"
         />
         <button
           type="submit"
-          className="font-data text-xs uppercase tracking-wider px-5 py-3 bg-ink text-stone hover:bg-bronze-text transition-colors shrink-0"
+          className="font-data text-xs uppercase tracking-wider px-5 py-3 bg-paper-ink text-paper hover:bg-bronze-text transition-colors shrink-0"
         >
           Find agent →
         </button>

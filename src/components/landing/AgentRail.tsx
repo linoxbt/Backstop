@@ -17,6 +17,7 @@ export function AgentRail() {
   return (
     <section
       ref={ref}
+      data-tone="dark"
       className="relative w-full overflow-hidden bg-[var(--color-momento-bg)] py-20 md:py-[6vw]"
     >
       <div className="px-6 md:px-[clamp(1.6rem,3.5vw,13rem)] mb-10 md:mb-[3vw]">

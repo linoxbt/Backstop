@@ -28,7 +28,7 @@ export function Territories() {
           <Link
             key={c.id}
             href={`/marketplace?category=${c.id}`}
-            className="group border border-stone-line bg-stone-raised/50 p-5 sm:p-6 hover:border-bronze-text transition-colors"
+            className="group border border-paper-line bg-paper-raised/50 p-5 sm:p-6 hover:border-bronze-text transition-colors"
           >
             <div className="flex items-baseline gap-3 mb-1">
               <span className="font-display text-2xl text-bronze-text" aria-hidden="true">
@@ -41,11 +41,11 @@ export function Territories() {
             <h3 className="font-display text-xl mb-2 group-hover:text-bronze-text transition-colors">
               {c.label}
             </h3>
-            <p className="font-body text-[13px] text-ink-soft leading-relaxed mb-4">{c.blurb}</p>
+            <p className="font-body text-[13px] text-paper-ink-soft leading-relaxed mb-4">{c.blurb}</p>
 
-            <div className="grid grid-cols-3 gap-3 font-data text-[11px] border-t border-stone-line pt-3">
+            <div className="grid grid-cols-3 gap-3 font-data text-[11px] border-t border-paper-line pt-3">
               <div>
-                <span className="block text-ink-faint text-[9px] uppercase tracking-wider">
+                <span className="block text-paper-ink-faint text-[9px] uppercase tracking-wider">
                   Agents
                 </span>
                 <span className="tabnum">
@@ -54,13 +54,13 @@ export function Territories() {
                 </span>
               </div>
               <div>
-                <span className="block text-ink-faint text-[9px] uppercase tracking-wider">
+                <span className="block text-paper-ink-faint text-[9px] uppercase tracking-wider">
                   Hirers
                 </span>
                 <span className="tabnum">{combinedHirers}</span>
               </div>
               <div className="truncate">
-                <span className="block text-ink-faint text-[9px] uppercase tracking-wider">
+                <span className="block text-paper-ink-faint text-[9px] uppercase tracking-wider">
                   Top agent
                 </span>
                 <span className="truncate block">{top?.name ?? "—"}</span>

@@ -31,9 +31,9 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
       <main className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
         <Link
           href={`/marketplace?category=${agent.category}`}
-          className="font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-bronze-text transition-colors"
+          className="font-data text-[11px] uppercase tracking-wider text-paper-ink-faint hover:text-bronze-text transition-colors"
         >
-          Marketplace / {category.label} / <span className="text-ink-soft">{agent.name}</span>
+          Marketplace / {category.label} / <span className="text-paper-ink-soft">{agent.name}</span>
         </Link>
 
         <div className="mt-6 mb-10">
@@ -41,21 +41,21 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             {category.clause}
           </span>
           <h1 className="font-display text-4xl sm:text-5xl mt-2 mb-4">{agent.name}</h1>
-          <p className="font-body text-lg text-ink-soft max-w-2xl leading-relaxed">
+          <p className="font-body text-lg text-paper-ink-soft max-w-2xl leading-relaxed">
             {agent.description}
           </p>
         </div>
 
-        <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5 py-6 border-y border-stone-line mb-12 font-data text-[13px]">
+        <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5 py-6 border-y border-paper-line mb-12 font-data text-[13px]">
           <div>
-            <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Operator</dt>
+            <dt className="text-paper-ink-faint text-[10px] uppercase tracking-wider mb-1">Operator</dt>
             <dd>{agent.operator}</dd>
           </div>
           <div>
-            <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">
+            <dt className="text-paper-ink-faint text-[10px] uppercase tracking-wider mb-1">
               Identity
               {agent.providerAddress && (
-                <span className={registration ? "text-verdigris" : "text-ink-faint"}> ●</span>
+                <span className={registration ? "text-verdigris" : "text-paper-ink-faint"}> ●</span>
               )}
             </dt>
             {registration ? (
@@ -71,19 +71,19 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
                 {registration.isVerified && <span className="text-verdigris"> · verified</span>}
               </dd>
             ) : agent.providerAddress ? (
-              <dd className="text-ink-faint">Not yet registered on ERC-8004</dd>
+              <dd className="text-paper-ink-faint">Not yet registered on ERC-8004</dd>
             ) : (
-              <dd className="text-ink-faint" title="No live on-chain wallet — illustrative listing">
+              <dd className="text-paper-ink-faint" title="No live on-chain wallet — illustrative listing">
                 Illustrative
               </dd>
             )}
           </div>
           <div>
-            <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Network</dt>
+            <dt className="text-paper-ink-faint text-[10px] uppercase tracking-wider mb-1">Network</dt>
             <dd className="flex items-center gap-1.5">
               <i
                 className={`inline-block w-2 h-2 shrink-0 ${
-                  agent.network === "BSC Testnet" ? "bg-bronze-text" : "bg-ink"
+                  agent.network === "BSC Testnet" ? "bg-bronze-text" : "bg-paper-ink"
                 }`}
                 aria-hidden="true"
               />
@@ -91,12 +91,12 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             </dd>
           </div>
           <div>
-            <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">Fee</dt>
+            <dt className="text-paper-ink-faint text-[10px] uppercase tracking-wider mb-1">Fee</dt>
             <dd>{agent.feeModel}</dd>
           </div>
           {agent.providerAddress && (
             <div>
-              <dt className="text-ink-faint text-[10px] uppercase tracking-wider mb-1">
+              <dt className="text-paper-ink-faint text-[10px] uppercase tracking-wider mb-1">
                 <span className="text-verdigris">●</span> Live address
               </dt>
               <dd className="truncate">
@@ -114,7 +114,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
         </dl>
 
         {pool && (
-          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 -mt-8 mb-12 font-data text-[12px] text-ink-faint">
+          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 -mt-8 mb-12 font-data text-[12px] text-paper-ink-faint">
             <span className="text-verdigris">●</span>
             <span>
               Live PancakeSwap v3 pool — WBNB/USDT, {(pool.feeTier / 10000).toFixed(2)}% tier, tick{" "}
@@ -141,7 +141,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
 
               <Link
                 href="/docs#guarantee"
-                className="mt-4 inline-block font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-bronze-text transition-colors"
+                className="mt-4 inline-block font-data text-[11px] uppercase tracking-wider text-paper-ink-faint hover:text-bronze-text transition-colors"
               >
                 How the guarantee works →
               </Link>

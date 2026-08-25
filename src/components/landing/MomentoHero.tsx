@@ -20,7 +20,10 @@ export function MomentoHero() {
   }, []);
 
   return (
-    <section className="relative w-full h-[100dvh] overflow-hidden bg-[var(--color-momento-bg)] flex flex-col">
+    <section
+      data-tone="dark"
+      className="relative w-full h-[100dvh] overflow-hidden bg-[var(--color-momento-bg)] flex flex-col"
+    >
       <div
         className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(120%_90%_at_50%_0%,_var(--color-momento-blue)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] opacity-90"
         aria-hidden="true"

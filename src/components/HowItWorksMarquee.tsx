@@ -10,7 +10,7 @@ const PHRASES = ["DISCOVER", "HIRE", "BAND COMMITS ON-CHAIN", "MISS IT, GET PAID
 export function HowItWorksMarquee() {
   const track = [...PHRASES, ...PHRASES];
   return (
-    <div className="border-y border-stone-line bg-stone-raised/50 overflow-hidden py-6 sm:py-8">
+    <div className="border-y border-paper-line bg-paper-raised/50 overflow-hidden py-6 sm:py-8">
       <div className="flex w-max animate-marquee">
         {[0, 1].map((rep) => (
           <div key={rep} className="flex items-center shrink-0" aria-hidden={rep === 1}>

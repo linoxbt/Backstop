@@ -69,18 +69,18 @@ export default function AdvantageReportPage() {
           TermiX Challenge deliverable
         </span>
         <h1 className="font-display text-4xl sm:text-5xl mt-3 mb-6">Agent Advantage Report</h1>
-        <p className="font-body text-lg text-ink-soft max-w-2xl mb-8">
+        <p className="font-body text-lg text-paper-ink-soft max-w-2xl mb-8">
           Same task. With an agent, and without. Time, cost, quality.
         </p>
 
-        <div className="border border-bronze-text bg-stone-raised/60 px-5 py-4 mb-12 font-data text-[12px]">
+        <div className="border border-bronze-text bg-paper-raised/60 px-5 py-4 mb-12 font-data text-[12px]">
           <strong className="text-bronze-text">Template — not yet populated.</strong> Bracketed
           fields need real measured runs before submission, not invented numbers.
         </div>
 
         <div className="space-y-10">
           {ROWS.map((row, i) => (
-            <div key={row.task} className="border-t border-stone-line pt-8">
+            <div key={row.task} className="border-t border-paper-line pt-8">
               <div className="flex flex-wrap items-baseline justify-between gap-3 mb-2">
                 <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text">
                   Task {i + 1} · {row.domain}
@@ -102,8 +102,8 @@ export default function AdvantageReportPage() {
                   quality={row.withoutAgent.quality}
                 />
               </div>
-              <p className="mt-5 font-data text-[12px] text-ink-faint">
-                Net advantage: <span className="text-ink">{row.delta}</span>
+              <p className="mt-5 font-data text-[12px] text-paper-ink-faint">
+                Net advantage: <span className="text-paper-ink">{row.delta}</span>
               </p>
             </div>
           ))}
@@ -129,22 +129,22 @@ function ReportColumn({
 }) {
   return (
     <div
-      className={`p-5 border ${accent ? "border-bronze-text bg-stone-raised/40" : "border-stone-line"}`}
+      className={`p-5 border ${accent ? "border-bronze-text bg-paper-raised/40" : "border-paper-line"}`}
     >
-      <div className="font-data text-[11px] uppercase tracking-wider text-ink-faint mb-3">
+      <div className="font-data text-[11px] uppercase tracking-wider text-paper-ink-faint mb-3">
         {heading}
       </div>
       <dl className="space-y-2 font-body text-sm">
         <div className="flex justify-between gap-3">
-          <dt className="text-ink-soft">Time</dt>
+          <dt className="text-paper-ink-soft">Time</dt>
           <dd className="text-right">{time}</dd>
         </div>
         <div className="flex justify-between gap-3">
-          <dt className="text-ink-soft">Cost</dt>
+          <dt className="text-paper-ink-soft">Cost</dt>
           <dd className="text-right">{cost}</dd>
         </div>
         <div className="flex justify-between gap-3">
-          <dt className="text-ink-soft">Quality</dt>
+          <dt className="text-paper-ink-soft">Quality</dt>
           <dd className="text-right">{quality}</dd>
         </div>
       </dl>

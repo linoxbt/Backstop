@@ -1,7 +1,7 @@
 import { AGENTS, CATEGORIES, catalogStats } from "@/lib/agents";
 import { Leaderboard } from "./Leaderboard";
 
-const SHADE = ["bg-ink", "bg-bronze-text", "bg-verdigris", "bg-ink-soft"];
+const SHADE = ["bg-paper-ink", "bg-bronze-text", "bg-verdigris", "bg-paper-ink-soft"];
 
 /**
  * Agentic Market's "big number + chart + leaderboard" block — real
@@ -16,14 +16,14 @@ export function CatalogOverview() {
   return (
     <div className="grid lg:grid-cols-[1fr_300px] gap-10">
       <div>
-        <span className="font-data text-[11px] uppercase tracking-wider text-ink-faint">
+        <span className="font-data text-[11px] uppercase tracking-wider text-paper-ink-faint">
           Hirers across the catalog
         </span>
         <div className="font-display text-4xl sm:text-5xl mt-1 mb-6 tabnum">
           {stats.totalHirers.toLocaleString()}
         </div>
 
-        <div className="flex h-3 w-full overflow-hidden border border-stone-line">
+        <div className="flex h-3 w-full overflow-hidden border border-paper-line">
           {CATEGORIES.map((c, i) => {
             const count = AGENTS.filter((a) => a.category === c.id).length;
             return (
@@ -36,7 +36,7 @@ export function CatalogOverview() {
             );
           })}
         </div>
-        <div className="flex flex-wrap gap-x-5 gap-y-2 mt-3 font-data text-[11px] text-ink-soft">
+        <div className="flex flex-wrap gap-x-5 gap-y-2 mt-3 font-data text-[11px] text-paper-ink-soft">
           {CATEGORIES.map((c, i) => {
             const count = AGENTS.filter((a) => a.category === c.id).length;
             return (

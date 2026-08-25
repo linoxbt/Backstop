@@ -82,7 +82,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
   }
 
   return (
-    <div className="border border-stone-line bg-stone-raised/50 p-5 sm:p-7">
+    <div className="border border-paper-line bg-paper-raised/50 p-5 sm:p-7">
       <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text">
         Get started
       </span>
@@ -90,25 +90,25 @@ export function HireFlow({ agent }: { agent: Agent }) {
 
       {!started && (
         <>
-          <label className="block font-data text-[11px] uppercase tracking-wider text-ink-faint mb-1.5">
+          <label className="block font-data text-[11px] uppercase tracking-wider text-paper-ink-faint mb-1.5">
             Position budget (U)
           </label>
           <input
             value={budget}
             onChange={(e) => setBudget(e.target.value)}
             inputMode="decimal"
-            className="w-full font-data text-lg bg-stone border border-stone-line px-3 py-2.5 mb-4 tabnum focus-visible:outline-2 focus-visible:outline-bronze"
+            className="w-full font-data text-lg bg-paper border border-paper-line px-3 py-2.5 mb-4 tabnum focus-visible:outline-2 focus-visible:outline-bronze"
           />
-          <p className="text-[12px] text-ink-faint mb-5 font-data">
+          <p className="text-[12px] text-paper-ink-faint mb-5 font-data">
             Altana session, scoped to {agent.name} · {agent.poolContribution} to the pool
           </p>
           <button
             onClick={begin}
-            className="w-full font-data text-xs uppercase tracking-wider px-4 py-3 bg-ink text-stone hover:bg-bronze-text transition-colors"
+            className="w-full font-data text-xs uppercase tracking-wider px-4 py-3 bg-paper-ink text-paper hover:bg-bronze-text transition-colors"
           >
             Sign &amp; fund job →
           </button>
-          <p className="mt-3 font-data text-[10px] text-ink-faint">
+          <p className="mt-3 font-data text-[10px] text-paper-ink-faint">
             {isConnected
               ? "Executed via Backstop's demo wallet · your wallet signs the My Agents record"
               : "Passkey signature · no seed phrase · attempts BSC Testnet first"}
@@ -117,7 +117,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
       )}
 
       {started && !result && (
-        <p className="font-data text-[11px] text-ink-faint">Awaiting signature…</p>
+        <p className="font-data text-[11px] text-paper-ink-faint">Awaiting signature…</p>
       )}
 
       {started && result?.mode === "live" && (
@@ -127,7 +127,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
           </p>
           {result.ok ? (
             <div className="space-y-2">
-              <p className="font-data text-[13px] text-ink tabnum">
+              <p className="font-data text-[13px] text-paper-ink tabnum">
                 Job #{result.jobId} · {result.status} · {budget} U
               </p>
               {result.explorerUrl && (
@@ -158,25 +158,25 @@ export function HireFlow({ agent }: { agent: Agent }) {
                 <li key={s.key} className="flex items-center gap-3 text-[13px]">
                   <span
                     className={`font-data text-xs w-4 ${
-                      reached ? "text-verdigris" : "text-ink-faint"
+                      reached ? "text-verdigris" : "text-paper-ink-faint"
                     }`}
                   >
                     {reached ? "✓" : active ? "…" : "○"}
                   </span>
-                  <span className={reached ? "text-ink" : "text-ink-faint"}>{s.label}</span>
+                  <span className={reached ? "text-paper-ink" : "text-paper-ink-faint"}>{s.label}</span>
                 </li>
               );
             })}
           </ol>
           {stage === "done" && (
-            <div className="border-t border-stone-line pt-4">
-              <p className="font-data text-[13px] text-ink tabnum mb-2">
+            <div className="border-t border-paper-line pt-4">
+              <p className="font-data text-[13px] text-paper-ink tabnum mb-2">
                 Funded · {budget} U
               </p>
-              <p className="font-data text-[11px] text-ink-faint break-all mb-3">
+              <p className="font-data text-[11px] text-paper-ink-faint break-all mb-3">
                 {agent.manifestHash}
               </p>
-              <p className="font-data text-[11px] text-ink-faint border-t border-stone-line pt-3">
+              <p className="font-data text-[11px] text-paper-ink-faint border-t border-paper-line pt-3">
                 Simulated — {result.error}
               </p>
             </div>
@@ -190,7 +190,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
 function TrackingStatus({ status, error }: { status: TrackStatus; error: string | null }) {
   switch (status) {
     case "signing":
-      return <p className="font-data text-[11px] text-ink-faint">Awaiting wallet signature to track this hire…</p>;
+      return <p className="font-data text-[11px] text-paper-ink-faint">Awaiting wallet signature to track this hire…</p>;
     case "recorded":
       return (
         <p className="font-data text-[11px] text-verdigris">
@@ -199,7 +199,7 @@ function TrackingStatus({ status, error }: { status: TrackStatus; error: string 
       );
     case "skipped":
       return (
-        <p className="font-data text-[11px] text-ink-faint">
+        <p className="font-data text-[11px] text-paper-ink-faint">
           Connect a wallet before hiring to have this show up in My Agents.
         </p>
       );

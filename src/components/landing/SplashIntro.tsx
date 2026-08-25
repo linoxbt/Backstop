@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DarkSeal } from "./DarkSeal";
+import { DarkSeal } from "@/components/Logo";
 
 const SESSION_KEY = "backstop-splash-seen";
 

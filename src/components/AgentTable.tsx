@@ -4,14 +4,11 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Agent, AgentCategory } from "@/lib/types";
 import { CATEGORIES } from "@/lib/agents";
-import { Track } from "./AssuranceBand";
-import { bandPct } from "@/lib/band";
 
 type SortKey = "name" | "category" | "hirers" | "cycles";
 type CategoryFilter = "all" | AgentCategory;
 type StatusFilter = "all" | "breach" | "within" | "pending";
 type NetworkFilter = "all" | Agent["network"];
-const MAX_COMPARE = 4;
 
 const STATUS_META: Record<Agent["band"]["status"], { label: string; className: string }> = {
   within: { label: "On track", className: "text-verdigris" },
@@ -72,7 +69,6 @@ export function AgentTable({
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("hirers");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [selected, setSelected] = useState<string[]>([]);
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -81,14 +77,6 @@ export function AgentTable({
       setSortKey(key);
       setSortDir(key === "name" || key === "category" ? "asc" : "desc");
     }
-  }
-
-  function toggleCompare(id: string) {
-    setSelected((prev) => {
-      if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= MAX_COMPARE) return prev;
-      return [...prev, id];
-    });
   }
 
   const rows = useMemo(() => {
@@ -119,7 +107,6 @@ export function AgentTable({
     return list;
   }, [agents, category, status, network, query, sortKey, sortDir]);
 
-  const selectedAgents = agents.filter((a) => selected.includes(a.id));
   const networks = useMemo(
     () => Array.from(new Set(agents.map((a) => a.network))).sort(),
     [agents],
@@ -127,13 +114,14 @@ export function AgentTable({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-3 mb-6">
+      <div className="mb-6">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by agent or operator…"
-          className="flex-1 min-w-[180px] font-data text-[13px] bg-stone border border-stone-line px-3 py-2 placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-bronze"
+          className="block w-full font-data text-[13px] bg-stone border border-stone-line px-3 py-2 mb-3 placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-bronze"
         />
+        <div className="flex flex-wrap items-center gap-3">
         <FilterSelect
           label="Sort"
           value={`${sortKey}-${sortDir}`}
@@ -178,6 +166,7 @@ export function AgentTable({
             { value: "pending", label: "Pending" },
           ]}
         />
+        </div>
       </div>
 
       <p className="font-data text-[11px] text-ink-faint mb-3 tabnum">
@@ -185,10 +174,9 @@ export function AgentTable({
       </p>
 
       <div className="overflow-x-auto -mx-5 px-5 sm:mx-0 sm:px-0">
-        <table className="w-full border-collapse text-sm sm:min-w-[720px]">
+        <table className="w-full border-collapse text-sm sm:min-w-[640px]">
           <thead>
             <tr className="border-b border-stone-line">
-              <th className="w-8" />
               <th className="hidden sm:table-cell w-10" />
               <SortHeader
                 label="Agent"
@@ -234,16 +222,7 @@ export function AgentTable({
               const meta = STATUS_META[agent.band.status];
               return (
                 <tr key={agent.id} className="border-b border-stone-line hover:bg-stone-raised/40">
-                  <td className="py-3">
-                    <input
-                      type="checkbox"
-                      checked={selected.includes(agent.id)}
-                      onChange={() => toggleCompare(agent.id)}
-                      aria-label={`Compare ${agent.name}`}
-                      className="w-4 h-4 accent-bronze-text cursor-pointer"
-                    />
-                  </td>
-                  <td className="hidden sm:table-cell font-data text-[11px] text-ink-faint tabnum">
+                  <td className="hidden sm:table-cell py-3 font-data text-[11px] text-ink-faint tabnum">
                     {String(i + 1).padStart(2, "0")}
                   </td>
                   <td className="py-3 pr-4">
@@ -287,47 +266,6 @@ export function AgentTable({
             })}
           </tbody>
         </table>
-      </div>
-
-      <div
-        className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-          selectedAgents.length >= 2 ? "grid-rows-[1fr] mt-8" : "grid-rows-[0fr]"
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="border border-bronze-text bg-stone-raised/50 p-5 sm:p-6">
-            <div className="flex items-center justify-between mb-5">
-              <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text">
-                Comparing {selectedAgents.length}
-              </span>
-              <button
-                onClick={() => setSelected([])}
-                className="font-data text-[11px] uppercase tracking-wider text-ink-faint hover:text-ink transition-colors"
-              >
-                Clear
-              </button>
-            </div>
-            <div className="space-y-5">
-              {selectedAgents.map((agent) => {
-                const markerLeft =
-                  agent.band.realized === null ? null : bandPct(agent.band, agent.band.realized);
-                return (
-                  <div key={agent.id}>
-                    <div className="flex items-baseline justify-between gap-3 mb-1.5">
-                      <span className="font-ui text-sm font-medium">{agent.name}</span>
-                      <span className="font-data text-xs tabnum text-ink-faint">
-                        {agent.band.realized === null
-                          ? "no cycle yet"
-                          : `${agent.band.realized}${agent.band.symbol} realized`}
-                      </span>
-                    </div>
-                    <Track band={agent.band} markerLeft={markerLeft} size="compact" />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

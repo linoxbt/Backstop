@@ -1,0 +1,28 @@
+name: Rebalance breach check
+
+# Real, unattended trigger for the assurance pool's automatic rebate path:
+# every 30 minutes, hit the deployed app's authenticated cron endpoint,
+# which checks a live PancakeSwap v3 liquidity condition and pays a real
+# rebate from the Altana pool session when it's breached. See
+# src/lib/chain/rebalanceBreach.ts and src/lib/chain/autoRebate.ts for what
+# "breached" means and why, and src/app/api/cron/rebalance-check/route.ts
+# for the endpoint itself.
+#
+# Requires two repo secrets (Settings -> Secrets and variables -> Actions):
+#   APP_URL      the deployed app's base URL, e.g. https://get-backstop.netlify.app
+#   CRON_SECRET  must match the same-named env var set on the deployment
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the rebalance-check endpoint
+        run: |
+          curl --fail-with-body -sS \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/rebalance-check"

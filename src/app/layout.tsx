@@ -1,27 +1,15 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Outfit, DM_Mono, Forum } from "next/font/google";
+import { Forum } from "next/font/google";
 import { WalletProviders } from "@/components/WalletProviders";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-});
-
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-});
-
-const dmMono = DM_Mono({
-  variable: "--font-dm-mono",
-  weight: ["400", "500"],
-  subsets: ["latin"],
-});
-
-// Landing-page-only accent serif — the same real, freely-licensed Google
-// Font used by the Momento Legal reference, reserved there (and here) for
-// select editorial headings rather than general UI text.
+// The reference (momentolegal.com) uses exactly two type families: Forum
+// for its big editorial headings, and bare system-font stacks (no custom
+// webfont at all) for everything else — confirmed directly from its own
+// shipped CSS (`--font-sans`/`--font-mono` are plain `ui-sans-serif`/
+// `ui-monospace` stacks). Backstop now matches that exactly instead of
+// using Space Grotesk/Outfit/DM Mono — see the --font-display/--font-body/
+// --font-ui/--font-data definitions in globals.css.
 const forum = Forum({
   variable: "--font-forum-serif",
   weight: "400",
@@ -36,10 +24,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${spaceGrotesk.variable} ${outfit.variable} ${dmMono.variable} ${forum.variable} h-full`}
-    >
+    <html lang="en" className={`${forum.variable} h-full`}>
       <body className="min-h-full flex flex-col">
         <WalletProviders>{children}</WalletProviders>
       </body>

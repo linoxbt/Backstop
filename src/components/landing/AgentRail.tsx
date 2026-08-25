@@ -36,11 +36,14 @@ export function AgentRail() {
       <div className="relative">
         <div className="pointer-events-none absolute inset-y-0 right-0 w-16 md:w-32 bg-[linear-gradient(270deg,_var(--color-momento-bg)_0%,_transparent_100%)] z-10" />
         <div className="flex gap-5 md:gap-[1.5vw] overflow-x-auto px-6 md:px-[clamp(1.6rem,3.5vw,13rem)] pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          {featured.map((agent) => (
+          {featured.map((agent, i) => (
             <Link
               key={agent.id}
               href={`/agents/${agent.id}`}
-              className="group shrink-0 w-[280px] md:w-[24vw] border border-[var(--color-momento-line)] bg-[var(--color-momento-surface)] p-6 hover:border-bronze-bright/60 transition-colors"
+              className={`group shrink-0 w-[280px] md:w-[24vw] border border-[var(--color-momento-line)] bg-[var(--color-momento-surface)] p-6 hover:border-bronze-bright/60 transition-[opacity,transform,border-color] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+              }`}
+              style={{ transitionDelay: inView ? `${i * 90}ms` : "0ms" }}
             >
               <span className="font-data text-[10px] uppercase tracking-[0.2em] text-white/40 block mb-1">
                 {CATEGORIES.find((c) => c.id === agent.category)?.label}

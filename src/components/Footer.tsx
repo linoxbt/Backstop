@@ -16,8 +16,14 @@ const RESOURCE_LINKS = MENU_LINKS.filter((l) => ["/docs", "/advantage-report"].i
  */
 export function Footer() {
   return (
-    <footer className="bg-[var(--color-momento-bg)] mt-auto">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
+    <footer className="relative bg-[var(--color-momento-bg)] mt-auto overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-1/4 -bottom-1/3 opacity-[0.07] animate-slow-spin"
+      >
+        <DarkSeal size={680} />
+      </div>
+      <div className="relative max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
         <div className="grid gap-12 sm:grid-cols-[1.4fr_1fr_1fr] mb-14">
           <div>
             <div className="flex items-center gap-3 mb-4">

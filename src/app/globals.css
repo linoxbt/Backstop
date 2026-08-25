@@ -30,10 +30,14 @@
   --color-stamp: #ef5a44;
   --color-stamp-soft: #c65a49;
 
-  --font-display: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
-  --font-body: var(--font-outfit), system-ui, -apple-system, sans-serif;
-  --font-ui: var(--font-outfit), system-ui, -apple-system, sans-serif;
-  --font-data: var(--font-dm-mono), "SF Mono", "Courier New", monospace;
+  /* Matches the reference's own font stacks exactly (verified from its
+     shipped CSS) — plain system fonts, no custom webfont, for everything
+     that isn't a Forum editorial heading. */
+  --font-display: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-ui: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-data: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
   --font-forum: var(--font-forum-serif), serif;
 
   /* the dark register (Momento Legal reference) — sitewide now, one masthead
@@ -226,6 +230,44 @@ body {
   animation: splash-zoom 1100ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Loading screen mark: a slow, deliberate entrance (blur+rotate+scale
+   settling into place) and a distinct exit (the mark itself leaves first,
+   scaling past 1 and blurring away, before the backdrop fades) — two
+   separate beats rather than one shared opacity transition on everything. */
+@keyframes splash-mark-in {
+  from {
+    opacity: 0;
+    filter: blur(24px);
+    transform: scale(0.55) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.animate-splash-mark-in {
+  animation: splash-mark-in 1200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes splash-mark-out {
+  from {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    opacity: 0;
+    filter: blur(16px);
+    transform: scale(1.25) rotate(4deg);
+  }
+}
+
+.animate-splash-mark-out {
+  animation: splash-mark-out 650ms cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
 /* Continuous horizontal ticker — the marketplace's closing "how it works"
    banner, echoing the reference's scrolling arrow-separated phrase strip.
    The track is the phrase list duplicated once; translating exactly -50%
@@ -242,6 +284,21 @@ body {
 
 .animate-marquee {
   animation: marquee-scroll 22s linear infinite;
+}
+
+/* A very slow, continuous turn — the footer's huge background mark, and
+   anywhere else a mark should read as quietly alive rather than static. */
+@keyframes slow-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-slow-spin {
+  animation: slow-spin 90s linear infinite;
 }
 
 /* Continuous scroll-linked depth-of-field: the reference's "About" heading
@@ -266,4 +323,17 @@ body {
   100% {
     filter: blur(14px);
   }
+}
+
+/* The Territories scroll sequence: a tall (N x 100vh) wrapper with a
+   sticky-pinned viewport inside it (see CategoryShowcase.tsx). A named
+   view-timeline per panel was tried here first (each panel claiming an
+   equal slice of the wrapper's own scroll-through range) but verified
+   unreliable in practice — the named-timeline-consumed-by-a-descendant
+   pattern didn't bind correctly, leaving every panel visible and
+   overlapping instead of one at a time. useScrollSequence.ts's scroll
+   listener is the real, always-on mechanism instead; this class is now
+   just a positioning hook, no animation bound to it directly. */
+.category-sequence-wrapper {
+  position: relative;
 }

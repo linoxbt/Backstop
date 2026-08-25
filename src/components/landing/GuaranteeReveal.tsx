@@ -5,6 +5,7 @@ import { getAgent } from "@/lib/agents";
 import { useInView } from "@/lib/useInView";
 import { useScrollDepth } from "@/lib/useScrollDepth";
 import { DarkBandBar } from "./DarkBandBar";
+import { HeroWatermark } from "./HeroWatermark";
 
 /**
  * The reference's art-directed "About" section, reimplemented with a real
@@ -30,10 +31,7 @@ export function GuaranteeReveal() {
       data-tone="dark"
       className="relative w-full min-h-[100dvh] overflow-hidden bg-[var(--color-momento-bg-deep)] flex flex-col justify-center py-20 md:py-0"
     >
-      <div
-        className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(80%_60%_at_85%_50%,_var(--color-momento-blue)_0%,_transparent_70%)] opacity-60"
-        aria-hidden="true"
-      />
+      <HeroWatermark />
       {/* Desktop: headline layered over a large right-hand visual */}
       <div className="hidden md:block relative z-10 w-full h-[100dvh]">
         <div className="absolute top-[16%] left-[clamp(1.6rem,3.5vw,13rem)] z-10 max-w-md">

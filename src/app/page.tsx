@@ -98,7 +98,7 @@ export default function Home() {
             </h2>
             <Link
               href="/marketplace"
-              className="font-data text-xs uppercase tracking-wider rounded-lg px-5 py-3 bg-white text-[var(--color-momento-bg)] hover:bg-white/85 transition-colors shrink-0"
+              className="font-data text-xs uppercase tracking-wider rounded-lg px-5 py-3 bg-bronze-bright text-[var(--color-momento-bg)] hover:bg-bronze-text transition-colors shrink-0"
             >
               Enter the marketplace →
             </Link>

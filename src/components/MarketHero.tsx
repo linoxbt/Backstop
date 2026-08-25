@@ -32,7 +32,7 @@ export function MarketHero() {
             />
             <button
               type="submit"
-              className="font-data text-xs uppercase tracking-wider rounded-lg px-5 py-3 bg-white text-[var(--color-momento-bg)] hover:bg-white/85 transition-colors shrink-0"
+              className="font-data text-xs uppercase tracking-wider rounded-lg px-5 py-3 bg-bronze-bright text-[var(--color-momento-bg)] hover:bg-bronze-text transition-colors shrink-0"
             >
               Find agent →
             </button>

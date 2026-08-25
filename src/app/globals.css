@@ -1,18 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* "paper" — the light register, used everywhere except each page's one
-     dark momento masthead moment. Values are the reference's own verified
-     light-mode tokens (momentolegal.com's shipped --background/--accent/
-     --border/--foreground/--muted-foreground), not approximated — note
-     paper-ink is the exact same navy as --color-momento-surface below, so
-     the two registers share one ink color across the whole site. */
-  --color-paper: #fbfcfd;
-  --color-paper-raised: #f0f2f4;
-  --color-paper-line: #e4e5e7;
-  --color-paper-ink: #131a2d;
-  --color-paper-ink-soft: #5e636f;
-  --color-paper-ink-faint: #8a8f99;
+  /* "paper" — now the site's single register, sitewide. Backgrounds reuse
+     the same real momento-* navy values below (no separate light surface
+     anywhere in the app, by design — no white background, full stop);
+     ink is a warm off-white (never pure #fff) for legible text on that
+     navy, echoing the ledger's parchment tone rather than a stark white. */
+  --color-paper: #000214;
+  --color-paper-raised: #131a2d;
+  --color-paper-line: #1e2842;
+  --color-paper-ink: #f5f2ea;
+  --color-paper-ink-soft: #b8c2d9;
+  --color-paper-ink-faint: #7c8aa3;
 
   /* dark surfaces (vault interiors, hero, footer) */
   --color-steel: #14171a;
@@ -22,13 +21,13 @@
 
   /* metal accent */
   --color-bronze: #8c6a45;
-  --color-bronze-text: #6b4f31;
-  --color-bronze-bright: #b78c52;
+  --color-bronze-text: #b78c52;
+  --color-bronze-bright: #d3a15c;
 
-  /* signal */
-  --color-verdigris: #3f6153;
-  --color-verdigris-soft: #7c8f7c;
-  --color-stamp: #8c2115;
+  /* signal — brightened for legibility against the dark ground everywhere */
+  --color-verdigris: #4ec9a3;
+  --color-verdigris-soft: #2f4a40;
+  --color-stamp: #ef5a44;
   --color-stamp-soft: #c65a49;
 
   --font-display: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;

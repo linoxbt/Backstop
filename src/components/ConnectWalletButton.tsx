@@ -34,8 +34,8 @@ function ConnectedButton({ dark }: { dark: boolean }) {
       onClick={() => open()}
       className={`${buttonClass} ${
         dark
-          ? "border-white/40 text-white hover:bg-white hover:text-[var(--color-momento-bg)]"
-          : "border-paper-ink text-paper-ink hover:bg-paper-ink hover:text-paper"
+          ? "border-white/40 text-white hover:bg-bronze-bright hover:text-[var(--color-momento-bg)]"
+          : "border-paper-ink text-paper-ink hover:bg-bronze-bright hover:text-paper hover:border-bronze-bright"
       }`}
     >
       {isConnected && address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "Connect wallet"}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MENU_LINKS } from "@/lib/navLinks";
+import { DarkSeal } from "./Logo";
 
 /**
  * The reference's menu glyph isn't three equal bars — the middle bar runs
@@ -42,13 +43,12 @@ function MenuGlyph({ open, dark }: { open: boolean; dark: boolean }) {
 }
 
 /**
- * Hamburger toggle + full-screen takeover panel, replacing the header's
- * secondary links (Marketplace, Pool, Docs, Advantage Report) with a single
- * control — echoing the reference's own "collapse everything behind one
- * button" nav pattern. The open panel is always the dark momento register
- * now (it's a modal overlay, not tied to whatever page/tone sits behind
- * it) — `dark` only affects the closed button's appearance against
- * whatever the header currently looks like.
+ * Hamburger toggle + full-viewport takeover panel. The panel is a glass
+ * overlay (a translucent dark fill plus a heavy backdrop-blur), not a solid
+ * opaque one — whatever page is behind it reads only as a blurred wash of
+ * color, never legible, while the panel's own content (the Backstop mark +
+ * wordmark, then the nav list) is fully sharp and centered both axes. The
+ * mark sits above the nav list as its own beat, not inline with it.
  */
 export function NavMenu({ dark = false }: { dark?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -87,29 +87,53 @@ export function NavMenu({ dark = false }: { dark?: boolean }) {
       </button>
 
       <div
-        className={`fixed inset-x-0 top-[76px] h-[calc(100dvh-76px)] z-30 bg-[var(--color-momento-bg)] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 bg-[var(--color-momento-bg)]/85 backdrop-blur-2xl transition-opacity duration-300 ${
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         aria-hidden={!open}
       >
-        <nav className="max-w-6xl mx-auto px-5 sm:px-8 h-full flex flex-col justify-center gap-1 sm:gap-2">
-          {MENU_LINKS.map((item, i) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              tabIndex={open ? 0 : -1}
-              onClick={() => setOpen(false)}
-              className={`font-display text-4xl sm:text-6xl text-white hover:text-bronze-bright transition-colors w-fit ${
-                open ? "animate-fade-rise" : ""
-              }`}
-              style={
-                open ? { animationDelay: `${i * 60}ms`, animationFillMode: "backwards" } : undefined
-              }
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label="Close menu"
+          tabIndex={open ? 0 : -1}
+          className="absolute top-0 right-0 px-5 sm:px-8 h-[76px] flex items-center"
+        >
+          <span className="flex items-center justify-center size-10 rounded-full border border-white/30 hover:border-white transition-colors">
+            <MenuGlyph open dark />
+          </span>
+        </button>
+
+        <div className="h-full flex flex-col items-center justify-center gap-10 sm:gap-14 px-6">
+          <div
+            className={`flex items-center gap-3 ${open ? "animate-fade-rise" : ""}`}
+            style={open ? { animationFillMode: "backwards" } : undefined}
+          >
+            <DarkSeal size={36} />
+            <span className="font-display text-2xl text-white tracking-tight">Backstop</span>
+          </div>
+
+          <nav className="flex flex-col items-center gap-1 sm:gap-2">
+            {MENU_LINKS.map((item, i) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                tabIndex={open ? 0 : -1}
+                onClick={() => setOpen(false)}
+                className={`font-display text-4xl sm:text-6xl text-white hover:text-bronze-bright transition-colors ${
+                  open ? "animate-fade-rise" : ""
+                }`}
+                style={
+                  open
+                    ? { animationDelay: `${(i + 1) * 60}ms`, animationFillMode: "backwards" }
+                    : undefined
+                }
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </div>
     </>
   );

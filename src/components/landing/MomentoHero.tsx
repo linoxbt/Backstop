@@ -52,7 +52,7 @@ export function MomentoHero() {
         >
           <Link
             href="/marketplace"
-            className="font-data text-xs uppercase tracking-[0.2em] px-6 py-3 border border-white/40 text-white hover:bg-white hover:text-[var(--color-momento-bg)] transition-colors"
+            className="font-data text-xs uppercase tracking-[0.2em] px-6 py-3 border border-white/40 text-white hover:bg-bronze-bright hover:text-[var(--color-momento-bg)] hover:border-bronze-bright transition-colors"
           >
             Enter the marketplace
           </Link>

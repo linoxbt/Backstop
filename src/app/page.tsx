@@ -133,14 +133,14 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-t border-stone-line bg-steel text-paper-on-steel">
+        <section className="border-t border-stone-line bg-stone-raised">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20 flex flex-wrap items-center justify-between gap-6">
             <h2 className="font-display text-2xl sm:text-3xl max-w-md">
               Four categories, one reserve. Go hire something.
             </h2>
             <Link
               href="/marketplace"
-              className="font-data text-xs uppercase tracking-wider px-5 py-3 bg-paper-on-steel text-steel hover:bg-bronze-bright transition-colors shrink-0"
+              className="font-data text-xs uppercase tracking-wider px-5 py-3 bg-ink text-stone hover:bg-bronze-text transition-colors shrink-0"
             >
               Enter the marketplace →
             </Link>

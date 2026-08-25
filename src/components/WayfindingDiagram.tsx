@@ -33,23 +33,23 @@ export function WayfindingDiagram() {
       <div className="absolute inset-0 hidden sm:flex items-center justify-center pointer-events-none">
         <Link
           href="/pool"
-          className="pointer-events-auto relative w-[104px] h-[104px] rounded-full bg-steel border border-bronze flex flex-col items-center justify-center text-center hover:border-bronze-bright transition-colors"
+          className="pointer-events-auto relative w-[104px] h-[104px] rounded-full bg-stone border-2 border-bronze-text flex flex-col items-center justify-center text-center hover:border-bronze-bright transition-colors"
         >
-          <span className="font-data text-[9px] uppercase tracking-wider text-paper-on-steel/60">
+          <span className="font-data text-[9px] uppercase tracking-wider text-ink-faint">
             Reserve
           </span>
-          <span className="font-display text-sm text-paper-on-steel mt-1">{POOL.tvl}</span>
+          <span className="font-display text-sm text-ink mt-1">{POOL.tvl}</span>
         </Link>
       </div>
 
       <Link
         href="/pool"
-        className="sm:hidden mt-3 flex items-center justify-between bg-steel border border-bronze px-5 py-4 hover:border-bronze-bright transition-colors"
+        className="sm:hidden mt-3 flex items-center justify-between bg-stone-raised border border-bronze-text px-5 py-4 hover:border-bronze-bright transition-colors"
       >
-        <span className="font-data text-[10px] uppercase tracking-wider text-paper-on-steel/60">
+        <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint">
           Reserve
         </span>
-        <span className="font-display text-base text-paper-on-steel">{POOL.tvl}</span>
+        <span className="font-display text-base text-ink">{POOL.tvl}</span>
       </Link>
     </div>
   );

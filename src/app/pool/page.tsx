@@ -1,28 +1,31 @@
+import { AGENTS, CATEGORIES } from "@/lib/agents";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { POOL, REBATE_LOG } from "@/lib/pool";
 import { getPoolSessionInfo } from "@/lib/wallet/altanaPool";
 import { checkRebalancerBreach } from "@/lib/chain/rebalanceBreach";
 
+const SHADE = ["bg-ink", "bg-bronze-text", "bg-verdigris", "bg-ink-soft"];
+
 export default async function PoolPage() {
   const [session, breachCheck] = await Promise.all([getPoolSessionInfo(), checkRebalancerBreach()]);
+  const totalHirers = AGENTS.reduce((sum, a) => sum + a.hirers, 0);
+  const cleanEntries = AGENTS.filter((a) => a.band.status === "within");
+
   return (
     <>
       <Header />
       <main>
-        <section className="bg-steel text-paper-on-steel">
-          <div className="max-w-4xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
-            <span className="font-data text-xs uppercase tracking-[0.2em] text-bronze-bright">
+        <section className="border-b border-stone-line bg-stone-raised/40">
+          <div className="max-w-4xl mx-auto px-5 sm:px-8 py-16 sm:py-24 text-center">
+            <span className="font-data text-xs uppercase tracking-[0.2em] text-bronze-text">
               The reserve
             </span>
-            <h1 className="font-display text-4xl sm:text-5xl mt-4 mb-6 text-balance">
-              What actually stands behind a guarantee
-            </h1>
-            <p className="font-body text-lg text-paper-on-steel/75 max-w-xl mb-12">
-              Every agent&rsquo;s fee funds it. Every miss pays out from it — automatically.
+            <div className="font-display text-5xl sm:text-6xl mt-4 mb-2 tabnum">{POOL.tvl}</div>
+            <p className="font-body text-ink-soft mb-10">
+              protecting agent jobs across {AGENTS.length} agents, {CATEGORIES.length} categories
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-10">
-              <Stat label="Pool balance" value={POOL.tvl} note={POOL.tvlUnit} />
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-10 max-w-xl mx-auto text-left">
               <Stat label="Payout ratio" value={POOL.payoutRatio} note={POOL.payoutRatioNote} />
               <Stat
                 label="Solvency buffer"
@@ -39,6 +42,47 @@ export default async function PoolPage() {
         </section>
 
         <section className="max-w-4xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
+          <span className="font-data text-xs uppercase tracking-wider text-bronze-text block mb-3">
+            What it protects
+          </span>
+          <h2 className="font-display text-3xl mb-6">Protection by category</h2>
+          <p className="font-body text-ink-soft max-w-2xl mb-6">
+            Weighted by hirers per category — where the pool&rsquo;s obligation is actually
+            concentrated, not an invented dollar split.
+          </p>
+          <div className="flex h-3 w-full overflow-hidden border border-stone-line mb-3">
+            {CATEGORIES.map((c, i) => {
+              const hirers = AGENTS.filter((a) => a.category === c.id).reduce(
+                (sum, a) => sum + a.hirers,
+                0,
+              );
+              return (
+                <div
+                  key={c.id}
+                  className={SHADE[i % SHADE.length]}
+                  style={{ width: `${(hirers / totalHirers) * 100}%` }}
+                  title={`${c.label}: ${hirers} hirers`}
+                />
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 font-data text-[11px] text-ink-soft">
+            {CATEGORIES.map((c, i) => {
+              const hirers = AGENTS.filter((a) => a.category === c.id).reduce(
+                (sum, a) => sum + a.hirers,
+                0,
+              );
+              return (
+                <span key={c.id} className="flex items-center gap-1.5">
+                  <i className={`inline-block w-2.5 h-2.5 shrink-0 ${SHADE[i % SHADE.length]}`} />
+                  {c.label} · {Math.round((hirers / totalHirers) * 100)}%
+                </span>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="max-w-4xl mx-auto px-5 sm:px-8 py-16 sm:py-20 border-t border-stone-line">
           <div className="flex items-center gap-3 mb-3">
             <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
               Clause 0 — Session authority
@@ -100,7 +144,7 @@ export default async function PoolPage() {
           )}
         </section>
 
-        <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-20">
+        <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-20 border-t border-stone-line pt-16 sm:pt-20">
           <div className="flex items-center gap-3 mb-3">
             <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
               Clause 0(b) — Automated check
@@ -125,33 +169,66 @@ export default async function PoolPage() {
           <p className="font-data text-xs text-ink-faint max-w-2xl">{breachCheck.reason}</p>
         </section>
 
-        <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-20 sm:pb-28">
+        <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-20 sm:pb-28 border-t border-stone-line pt-16 sm:pt-20">
           <span className="font-data text-xs uppercase tracking-wider text-bronze-text block mb-3">
             Clause 1 — Ledger
           </span>
-          <h2 className="font-display text-3xl mb-8">Recent payouts</h2>
+          <h2 className="font-display text-3xl mb-8">Backstop in action</h2>
           <div className="border-t border-stone-line">
             {REBATE_LOG.map((r) => (
               <div
                 key={r.id}
                 className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-2 py-5 border-b border-stone-line"
               >
-                <div>
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
-                    <span className="font-display text-lg">{r.agent}</span>
-                    <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint">
-                      {r.category}
-                    </span>
-                    <span className="font-data text-[10px] uppercase tracking-wider text-bronze-text">
-                      {r.clause}
-                    </span>
+                <div className="flex gap-3">
+                  <span className="text-stamp shrink-0" aria-hidden="true">
+                    ⚠
+                  </span>
+                  <div>
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+                      <span className="font-display text-lg">{r.agent}</span>
+                      <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint">
+                        {r.category}
+                      </span>
+                      <span className="font-data text-[10px] uppercase tracking-wider text-bronze-text">
+                        {r.clause}
+                      </span>
+                    </div>
+                    <p className="font-body text-sm text-ink-soft">{r.reason}</p>
                   </div>
-                  <p className="font-body text-sm text-ink-soft">{r.reason}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-data text-sm tabnum">{r.amount}</div>
+                  <div className="font-data text-sm tabnum">{r.amount} rebate</div>
                   <div className="font-data text-[11px] text-ink-faint tabnum">{r.time}</div>
                   <div className="font-data text-[11px] text-ink-faint">{r.txHash}</div>
+                </div>
+              </div>
+            ))}
+            {cleanEntries.map((a) => (
+              <div
+                key={a.id}
+                className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-2 py-5 border-b border-stone-line"
+              >
+                <div className="flex gap-3">
+                  <span className="text-verdigris shrink-0" aria-hidden="true">
+                    ✓
+                  </span>
+                  <div>
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+                      <span className="font-display text-lg">{a.name}</span>
+                      <span className="font-data text-[10px] uppercase tracking-wider text-ink-faint">
+                        {CATEGORIES.find((c) => c.id === a.category)?.label}
+                      </span>
+                    </div>
+                    <p className="font-body text-sm text-ink-soft">
+                      Realized {a.band.realized}
+                      {a.band.symbol} {a.band.unit} — inside the promised band, no rebate needed
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="font-data text-sm tabnum text-ink-faint">no payout</div>
+                  <div className="font-data text-[11px] text-ink-faint tabnum">{a.band.cycleLabel}</div>
                 </div>
               </div>
             ))}
@@ -166,11 +243,11 @@ export default async function PoolPage() {
 function Stat({ label, value, note }: { label: string; value: string; note: string }) {
   return (
     <div>
-      <div className="font-data text-[10px] uppercase tracking-wider text-paper-on-steel/50 mb-2">
+      <div className="font-data text-[10px] uppercase tracking-wider text-ink-faint mb-2">
         {label}
       </div>
       <div className="font-display text-2xl sm:text-3xl mb-1.5 tabnum">{value}</div>
-      <div className="font-body text-xs text-paper-on-steel/60 leading-snug">{note}</div>
+      <div className="font-body text-xs text-ink-soft leading-snug">{note}</div>
     </div>
   );
 }

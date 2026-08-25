@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Seal, Wordmark } from "./Logo";
 import { ConnectWalletButton } from "./ConnectWalletButton";
+import { NavMenu } from "./NavMenu";
 
 function NavLink({
   href,
@@ -35,6 +36,9 @@ function NavLink({
 }
 
 export function Header() {
+  const pathname = usePathname();
+  const enteredMarketplace = pathname !== "/";
+
   return (
     <header className="border-b border-stone-line bg-stone/95 backdrop-blur sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 h-[76px] flex items-center justify-between gap-6">
@@ -44,17 +48,10 @@ export function Header() {
             <Wordmark />
           </div>
         </Link>
-        <nav className="flex items-center gap-6 sm:gap-8 font-ui text-[13px] tracking-wide">
-          <NavLink href="/marketplace">Marketplace</NavLink>
-          <NavLink href="/pool">Pool</NavLink>
+        <nav className="flex items-center gap-4 sm:gap-6 font-ui text-[13px] tracking-wide">
           <NavLink href="/my-agents">My Agents</NavLink>
-          <NavLink href="/docs" className="hidden sm:inline">
-            Docs
-          </NavLink>
-          <NavLink href="/advantage-report" className="hidden sm:inline">
-            Advantage Report
-          </NavLink>
-          <ConnectWalletButton />
+          {enteredMarketplace && <ConnectWalletButton />}
+          <NavMenu />
         </nav>
       </div>
     </header>

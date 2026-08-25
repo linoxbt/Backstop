@@ -32,6 +32,12 @@
   --font-body: var(--font-outfit), system-ui, -apple-system, sans-serif;
   --font-ui: var(--font-outfit), system-ui, -apple-system, sans-serif;
   --font-data: var(--font-dm-mono), "SF Mono", "Courier New", monospace;
+  --font-forum: var(--font-forum-serif), serif;
+
+  /* landing-page-only dark surface (Momento Legal reference) — not used
+     anywhere else in the app, which stays on the stone/ink/bronze palette */
+  --color-momento-bg: #000214;
+  --color-momento-bg-deep: #000321;
 }
 
 @theme inline {
@@ -57,6 +63,10 @@
   --font-body: var(--font-body);
   --font-ui: var(--font-ui);
   --font-data: var(--font-data);
+  --font-forum: var(--font-forum);
+
+  --color-momento-bg: var(--color-momento-bg);
+  --color-momento-bg-deep: var(--color-momento-bg-deep);
 }
 
 * {
@@ -146,4 +156,39 @@ body {
 
 .animate-fade-rise {
   animation: fade-rise 0.4s ease forwards;
+}
+
+/* Slow, restrained blur-to-focus reveal — landing page only, echoing the
+   Momento Legal reference's will-change-filter treatment on its editorial
+   headings, without adding an animation library. */
+@keyframes momento-reveal {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+.animate-momento-reveal {
+  animation: momento-reveal 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes splash-zoom {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-splash-zoom {
+  animation: splash-zoom 1100ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

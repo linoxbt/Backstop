@@ -489,3 +489,26 @@ export function categoryMeta(category: string): CategoryMeta | undefined {
 export function isCategory(value: string | undefined): value is AgentCategory {
   return CATEGORIES.some((c) => c.id === value);
 }
+
+export interface CatalogStats {
+  agentCount: number;
+  categoryCount: number;
+  liveOnChainCount: number;
+  totalHirers: number;
+}
+
+/**
+ * Honest aggregate numbers for the marketplace's stat strip — sums of the
+ * catalog's own listed fields, never a fabricated "live" figure. `hirers`
+ * is the same illustrative per-agent number shown on every agent card
+ * elsewhere in the app; `liveOnChainCount` is real (agents with a real
+ * on-chain `providerAddress`).
+ */
+export function catalogStats(): CatalogStats {
+  return {
+    agentCount: AGENTS.length,
+    categoryCount: CATEGORIES.length,
+    liveOnChainCount: AGENTS.filter((a) => a.providerAddress).length,
+    totalHirers: AGENTS.reduce((sum, a) => sum + a.hirers, 0),
+  };
+}

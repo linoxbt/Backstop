@@ -1,17 +1,37 @@
 import type { AssuranceBand as AssuranceBandT } from "@/lib/types";
 import { bandPct } from "@/lib/band";
 
+type Tone = "ink" | "paper";
+
+const TONE = {
+  ink: {
+    rail: "bg-stone-line",
+    tick: "text-ink-faint",
+    faint: "text-ink-faint",
+    body: "text-ink-soft",
+  },
+  paper: {
+    rail: "bg-steel-line",
+    tick: "text-paper-on-steel/45",
+    faint: "text-paper-on-steel/45",
+    body: "text-paper-on-steel/70",
+  },
+} as const;
+
 function Track({
   band,
   markerLeft,
   showTicks = true,
   size = "default",
+  tone = "ink",
 }: {
   band: AssuranceBandT;
   markerLeft: number | null;
   showTicks?: boolean;
   size?: "default" | "compact";
+  tone?: Tone;
 }) {
+  const t = TONE[tone];
   const histLeft = bandPct(band, band.historicalLow);
   const histWidth = bandPct(band, band.historicalHigh) - histLeft;
   const promLeft = bandPct(band, band.promisedLow);
@@ -26,7 +46,7 @@ function Track({
 
   return (
     <div className={`relative ${h}`}>
-      <div className={`absolute left-0 right-0 ${railTop} h-px bg-stone-line`} />
+      <div className={`absolute left-0 right-0 ${railTop} h-px ${t.rail}`} />
       <div
         className={`hatch-corridor absolute ${corridorTop} h-6`}
         style={{ left: `${histLeft}%`, width: `${histWidth}%` }}
@@ -43,11 +63,11 @@ function Track({
       )}
       {showTicks && (
         <>
-          <span className="absolute top-0 left-0 font-data text-[10px] text-ink-faint tabnum">
+          <span className={`absolute top-0 left-0 font-data text-[10px] tabnum ${t.tick}`}>
             {band.scaleMin}
             {band.symbol}
           </span>
-          <span className="absolute top-0 right-0 font-data text-[10px] text-ink-faint tabnum">
+          <span className={`absolute top-0 right-0 font-data text-[10px] tabnum ${t.tick}`}>
             {band.scaleMax}
             {band.symbol}
           </span>
@@ -57,7 +77,16 @@ function Track({
   );
 }
 
-function Legend({ band, compact = false }: { band: AssuranceBandT; compact?: boolean }) {
+function Legend({
+  band,
+  compact = false,
+  tone = "ink",
+}: {
+  band: AssuranceBandT;
+  compact?: boolean;
+  tone?: Tone;
+}) {
+  const t = TONE[tone];
   const sep = compact ? " · " : null;
   const items = [
     <span key="hist" className="flex items-center gap-1.5">
@@ -73,8 +102,8 @@ function Legend({ band, compact = false }: { band: AssuranceBandT; compact?: boo
       {band.symbol} {band.unit}
     </span>,
     band.status === "pending" ? (
-      <span key="live" className="flex items-center gap-1.5 text-ink-faint">
-        <i className="inline-block w-3 h-3 shrink-0 rounded-full border border-ink-faint border-dashed" />
+      <span key="live" className={`flex items-center gap-1.5 ${t.faint}`}>
+        <i className={`inline-block w-3 h-3 shrink-0 rounded-full border ${t.faint} border-dashed`} />
         Awaiting first cycle
       </span>
     ) : (
@@ -87,20 +116,18 @@ function Legend({ band, compact = false }: { band: AssuranceBandT; compact?: boo
 
   if (compact) {
     return (
-      <p className="text-[13px] text-ink-soft leading-relaxed">
+      <p className={`text-[13px] leading-relaxed ${t.body}`}>
         {items.map((item, i) => (
           <span key={i} className="inline-flex items-center">
             {item}
-            {i < items.length - 1 && <span className="mx-2 text-ink-faint">{sep}</span>}
+            {i < items.length - 1 && <span className={`mx-2 ${t.faint}`}>{sep}</span>}
           </span>
         ))}
       </p>
     );
   }
 
-  return (
-    <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-ink-soft">{items}</div>
-  );
+  return <div className={`flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] ${t.body}`}>{items}</div>;
 }
 
 export { Track, Legend };

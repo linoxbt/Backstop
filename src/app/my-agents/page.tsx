@@ -9,6 +9,7 @@ import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { getHiresForWallet, type HireRecord } from "@/lib/chain/hires";
 import { getAgent } from "@/lib/agents";
 import { formatUnits } from "viem";
+import { projectId } from "@/lib/wallet/config";
 
 export default function MyAgentsPage() {
   const { address, isConnected } = useAccount();
@@ -55,6 +56,16 @@ export default function MyAgentsPage() {
             <div className="flex justify-center">
               <ConnectWalletButton />
             </div>
+            {!projectId && (
+              // The button above is disabled with only a hover `title` to
+              // explain why (not discoverable on touch devices, and easy to
+              // miss even on desktop) — this page has room to just say it
+              // outright, unlike the header's cramped nav slot.
+              <p className="mt-4 font-data text-[11px] text-paper-ink-faint">
+                Wallet connect isn&rsquo;t configured for this deployment (missing
+                NEXT_PUBLIC_REOWN_PROJECT_ID).
+              </p>
+            )}
           </div>
         )}
 

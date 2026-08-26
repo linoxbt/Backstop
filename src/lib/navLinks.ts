@@ -1,10 +1,13 @@
-/** Shared nav destinations — used by both NavMenu.tsx (client) and Footer.tsx (server). */
+/**
+ * Shared nav destinations — used by both NavMenu.tsx (client) and
+ * Footer.tsx (server). This is the *only* place My Agents and Advantage
+ * Report are reachable from the header at any breakpoint (see Header.tsx's
+ * own doc comment) — they don't have a separate top-level link to keep in
+ * sync with this list.
+ */
 export const MENU_LINKS = [
   { href: "/marketplace", label: "Marketplace" },
   { href: "/pool", label: "Pool" },
-  // "My Agents" is a top-level, always-visible header link from sm: up —
-  // it only needs a home here so it stays reachable once the header hides
-  // it below that breakpoint to make room for the wordmark.
   { href: "/my-agents", label: "My Agents" },
   { href: "/docs", label: "Docs" },
   { href: "/advantage-report", label: "Advantage Report" },

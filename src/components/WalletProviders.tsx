@@ -12,7 +12,7 @@ if (projectId) {
     networks,
     projectId,
     metadata: appKitMetadata,
-    themeMode: "light",
+    themeMode: "dark",
     themeVariables: {
       "--w3m-accent": "#6b4f31",
       "--w3m-border-radius-master": "0px",

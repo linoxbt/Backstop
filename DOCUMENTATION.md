@@ -411,19 +411,30 @@ See [§10 Backend Architecture](#10-backend-architecture) — this is one of the
 ### `src/lib/chain/hires.ts`
 - **What it does:** `recordHire()` — verifies a wallet's signature over a hire
   authorization message (`viem.verifyMessage`) and its embedded timestamp's freshness
-  (rejects anything older than 5 minutes, guarding against a replayed signed message),
-  then inserts via `supabaseAdmin`. `getHiresForWallet()` — public read, enriched with
-  each hire's real rebate status via a `rebates` embed. `getUnrebatedHiresForAgent()` /
-  `recordRebate()` — the query and write `autoRebate.ts` uses to pay and record a real,
-  per-hire rebate exactly once.
+  (via `hireAuthMessage.ts`'s `messageIsFresh`, rejecting anything older than 5 minutes),
+  then inserts via `supabaseAdmin`; a `hires_auth_signature_key` unique constraint makes
+  a byte-for-byte replay of the same signed message idempotent rather than a duplicate
+  row. `getHiresForWallet()` — public read (queried by the normalized-lowercase
+  `wallet_address`, matching `hires_wallet_address_idx`), enriched with each hire's real,
+  *paid* rebate status via a `rebates` embed (a "pending" claim never counts).
+  `getUnrebatedHiresForAgent()` / `claimRebate()` / `finalizeRebate()` /
+  `releaseRebateClaim()` — the atomic claim-before-pay sequence `autoRebate.ts` uses to
+  pay and record a real, per-hire rebate exactly once, even under concurrent invocations
+  (see `autoRebate.ts` below).
 - **Marked `"use server"`:** every export here is a Next.js Server Action, callable
   directly from a client component (`my-agents/page.tsx` calls `getHiresForWallet`
-  this way) without a hand-written API route.
+  this way) without a hand-written API route. `messageIsFresh` lives in
+  `hireAuthMessage.ts` instead, a plain (non-`"use server"`) module, since Next.js
+  requires every export of a `"use server"` file to itself be an async action.
 
 ### `src/lib/chain/hireAuthMessage.ts`
 - **What it does:** `buildHireAuthMessage()` — pure string builder for the message a
-  connected wallet signs to authorize a hire record, including an ISO 8601 timestamp
-  that `hires.ts`'s `recordHire()` later checks for staleness.
+  connected wallet signs to authorize a hire record, including an ISO 8601 timestamp.
+  `messageIsFresh()` — the staleness/future-timestamp check `hires.ts`'s `recordHire()`
+  runs against that timestamp before ever verifying the signature; kept here (not in
+  `hires.ts`) so it's a plain, directly unit-testable function rather than a
+  `"use server"` export, and so `hireAuthMessage.test.ts` can cover its edge cases
+  (stale, future-dated, malformed, exactly-at-the-boundary) without touching Supabase.
 
 ### `src/lib/chain/bandBreach.ts`
 - **What it does:** `checkAgentBandBreaches()` — the real payout trigger. For every
@@ -444,11 +455,26 @@ See [§10 Backend Architecture](#10-backend-architecture) — this is one of the
 ### `src/lib/chain/autoRebate.ts`
 - **What it does:** `runAutoRebateCheck()` — calls `checkAgentBandBreaches()`; for every
   breached real agent, calls `getUnrebatedHiresForAgent()` and, for each unrebated hire
-  found, pays that hire's own wallet a real rebate via `payRebate()` and records it via
-  `recordRebate()`. Returns which hires were paid and which agents/hires were skipped
-  (and why — e.g. "no real hires to rebate for this agent yet").
-- **Idempotency:** the `rebates.hire_id` unique database constraint, not a timer — a
-  given hire can never be rebated twice, even across a cold start. Called only from the
+  found: (1) `claimRebate()` — an insert into `rebates` with `status: "pending"`, before
+  anything is paid; (2) only if that claim wins, `payRebate()` — the real on-chain
+  transfer; (3) `finalizeRebate()` — flips the same row to `status: "paid"` with the real
+  tx hash. A failed claim (lost the race to a concurrent invocation) skips before ever
+  calling `payRebate`. A failed payment calls `releaseRebateClaim()` so a future run can
+  retry. A payment that succeeds but fails to finalize is *never* released — the transfer
+  already happened, so releasing it would risk paying the same hire twice. Returns which
+  hires were paid and which agents/hires were skipped (and why).
+- **Idempotency and concurrency safety:** the `rebates.hire_id` unique database
+  constraint is what makes the *claim* step atomic — only one concurrent caller's insert
+  can win it — and `unrebated_hires` excludes any hire with a matching row at all
+  (pending or paid), so a second invocation's own read stops seeing a hire the instant
+  the first claims it. This closes a real race the previous single-step
+  "pay-then-record" design had: two overlapping invocations (a manual
+  `workflow_dispatch` racing the scheduled run) could both pass the read and both execute
+  a real transfer, with only the *recording* guarded against duplication, not the payout
+  itself. See `.github/workflows/rebalance-breach-check.yml`'s `concurrency` group for
+  the trigger-level defense-in-depth on top of this. Covered by
+  `src/lib/chain/autoRebate.test.ts` (claim-before-pay ordering, lost-race skip,
+  failed-payment release, failed-finalize non-release). Called only from the
   authenticated cron route handler (§10, §18), never from a page render.
 
 ### `src/lib/chain/rebates.ts`
@@ -547,7 +573,7 @@ graph TD
 There is no standalone backend server or REST/GraphQL API in this project. "Backend" logic exists purely as:
 
 1. **Next.js Server Components** — `async function Page()` functions that run only on the server, fetch data (from static modules or live external sources), and render HTML. Used by `agents/[id]/page.tsx`, `pool/page.tsx`, and `marketplace/page.tsx`.
-2. **Next.js Server Actions** — every export of `src/lib/chain/hireAgent.ts` and `src/lib/chain/hires.ts` (both marked `"use server"`). `hireAgentOnChain` performs the real state-changing on-chain operation (submitting the ERC-8183 job); `recordHire` performs the real state-changing database write (a signature-verified hire record); `getHiresForWallet`, `getUnrebatedHiresForAgent`, and `recordRebate` are the reads/writes the auto-rebate path and `/my-agents` use. Next.js compiles each into a callable endpoint automatically; there is no hand-written route handler for any of them.
+2. **Next.js Server Actions** — every export of `src/lib/chain/hireAgent.ts` and `src/lib/chain/hires.ts` (both marked `"use server"`). `hireAgentOnChain` performs the real state-changing on-chain operation (submitting the ERC-8183 job); `recordHire` performs the real state-changing database write (a signature-verified hire record); `getHiresForWallet`, `getUnrebatedHiresForAgent`, `claimRebate`, `finalizeRebate`, and `releaseRebateClaim` are the reads/writes the auto-rebate path and `/my-agents` use. Next.js compiles each into a callable endpoint automatically; there is no hand-written route handler for any of them.
 3. **One hand-written route handler** — `src/app/api/cron/rebalance-check/route.ts`, a `GET` handler (not a Server Action, since it's invoked by an external cron job, not client-side React) protected by a timing-safe bearer-token check against `CRON_SECRET`. See §18.
 4. **Server-only utility modules** — `src/lib/erc8004.ts`, `src/lib/pancakeswap.ts`, `src/lib/wallet/altanaPool.ts`, `src/lib/supabase.ts`, `src/lib/rateLimit.ts`, `src/lib/chain/bandBreach.ts`, `src/lib/chain/rebalanceBreach.ts`, and `src/lib/chain/autoRebate.ts` are marked with the `server-only` package's import guard (`import "server-only"`), which throws a build-time/runtime error if accidentally imported into client-bundled code.
 
@@ -795,7 +821,7 @@ Every visual element (the historical corridor's left/width, the promised band's 
 **Where the pool comes in:** the narrative (landing page, `/pool`, `GuaranteeSteps`) states that every agent's fee contributes a percentage (`Agent.poolContribution`, e.g. "6% of performance fee") to a shared assurance pool, and that a breach's rebate is paid automatically out of that pool. **This is now real, per-hire, and automatic** — every 30 minutes, `src/app/api/cron/rebalance-check/route.ts` calls `runAutoRebateCheck()` (`autoRebate.ts`), which:
 1. Calls `checkAgentBandBreaches()` (`bandBreach.ts`) — for every real, on-chain agent (`providerAddress` set), checks whether its `AssuranceBand.status` is `"breach"`.
 2. For each breached agent, looks up every real hire against it that hasn't been rebated yet (`getUnrebatedHiresForAgent`, backed by the `unrebated_hires` view).
-3. Pays each such hire's own wallet a real, fixed rebate (5 U) from the Altana pool session (`payRebate`), and records it in the `rebates` table (`recordRebate`) — a `unique` constraint on `hire_id` guarantees a given hire is never rebated twice.
+3. Claims each such hire in the `rebates` table first (`claimRebate`, `status: "pending"` — the `unique` constraint on `hire_id` means only one concurrent invocation's claim can win), *then* pays that hire's own wallet a real, fixed rebate (5 U) from the Altana pool session (`payRebate`), then finalizes the same row (`finalizeRebate`, `status: "paid"`) with the real tx hash. Claiming before paying — not just recording after — is what actually guarantees a given hire is never paid twice, even if two invocations of the cron overlap.
 
 `/pool`'s ledger now renders these real payouts, each labeled "● Real payout," reading from `getRecentRebates()` (`src/lib/chain/rebates.ts`) — separately from the older, still-static `REBATE_LOG` array, which remains and is now explicitly labeled "Illustrative" in the same ledger so the two are never visually ambiguous.
 
@@ -877,9 +903,9 @@ Observations grounded in the actual code, not general advice:
 
 ## 19. Performance Optimizations
 
-- **Static generation by default:** `/`, `/marketplace` (dynamic only because it reads `searchParams`), `/docs`, `/advantage-report`, and every `/agents/[id]` page (via `generateStaticParams()` enumerating all 13 agent ids) are statically generated at build time where possible — confirmed by the Next.js build output classifying these routes `○` (Static) or `●` (SSG).
-- **`/agents/[id]`'s live external reads happen at build time for static params**, and the page still exposes a `loading.tsx` skeleton for the dynamic-render path (e.g., an id not covered by `generateStaticParams`, or during revalidation) — so a slow ERC-8004/PancakeSwap read never blocks an already-cached static response, only a fresh dynamic render.
-- **Time-bounded external fetches:** `lookupAgentByOwner()` uses `AbortSignal.timeout(8000)` and Next's `revalidate: 300` caching; `getLivePoolState()`'s underlying `viem` client uses the RPC transport's own timeout handling. Neither can hang the render indefinitely.
+- **Static generation by default, except where "live" is a claim the page actually makes:** `/`, `/marketplace` (dynamic only because it reads `searchParams`), `/docs`, and `/advantage-report` are statically generated at build time — confirmed by the Next.js build output classifying these routes `○` (Static).
+- **`/pool` and `/agents/[id]` are explicitly `export const dynamic = "force-dynamic"`, on purpose.** Both pages' own copy asserts real-time state ("This page runs the identical check on every load", "● Pool is live", a live PancakeSwap tick/liquidity reading) — without forcing dynamic rendering, Next's automatic static optimization would prerender them once at build time (neither route used a dynamic API like `cookies()`/`headers()` to opt out on its own), silently freezing every one of those "live" reads until the next deploy while the UI kept claiming they were current. `generateStaticParams()` on `/agents/[id]` still enumerates all 13 agent ids for routing/param-validation purposes, but no longer causes full-page prerendering given `force-dynamic`; the build output classifies both routes `ƒ` (Dynamic) accordingly. `loading.tsx` still covers the brief per-request render.
+- **Time-bounded, and now request-cost-bounded, external fetches:** `lookupAgentByOwner()` uses `AbortSignal.timeout(8000)` and Next's `revalidate: 300` fetch caching; `getLivePoolState()`'s underlying `viem` client uses the RPC transport's own timeout handling, and the exported `getLivePoolState` itself is wrapped in `unstable_cache` with a 30s revalidate window (`src/lib/pancakeswap.ts`) — necessary now that the pages calling it are dynamic, so real freshness doesn't come at the cost of hitting a free public RPC endpoint on every single page view.
 - **Deferred/parallel data fetching:** `agents/[id]/page.tsx` fetches the ERC-8004 registration and the PancakeSwap pool state concurrently with `Promise.all`, rather than sequentially.
 - **CSS-only animations:** the "Settle cycle" band-marker transition and the rebate stamp reveal are pure CSS (`transition`, `@keyframes`) rather than a JavaScript animation library, and the app respects `prefers-reduced-motion` globally (`globals.css` forces near-zero animation durations under that media query).
 - **Fonts loaded via `next/font/google`** (Space Grotesk, Outfit, DM Mono), which self-hosts and subsets the fonts at build time rather than requesting them from Google's CDN at runtime, avoiding a render-blocking third-party font request.

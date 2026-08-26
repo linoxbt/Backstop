@@ -24,6 +24,10 @@ export async function getRecentRebates(limit = 10): Promise<RealRebateEntry[]> {
   const { data, error } = await supabase
     .from("rebates")
     .select("id, agent_id, amount_raw, tx_hash, reason, paid_at")
+    // Only ever surface completed payouts — a "pending" row is an in-flight
+    // claim (see supabase/migrations/*_rebate_claim_status.sql), not yet a
+    // real transfer, and must never be shown as one.
+    .eq("status", "paid")
     .order("paid_at", { ascending: false })
     .limit(limit);
   if (error || !data) return [];

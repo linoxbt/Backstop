@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AssuranceBandInteractive } from "@/components/AssuranceBandInteractive";
 import { HireFlow } from "@/components/HireFlow";
+import { GettingStarted } from "@/components/GettingStarted";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { SimilarAgents } from "@/components/SimilarAgents";
 import { AGENTS, getAgent, categoryMeta } from "@/lib/agents";
@@ -13,6 +14,16 @@ import { getLivePoolState, TESTNET_TOKENS } from "@/lib/pancakeswap";
 export function generateStaticParams() {
   return AGENTS.map((a) => ({ id: a.id }));
 }
+
+// Without this, Next prerenders this page once at build time (it's fully
+// eligible for static optimization otherwise) and the "Live PancakeSwap v3
+// pool" banner and ERC-8004 registration status below would be frozen at
+// build time for every visitor — the opposite of what "live" means here.
+// getLivePoolState is cached for 30s server-side (src/lib/pancakeswap.ts)
+// and lookupAgentByOwner already sets its own 300s fetch revalidate, so
+// this doesn't turn into a fresh network round-trip on every single
+// request either.
+export const dynamic = "force-dynamic";
 
 export default async function AgentPage({
   params,
@@ -196,6 +207,13 @@ export default async function AgentPage({
                 >
                   How the guarantee works →
                 </Link>
+              </div>
+
+              <div>
+                <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text block mb-3">
+                  Getting started
+                </span>
+                <GettingStarted agent={agent} />
               </div>
 
               <div>

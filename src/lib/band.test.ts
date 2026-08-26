@@ -52,4 +52,9 @@ describe("bandPct", () => {
     expect(bandPct(b, -10)).toBe(0);
     expect(bandPct(b, 10)).toBe(100);
   });
+
+  it("returns 0 instead of NaN/Infinity for a zero-width or inverted scale", () => {
+    expect(bandPct(band({ scaleMin: 5, scaleMax: 5 }), 5)).toBe(0);
+    expect(bandPct(band({ scaleMin: 10, scaleMax: 0 }), 5)).toBe(0);
+  });
 });

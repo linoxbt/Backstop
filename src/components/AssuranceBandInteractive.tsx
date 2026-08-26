@@ -59,6 +59,7 @@ export function AssuranceBandInteractive({
       </button>
 
       <div
+        aria-live="polite"
         className={`grid transition-[grid-template-rows] duration-500 ease-out ${
           triggered ? "grid-rows-[1fr] mt-6 pt-6 border-t border-paper-line" : "grid-rows-[0fr]"
         }`}

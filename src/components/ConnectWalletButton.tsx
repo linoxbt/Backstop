@@ -13,6 +13,7 @@ export function ConnectWalletButton({ dark = false }: { dark?: boolean }) {
         type="button"
         disabled
         title="Wallet connect not configured — set NEXT_PUBLIC_REOWN_PROJECT_ID (get one free at dashboard.reown.com)"
+        aria-label="Wallet connect not configured — set NEXT_PUBLIC_REOWN_PROJECT_ID (get one free at dashboard.reown.com)"
         className={`${buttonClass} cursor-not-allowed ${
           dark ? "border-white/20 text-white/40" : "border-paper-line text-paper-ink-faint"
         }`}

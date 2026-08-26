@@ -17,6 +17,17 @@ on:
     - cron: "*/30 * * * *"
   workflow_dispatch: {}
 
+# Queue instead of running concurrently: a manual workflow_dispatch firing
+# while the scheduled run is still in flight (or a scheduled run overlapping
+# a previous one that ran long) is exactly the scenario the app-side rebate
+# claim (src/lib/chain/hires.ts's claimRebate) is hardened against, but
+# there's no reason to invite that race at the trigger level too when GitHub
+# Actions can just serialize it for free. Not cancel-in-progress: a run
+# already past the "pay" step should be allowed to finish, not be killed
+# mid-payout.
+concurrency:
+  group: rebalance-check
+
 jobs:
   check:
     runs-on: ubuntu-latest

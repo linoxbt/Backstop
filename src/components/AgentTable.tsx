@@ -10,9 +10,17 @@ type CategoryFilter = "all" | AgentCategory;
 type StatusFilter = "all" | "breach" | "within" | "pending";
 type NetworkFilter = "all" | Agent["network"];
 
+// "breach" only means this agent's static/illustrative band data says it
+// missed its promise this cycle -- it does NOT mean a real rebate has
+// actually landed for every hire against it (that depends on real hires
+// existing, the Altana payout session being configured, and the cron
+// having run since). "Rebate paid" here would assert a specific real-world
+// event this label can't actually verify; My Agents' HireCard is the one
+// place that's allowed to say "Rebate paid", since it derives that from a
+// real per-hire `rebates` row, not this static field.
 const STATUS_META: Record<Agent["band"]["status"], { label: string; className: string }> = {
   within: { label: "On track", className: "text-verdigris" },
-  breach: { label: "Rebate paid", className: "text-stamp" },
+  breach: { label: "Breach — rebate due", className: "text-stamp" },
   pending: { label: "Pending", className: "text-paper-ink-faint" },
 };
 
@@ -196,7 +204,7 @@ export function AgentTable({
           onChange={(v) => setStatus(v as StatusFilter)}
           options={[
             { value: "all", label: "Any status" },
-            { value: "breach", label: "Rebate paid" },
+            { value: "breach", label: "Breach — rebate due" },
             { value: "within", label: "On track" },
             { value: "pending", label: "Pending" },
           ]}

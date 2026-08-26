@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { createPublicClient, http, type Address } from "viem";
 import { bscTestnet } from "viem/chains";
 
@@ -74,14 +75,14 @@ export interface PoolState {
 /**
  * Find the first live pool for `tokenA`/`tokenB` across the standard fee
  * tiers and read its current state directly from the pool contract. Real
- * on-chain data — no aggregator, no cached feed.
+ * on-chain data — no aggregator.
  *
  * All fee tiers are checked concurrently (both the existence check and the
  * state reads), then reduced to the lowest fee tier with real liquidity —
  * same result as scanning tiers one at a time, but without paying for
  * round-trip latency four times over.
  */
-export async function getLivePoolState(tokenA: Address, tokenB: Address): Promise<PoolState | null> {
+async function getLivePoolStateUncached(tokenA: Address, tokenB: Address): Promise<PoolState | null> {
   try {
     const c = client();
     const poolAddresses = await Promise.all(
@@ -133,3 +134,19 @@ export async function getLivePoolState(tokenA: Address, tokenB: Address): Promis
     return null;
   }
 }
+
+/**
+ * Cached entry point — same real, live data as getLivePoolStateUncached,
+ * just not re-fetched on every single request. `/pool` and the agent
+ * dossier page both call this on every render now that they're dynamic
+ * (see `export const dynamic = "force-dynamic"` on those routes), which
+ * without this cache would mean up to ~16 RPC round-trips against a free
+ * public endpoint (bsc-testnet-rpc.publicnode.com) per visitor. A pool's
+ * tick/liquidity don't need sub-30-second freshness for what this app uses
+ * them for (an existence-and-liveness check, not a trading signal), so a
+ * short revalidate window is the honest tradeoff between "live" and
+ * "doesn't get the app rate-limited by a shared public RPC."
+ */
+export const getLivePoolState = unstable_cache(getLivePoolStateUncached, ["pancake-pool-state"], {
+  revalidate: 30,
+});

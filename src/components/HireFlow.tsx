@@ -110,7 +110,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
           </button>
           <p className="mt-3 font-data text-[10px] text-paper-ink-faint">
             {isConnected
-              ? "Executed via Backstop's demo wallet · your wallet signs the My Agents record"
+              ? "Attempts execution via Backstop's demo wallet · your wallet signs the My Agents record"
               : "Passkey signature · no seed phrase · attempts BSC Testnet first"}
           </p>
         </>

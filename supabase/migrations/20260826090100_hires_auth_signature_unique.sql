@@ -1,0 +1,13 @@
+-- Closes a signature-replay gap: recordHire() (src/lib/chain/hires.ts) only
+-- checked that the signed message wasn't older than 5 minutes, not that it
+-- hadn't been submitted before. The identical, still-valid signature could
+-- be POSTed to the server action repeatedly inside that window, creating
+-- multiple `hires` rows from a single wallet signature -- each one a
+-- separate, independently rebate-eligible row.
+--
+-- A signature is unique per (wallet, agent, budget, timestamp) by
+-- construction (buildHireAuthMessage embeds an ISO timestamp), so a real
+-- re-hire a moment later naturally produces a different signature and is
+-- unaffected; only a byte-for-byte replay of the same signed payload is
+-- rejected by this constraint.
+alter table hires add constraint hires_auth_signature_key unique (auth_signature);

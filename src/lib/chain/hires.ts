@@ -2,6 +2,7 @@
 
 import { verifyMessage } from "viem";
 import { supabase, supabaseAdmin } from "@/lib/supabase";
+import { messageIsFresh } from "./hireAuthMessage";
 
 /**
  * Real, wallet-scoped hire records — not illustrative. The wallet that
@@ -20,8 +21,6 @@ import { supabase, supabaseAdmin } from "@/lib/supabase";
  * just an app-layer nicety a direct REST call could bypass.
  */
 
-const AUTH_MESSAGE_MAX_AGE_SECONDS = 5 * 60;
-
 export interface RecordHireInput {
   walletAddress: `0x${string}`;
   agentId: string;
@@ -31,17 +30,6 @@ export interface RecordHireInput {
   mode: "live" | "simulated";
   message: string;
   signature: `0x${string}`;
-}
-
-function messageIsFresh(message: string): boolean {
-  const match = message.match(/^Time: (.+)$/m);
-  if (!match) return false;
-  const issuedAt = Date.parse(match[1]);
-  if (Number.isNaN(issuedAt)) return false;
-  const ageSeconds = (Date.now() - issuedAt) / 1000;
-  // Reject both a stale replay and a message claiming a future timestamp
-  // (a clock-skewed or deliberately backdated/forwarded signature).
-  return ageSeconds >= 0 && ageSeconds <= AUTH_MESSAGE_MAX_AGE_SECONDS;
 }
 
 export async function recordHire(input: RecordHireInput): Promise<{ ok: boolean; error?: string }> {
@@ -63,7 +51,7 @@ export async function recordHire(input: RecordHireInput): Promise<{ ok: boolean;
   }
 
   const { error } = await supabaseAdmin.from("hires").insert({
-    wallet_address: input.walletAddress,
+    wallet_address: input.walletAddress.toLowerCase(),
     agent_id: input.agentId,
     budget_human: input.budgetHuman,
     job_id: input.jobId ?? null,
@@ -72,7 +60,16 @@ export async function recordHire(input: RecordHireInput): Promise<{ ok: boolean;
     auth_message: input.message,
     auth_signature: input.signature,
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    // 23505 = unique_violation. hires_auth_signature_key (see
+    // supabase/migrations/*_hires_auth_signature_unique.sql) means this
+    // exact signed message was already recorded — a replayed submission
+    // (double-click, retried request), not a new hire. Treat it as the
+    // idempotent success it actually is rather than surfacing an error for
+    // something that already succeeded once.
+    if (error.code === "23505") return { ok: true };
+    return { ok: false, error: error.message };
+  }
   return { ok: true };
 }
 
@@ -90,22 +87,38 @@ export interface HireRecord {
   rebateAmountRaw: string | null;
 }
 
-type RebateEmbed = { tx_hash: string | null; amount_raw: string } | { tx_hash: string | null; amount_raw: string }[] | null;
+type RebateRow = { tx_hash: string | null; amount_raw: string; status: string };
+type RebateEmbed = RebateRow | RebateRow[] | null;
 
-function firstRebate(rebates: RebateEmbed) {
-  return Array.isArray(rebates) ? rebates[0] : rebates;
+/**
+ * A "pending" row (see the rebate-claim migration) means a payout has been
+ * claimed but hasn't actually landed on-chain yet — only "paid" should ever
+ * read as a real rebate to a viewer, otherwise My Agents could briefly show
+ * "Rebate paid" for a transfer that's still in flight (or that failed and
+ * never got un-claimed in time).
+ */
+function firstPaidRebate(rebates: RebateEmbed) {
+  const rows = Array.isArray(rebates) ? rebates : rebates ? [rebates] : [];
+  return rows.find((r) => r.status === "paid") ?? null;
 }
 
 export async function getHiresForWallet(walletAddress: string): Promise<HireRecord[]> {
   if (!supabase || !walletAddress) return [];
   const { data, error } = await supabase
     .from("hires")
-    .select("id, agent_id, budget_human, job_id, tx_hash, mode, created_at, rebates(tx_hash, amount_raw)")
-    .ilike("wallet_address", walletAddress)
+    .select(
+      "id, agent_id, budget_human, job_id, tx_hash, mode, created_at, rebates(tx_hash, amount_raw, status)",
+    )
+    // Plain equality against the normalized-lowercase column (see
+    // supabase/migrations/*_normalize_wallet_address_case.sql) — this is
+    // what actually lets Postgres use hires_wallet_address_idx. The
+    // previous `.ilike(...)` call didn't match that (or any) index, so this
+    // was a sequential scan on every My Agents page load.
+    .eq("wallet_address", walletAddress.toLowerCase())
     .order("created_at", { ascending: false });
   if (error || !data) return [];
   return data.map((r) => {
-    const rebate = firstRebate(r.rebates as RebateEmbed);
+    const rebate = firstPaidRebate(r.rebates as RebateEmbed);
     return {
       id: r.id,
       agentId: r.agent_id,
@@ -143,31 +156,83 @@ export async function getUnrebatedHiresForAgent(agentId: string): Promise<Unreba
   }));
 }
 
-export interface RecordRebateInput {
+export interface ClaimRebateInput {
   hireId: string;
   agentId: string;
   amountRaw: string;
-  txHash?: string;
   reason: string;
 }
 
+export interface ClaimRebateResult {
+  ok: boolean;
+  /** The claimed row's id, present only when ok is true. */
+  claimId?: string;
+  error?: string;
+}
+
 /**
- * Insert a real rebate row. The `hire_id` unique constraint (see the
- * create_rebates_table migration) is what actually prevents a double-pay
- * for the same hire — this function doesn't need its own locking, a
- * conflicting insert simply fails.
+ * Atomically claim a hire for payout *before* touching the chain — this is
+ * what actually closes the double-pay race the old recordRebate()-after-
+ * payRebate() ordering had: two overlapping cron invocations (a manual
+ * workflow_dispatch racing the scheduled run, a slow request retried) could
+ * both see the same "unrebated" hire and both execute a real transfer,
+ * since only the *recording* was guarded, not the payout itself.
+ *
+ * The `hire_id` unique constraint on `rebates` means only one concurrent
+ * caller's insert can win; the loser gets a `23505` conflict back
+ * immediately, before it has paid anything. `unrebated_hires` also stops
+ * returning this hire to any *other* caller's next read the instant this
+ * insert lands (it excludes any hire with a matching rebates row at all,
+ * pending or paid) — so the race is closed at both the read and write side,
+ * not just the write side alone.
  */
-export async function recordRebate(input: RecordRebateInput): Promise<{ ok: boolean; error?: string }> {
+export async function claimRebate(input: ClaimRebateInput): Promise<ClaimRebateResult> {
   if (!supabaseAdmin) {
     return { ok: false, error: "Rebate recording isn't configured (SUPABASE_SERVICE_ROLE_KEY unset)." };
   }
-  const { error } = await supabaseAdmin.from("rebates").insert({
-    hire_id: input.hireId,
-    agent_id: input.agentId,
-    amount_raw: input.amountRaw,
-    tx_hash: input.txHash ?? null,
-    reason: input.reason,
-  });
+  const { data, error } = await supabaseAdmin
+    .from("rebates")
+    .insert({
+      hire_id: input.hireId,
+      agent_id: input.agentId,
+      amount_raw: input.amountRaw,
+      reason: input.reason,
+      status: "pending",
+    })
+    .select("id")
+    .single();
+  if (error) {
+    if (error.code === "23505") {
+      return { ok: false, error: "Already claimed by a concurrent run — skipping." };
+    }
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, claimId: data.id };
+}
+
+/** Mark a claimed rebate as actually paid, with its real transaction hash. */
+export async function finalizeRebate(
+  claimId: string,
+  txHash: string | undefined,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!supabaseAdmin) {
+    return { ok: false, error: "Rebate recording isn't configured (SUPABASE_SERVICE_ROLE_KEY unset)." };
+  }
+  const { error } = await supabaseAdmin
+    .from("rebates")
+    .update({ status: "paid", tx_hash: txHash ?? null })
+    .eq("id", claimId);
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+/**
+ * Release a claim that failed *before* payment executed, so a future run
+ * can retry the same hire. Never call this once payRebate has actually
+ * succeeded — releasing after a real transfer would let the hire be paid
+ * again.
+ */
+export async function releaseRebateClaim(claimId: string): Promise<void> {
+  if (!supabaseAdmin) return;
+  await supabaseAdmin.from("rebates").delete().eq("id", claimId).eq("status", "pending");
 }

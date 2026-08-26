@@ -7,43 +7,6 @@ import { ConnectWalletButton } from "./ConnectWalletButton";
 import { NavMenu } from "./NavMenu";
 import { useHeaderTone } from "@/lib/useHeaderTone";
 
-function NavLink({
-  href,
-  children,
-  className = "",
-  dark,
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-  dark: boolean;
-}) {
-  const pathname = usePathname();
-  const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`relative py-1 transition-colors ${
-        dark
-          ? active
-            ? "text-white"
-            : "text-white/60 hover:text-white"
-          : active
-            ? "text-paper-ink"
-            : "text-paper-ink-soft hover:text-paper-ink"
-      } ${className}`}
-    >
-      {children}
-      <span
-        className={`absolute -bottom-[1px] left-0 right-0 h-px transition-opacity ${
-          dark ? "bg-bronze-bright" : "bg-bronze-text"
-        } ${active ? "opacity-100" : "opacity-0"}`}
-      />
-    </Link>
-  );
-}
-
 /**
  * Tone-aware sitewide header. Every page gets exactly one dark momento
  * masthead near its top (see useHeaderTone.ts) — while that masthead is
@@ -55,7 +18,12 @@ function NavLink({
  * on top of it. Logo/wordmark always sits left (the reference centers its
  * own wordmark, but Backstop doesn't have a matching third nav element to
  * balance a centered layout against, so left-aligned is the honest choice
- * here, not a copy of the reference's exact position).
+ * here, not a copy of the reference's exact position). My Agents and
+ * Advantage Report live only inside the hamburger menu (NavMenu's
+ * MENU_LINKS) at every breakpoint, desktop included — they used to also
+ * render here as a standalone top-level link from the `sm` breakpoint up,
+ * which duplicated the hamburger's own entry for the same page instead of
+ * giving desktop visitors one consistent place to find every destination.
  */
 export function Header() {
   const pathname = usePathname();
@@ -82,9 +50,6 @@ export function Header() {
         </Link>
 
         <nav className="flex items-center gap-4 sm:gap-6 font-ui text-[13px] tracking-wide shrink-0">
-          <NavLink href="/my-agents" className="hidden sm:inline-block" dark={dark}>
-            My Agents
-          </NavLink>
           {enteredMarketplace ? (
             <ConnectWalletButton dark={dark} />
           ) : (

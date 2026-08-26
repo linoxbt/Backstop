@@ -1,0 +1,18 @@
+-- Fixes a real double-payout race in src/lib/chain/autoRebate.ts: the old
+-- flow read "unrebated hires", called payRebate() (a real on-chain
+-- transfer), and only *afterwards* inserted the rebates row that the unique
+-- constraint on hire_id was supposed to guard. Two overlapping invocations
+-- (a manual workflow_dispatch racing the scheduled run, or a slow request
+-- retried) could both pass the read, both pay out on-chain, and only fail
+-- to double-*record* it -- the ledger would undercount a real double-spend.
+--
+-- The fix flips the order: claim first (an insert that only one concurrent
+-- caller can win, via the existing unique constraint on hire_id), then pay,
+-- then finalize the same row with the real tx hash. `status` distinguishes
+-- an in-flight claim from a completed payout; `tx_hash` was already
+-- nullable (a claim doesn't have one yet). `unrebated_hires` already
+-- excludes any hire with *any* matching rebates row (pending or paid), so
+-- the moment one run inserts its pending claim, a second run's own SELECT
+-- stops returning that hire too -- this is what actually closes the race,
+-- not just the insert-time conflict.
+alter table rebates add column status text not null default 'paid' check (status in ('pending', 'paid'));

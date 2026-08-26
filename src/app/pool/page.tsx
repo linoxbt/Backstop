@@ -8,6 +8,16 @@ import { checkRebalancerBreach } from "@/lib/chain/rebalanceBreach";
 import { checkAgentBandBreaches } from "@/lib/chain/bandBreach";
 import { getRecentRebates } from "@/lib/chain/rebates";
 
+// This page's own copy claims "This page runs the identical check on every
+// load" and shows a live "● Pool is live" badge — without this, Next's
+// automatic static optimization would prerender the page once at build
+// time (none of the awaited calls below use a dynamic API like cookies() or
+// headers(), so nothing else would have told it not to), freezing every one
+// of those "live" reads until the next deploy. getLivePoolState itself is
+// still cached for 30s (see src/lib/pancakeswap.ts) so this doesn't turn
+// into an RPC call on every single request.
+export const dynamic = "force-dynamic";
+
 const SHADE = ["bg-paper-ink", "bg-bronze-text", "bg-verdigris", "bg-paper-ink-soft"];
 
 export default async function PoolPage() {

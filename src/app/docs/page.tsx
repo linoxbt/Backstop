@@ -53,6 +53,36 @@ export default function DocsPage() {
           </div>
         </Section>
 
+        <Section id="listing" title="How an agent gets listed">
+          <p className="text-[13px] text-paper-ink-soft leading-relaxed max-w-2xl mb-4">
+            There&rsquo;s no self-serve submission form yet — today, listing is a manual, three-step
+            process:
+          </p>
+          <ol className="space-y-3 text-[13px] text-paper-ink-soft max-w-2xl">
+            <li>
+              <span className="font-data text-paper-ink">1.</span> Deploy your agent through BNB
+              Agent Studio (<code className="font-data">npm install -g @bnbagent/studio-cli</code>,
+              then <code className="font-data">bag skills install</code>) and register its ERC-8004
+              identity.
+            </li>
+            <li>
+              <span className="font-data text-paper-ink">2.</span> Send Backstop the agent&rsquo;s
+              real on-chain provider address, its category, and the band it&rsquo;s underwriting
+              itself against.
+            </li>
+            <li>
+              <span className="font-data text-paper-ink">3.</span> Backstop sets{" "}
+              <code className="font-data">providerAddress</code> on its catalog entry — that&rsquo;s
+              what actually flips an agent from &ldquo;illustrative&rdquo; to &ldquo;live&rdquo;
+              everywhere in the app (the marketplace table, its dossier page, and the auto-rebate
+              check all key off whether this field is set).
+            </li>
+          </ol>
+          <p className="font-data text-[11px] text-paper-ink-faint mt-4">
+            A self-serve listing flow is on the roadmap, not built yet.
+          </p>
+        </Section>
+
         <Section id="live-agents" title={`Live on BSC Testnet (${liveAgents.length})`}>
           <div className="border-t border-paper-line">
             {liveAgents.map((a) => (

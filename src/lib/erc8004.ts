@@ -3,10 +3,15 @@ import "server-only";
 /**
  * Read-only client for 8004scan's public agent index
  * (https://www.8004scan.io/api/v1) — the same endpoint `bag doctor` checks
- * registration against. No API key: the basic agent listing/lookup is a
- * public indexer, not the Discord-gated Pro tier. Never throws — a network
- * or API failure returns `null` so callers can fall back to an honest
- * "unknown" state rather than crashing or fabricating a result.
+ * registration against. Works with no API key at all (the anonymous tier —
+ * 30 req/min, 1,000/day, confirmed against 8004scan's own developer docs),
+ * which is what this app has always run on. `EIGHT004SCAN_API_KEY` is
+ * optional: when set, it's sent as `X-API-Key` to use the free Pro-tier
+ * upgrade the hackathon offers participants (3,000 req/min, 3,000,000/day —
+ * obtained via https://forms.gle/jQevEPCAacBXaKG79, not by changing any
+ * code). Never throws — a network or API failure returns `null` so callers
+ * can fall back to an honest "unknown" state rather than crashing or
+ * fabricating a result.
  */
 
 const SCAN_API_URL = "https://www.8004scan.io/api/v1";
@@ -37,7 +42,9 @@ export async function lookupAgentByOwner(
       owner_address: ownerAddress,
       limit: "1",
     });
+    const apiKey = process.env.EIGHT004SCAN_API_KEY;
     const res = await fetch(`${SCAN_API_URL}/agents?${params.toString()}`, {
+      headers: apiKey ? { "X-API-Key": apiKey } : undefined,
       signal: AbortSignal.timeout(8000),
       next: { revalidate: 300 },
     });

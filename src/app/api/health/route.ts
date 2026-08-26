@@ -53,5 +53,11 @@ export async function GET() {
       // surfaced here too for one-stop checking.
       cronSecretConfigured: Boolean(process.env.CRON_SECRET),
     },
+    erc8004Lookup: {
+      // src/lib/erc8004.ts — works fine on 8004scan's anonymous tier with
+      // no key at all; this only reflects whether the free Pro-tier
+      // upgrade's key has been wired in, not whether the lookup works.
+      proTierKeyConfigured: Boolean(process.env.EIGHT004SCAN_API_KEY),
+    },
   });
 }

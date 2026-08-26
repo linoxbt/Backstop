@@ -31,8 +31,8 @@ export default async function MarketplacePage({
   const initialQuery = params.q ?? "";
   const [volumeByAgent, discoveredTestnet, discoveredMainnet] = await Promise.all([
     getRealHireStatsForAllAgents(),
-    listRegisteredAgents(12, BSC_TESTNET_CHAIN_ID),
-    listRegisteredAgents(12, BSC_MAINNET_CHAIN_ID),
+    listRegisteredAgents(100, BSC_TESTNET_CHAIN_ID),
+    listRegisteredAgents(100, BSC_MAINNET_CHAIN_ID),
   ]);
   const totalCyclesCompleted = AGENTS.reduce((sum, a) => sum + a.cyclesCompleted, 0);
 
@@ -45,7 +45,7 @@ export default async function MarketplacePage({
         <StatStrip />
 
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 sm:pt-12 pb-10">
-          <CatalogOverview />
+          <CatalogOverview volumeByAgent={volumeByAgent} />
         </div>
 
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16">
@@ -56,17 +56,17 @@ export default async function MarketplacePage({
           <MiniStats />
         </div>
 
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-10">
-          <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
-            Territories
-          </span>
-          <h2 className="font-display text-2xl sm:text-3xl mt-2 mb-8">
-            Four kinds of work, equally underwritten.
-          </h2>
-          <Territories />
-        </div>
-
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
+          <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
+            Backstop&rsquo;s roster
+          </span>
+          <h2 className="font-display text-2xl sm:text-3xl mt-2 mb-2">
+            Every agent Backstop underwrites.
+          </h2>
+          <p className="font-body text-paper-ink-soft max-w-2xl mb-8">
+            A real fee model, a promised assurance band, and a real ERC-8183 job when you hire.
+            Every one of these has a real onchain address.
+          </p>
           <AgentTable agents={AGENTS} initialCategory={initialCategory} initialQuery={initialQuery} />
         </div>
 
@@ -78,11 +78,22 @@ export default async function MarketplacePage({
             Every agent registered on BNB Chain.
           </h2>
           <p className="font-body text-paper-ink-soft max-w-2xl mb-8">
-            Real identities from the ERC-8004 registry, not Backstop&rsquo;s own roster above. No
-            fee relationship or assurance band from Backstop for these, but every card here can
-            still open a real, direct ERC-8183 hire against the agent&rsquo;s own onchain address.
+            Real identities from the ERC-8004 registry, not Backstop&rsquo;s roster above. No fee
+            relationship or assurance band from Backstop for these, but every row here can still
+            open a real, direct ERC-8183 hire against the agent&rsquo;s own onchain address, and
+            click through to a full detail page.
           </p>
           <DiscoveredAgents testnet={discoveredTestnet} mainnet={discoveredMainnet} />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
+          <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
+            Territories
+          </span>
+          <h2 className="font-display text-2xl sm:text-3xl mt-2 mb-8">
+            Four kinds of work, equally underwritten.
+          </h2>
+          <Territories />
         </div>
 
         <HowItWorksMarquee />

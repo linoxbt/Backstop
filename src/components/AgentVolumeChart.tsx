@@ -1,5 +1,5 @@
 import type { AgentVolumeEntry } from "@/lib/chain/hires";
-import { getAgent, CATEGORIES } from "@/lib/agents";
+import { getAgent, CATEGORIES, AGENTS } from "@/lib/agents";
 
 // The exact same fixed category order and hues CatalogOverview.tsx already
 // uses for its own category-composition bar, reused here rather than a
@@ -45,7 +45,7 @@ export function AgentVolumeChart({
         <ChartStat
           label="Cycles completed"
           value={totalCyclesCompleted.toLocaleString()}
-          note="Illustrative catalog field, summed across all 13 agents"
+          note={`Illustrative catalog field, summed across all ${AGENTS.length} agents`}
         />
       </div>
 

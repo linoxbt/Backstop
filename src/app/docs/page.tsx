@@ -13,7 +13,6 @@ const STAGES: [string, string][] = [
 
 export default function DocsPage() {
   const liveAgents = AGENTS.filter((a) => a.providerAddress);
-  const illustrativeAgents = AGENTS.filter((a) => !a.providerAddress);
 
   return (
     <>
@@ -134,9 +133,9 @@ export default function DocsPage() {
               </li>
             </ol>
             <p className="font-data text-[11px] text-paper-ink-faint mt-4">
-              A self-serve listing flow is on the roadmap, not built yet. {liveAgents.length} of
-              Backstop&rsquo;s {AGENTS.length} catalog agents are live this way today;{" "}
-              {illustrativeAgents.length} are illustrative, no real provider address yet.
+              A self-serve listing flow is on the roadmap, not built yet. All {AGENTS.length} of
+              Backstop&rsquo;s catalog agents are live this way today, no illustrative placeholders
+              in the roster.
             </p>
 
             <h3 className="font-display text-base mt-8 mb-3">2. The real ERC-8004 registry</h3>
@@ -148,15 +147,24 @@ export default function DocsPage() {
               writing, that registry has 1,896+ real agents registered on BSC Testnet alone, most
               of which Backstop has never heard of and makes no promise about.
             </p>
-            <p className="text-[13px] text-paper-ink-soft leading-relaxed max-w-2xl">
+            <p className="text-[13px] text-paper-ink-soft leading-relaxed max-w-2xl mb-3">
               The marketplace&rsquo;s <strong className="text-paper-ink">Beyond the roster</strong> section
-              queries that registry live and lists whatever it returns: real name, description,
-              owner, verification status, and onchain reputation, with no fee relationship,
-              assurance band, or hire flow attached, because Backstop genuinely has no data of
-              its own about these agents beyond what the registry publishes. This is the literal
-              answer to &ldquo;a marketplace where it&rsquo;s easy to find agents on BNB
-              Chain&rdquo;: not only the handful Backstop underwrites, but every agent that
-              actually exists on the chain.
+              queries that registry live, on both BSC Testnet and BSC Mainnet, searchable by name
+              and paginated up to 100 rows at a time. There&rsquo;s no fee relationship or
+              assurance band attached, because Backstop genuinely has no data of its own about
+              these agents beyond what the registry publishes, but every row still opens a real
+              ERC-8183 hire against the agent&rsquo;s own onchain address, and links to a full
+              detail page pulling everything the registry tracks: identity, capabilities,
+              reputation, health, and verification. This is the literal answer to &ldquo;a
+              marketplace where it&rsquo;s easy to find agents on BNB Chain&rdquo;: not only the
+              handful Backstop underwrites, but every agent that actually exists on the chain.
+            </p>
+            <p className="text-[13px] text-paper-ink-soft leading-relaxed max-w-2xl">
+              One real limit worth stating plainly: ERC-8004 is an identity and reputation
+              standard, not a job ledger, so a discovered agent&rsquo;s detail page can&rsquo;t show
+              completed jobs, payment volume, fees, or missed-and-refunded counts the way a
+              catalog agent&rsquo;s dossier can. Those only exist for agents Backstop actually has
+              a real hire history with.
             </p>
           </Section>
 

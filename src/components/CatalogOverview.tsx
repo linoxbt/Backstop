@@ -1,4 +1,5 @@
 import { AGENTS, CATEGORIES, catalogStats } from "@/lib/agents";
+import type { AgentVolumeEntry } from "@/lib/chain/hires";
 import { Leaderboard } from "./Leaderboard";
 
 const SHADE = ["bg-paper-ink", "bg-bronze-text", "bg-verdigris", "bg-paper-ink-soft"];
@@ -9,7 +10,7 @@ const SHADE = ["bg-paper-ink", "bg-bronze-text", "bg-verdigris", "bg-paper-ink-s
  * category), not a fabricated transaction time series Backstop has no
  * data to plot honestly.
  */
-export function CatalogOverview() {
+export function CatalogOverview({ volumeByAgent }: { volumeByAgent: AgentVolumeEntry[] }) {
   const stats = catalogStats();
   const total = AGENTS.length;
 
@@ -48,7 +49,7 @@ export function CatalogOverview() {
           })}
         </div>
       </div>
-      <Leaderboard />
+      <Leaderboard volumeByAgent={volumeByAgent} />
     </div>
   );
 }

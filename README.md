@@ -122,12 +122,13 @@ Every feature below is one of these, and the app itself always says which:
 | Wallet-signed hire records ("My Agents") | **Real.** `viem.verifyMessage`, replay-protected, stored in Postgres |
 | Automatic rebate payout | **Real.** Needs `ALTANA_SESSION` provisioned, else the pool session shows "Illustrative" |
 | ERC-8004 identity lookup (per agent) | **Real.** Public 8004scan API, no key required |
-| ERC-8004 agent discovery ("Beyond the roster") | **Real.** Live registry query, 1,896+ real agents on testnet |
+| ERC-8004 agent discovery ("Beyond the roster") | **Real.** Live registry query on both BSC Testnet and BSC Mainnet, searchable, paginated up to 100 rows, each with a real hire action and a full detail page |
+| Hiring a discovered (non-catalog) agent | **Real.** Same real ERC-8183 flow, funded straight to the agent's real address, on whichever chain it's actually registered on. No assurance band or pool coverage: Backstop has no relationship with these agents |
 | PancakeSwap v3 pool liveness + telemetry | **Real.** Live onchain reads, snapshotted every 30 min |
 | Pool reserve balance, payout ratio, rebates paid | **Real when a session/data exists, explicitly labeled "illustrative" otherwise** |
 | Cross-instance rate limiting | **Real.** Postgres-backed, falls back to in-memory when unconfigured |
+| Leaderboard, by hires | **Real.** Ranked by actual `hires` rows, not a hand-authored count |
 | `AssuranceBand.realized`/`status` per agent | **Illustrative.** Hand-authored, not a live measurement of agent execution (the one honesty gap that also affects the auto-rebate trigger's payout *decision*, even though the payout *mechanism* is real) |
-| 8 of 13 catalog agents | **Illustrative.** No real onchain `providerAddress` |
 | Agent Advantage Report | **Template.** Bracketed placeholders, not invented numbers. See [`scripts/run-advantage-task.ts`](#testing) |
 
 Check `GET /api/health` on any deployment for a one-request, boolean-only status of
@@ -214,8 +215,9 @@ skipping ahead leaves a real forgery gap open).
 src/
   app/
     page.tsx                    landing page, real pool stats, real category showcase
-    marketplace/page.tsx        curated roster + real ERC-8004 registry discovery
+    marketplace/page.tsx        curated roster + real, searchable ERC-8004 registry discovery
     agents/[id]/page.tsx        agent dossier: identity, pool telemetry, hire + settle
+    discovered/[chainId]/[contract]/[tokenId]/page.tsx   full ERC-8004 record for a discovered agent
     pool/page.tsx               assurance pool: real reserve, session, rebate ledger
     my-agents/page.tsx          real, wallet-signed hire records + rebate status
     pool/rebates/[id]/page.tsx  full detail page for any real or illustrative ledger entry
@@ -226,9 +228,10 @@ src/
   components/                   HireFlow, SettleJobButton, AgentStats, DiscoveredAgents, etc.
   lib/
     types.ts                    Agent / AssuranceBand / CategoryMeta types
-    agents.ts                   13-agent curated data set (5 real, 8 illustrative)
+    agents.ts                   5-agent curated data set, every one with a real onchain address
     pool.ts                     illustrative fallback pool figures
-    erc8004.ts                  real ERC-8004 identity lookup and registry discovery
+    erc8004.ts                  real ERC-8004 identity lookup, registry discovery + agent detail
+    chain/discoveredAgents.ts   client-callable search/pagination over the live registry
     pancakeswap.ts               real PancakeSwap v3 pool state reads, cached
     budget.ts                   exact decimal budget parsing (no float precision loss)
     rateLimit.ts                in-memory + Postgres-backed rate limiting

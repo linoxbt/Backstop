@@ -105,7 +105,16 @@ export default function MyAgentsPage() {
 
 function HireCard({ hire }: { hire: HireRecord }) {
   const agent = getAgent(hire.agentId);
-  if (!agent) return null;
+  // A discovered-agent hire's agentId is the real ERC-8004 id itself,
+  // shaped "<chainId>:<contract>:<tokenId>" (see DiscoveredAgentHire.tsx) —
+  // no catalog lookup exists for these, so the chain and a display name are
+  // recovered from the id itself and the agent_name snapshot taken at hire
+  // time, rather than hiding the row entirely.
+  const chainId = agent ? 97 : Number(hire.agentId.split(":")[0]) || 97;
+  const isMainnet = chainId === 56;
+  const network = isMainnet ? "bsc-mainnet" : "bsc-testnet";
+  const explorerBase = isMainnet ? "https://bscscan.com" : "https://testnet.bscscan.com";
+  const displayName = agent?.name ?? hire.agentName ?? "Unregistered agent";
   const hiredAt = new Date(hire.createdAt);
   // Derived from this specific hire's real `rebates` row, never from the
   // agent's static/illustrative band.status — a real rebate claim requires
@@ -116,12 +125,23 @@ function HireCard({ hire }: { hire: HireRecord }) {
   return (
     <div className="border border-paper-line bg-paper-raised/50 p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-3 mb-4">
-        <Link
-          href={`/agents/${agent.id}`}
-          className="font-display text-xl hover:text-bronze-text transition-colors"
-        >
-          {agent.name}
-        </Link>
+        {agent ? (
+          <Link
+            href={`/agents/${agent.id}`}
+            className="font-display text-xl hover:text-bronze-text transition-colors"
+          >
+            {displayName}
+          </Link>
+        ) : (
+          <a
+            href={`https://www.8004scan.io/agent/${hire.agentId}`}
+            target="_blank"
+            rel="noreferrer"
+            className="font-display text-xl hover:text-bronze-text transition-colors"
+          >
+            {displayName}
+          </a>
+        )}
         <span className="font-data text-[10px] uppercase tracking-wider text-paper-ink-faint tabnum">
           Hired {hiredAt.toLocaleString()}
         </span>
@@ -151,7 +171,7 @@ function HireCard({ hire }: { hire: HireRecord }) {
       <div className="flex flex-wrap gap-x-5 gap-y-1">
         {hire.txHash && (
           <a
-            href={`https://testnet.bscscan.com/tx/${hire.txHash}`}
+            href={`${explorerBase}/tx/${hire.txHash}`}
             target="_blank"
             rel="noreferrer"
             className="font-data text-[11px] text-bronze-text underline underline-offset-2"
@@ -161,7 +181,7 @@ function HireCard({ hire }: { hire: HireRecord }) {
         )}
         {hire.rebatePaid && hire.rebateTxHash && (
           <a
-            href={`https://testnet.bscscan.com/tx/${hire.rebateTxHash}`}
+            href={`${explorerBase}/tx/${hire.rebateTxHash}`}
             target="_blank"
             rel="noreferrer"
             className="font-data text-[11px] text-stamp underline underline-offset-2"
@@ -174,15 +194,23 @@ function HireCard({ hire }: { hire: HireRecord }) {
 
       {hire.mode === "live" && hire.jobId && (
         <div className="mt-4 pt-4 border-t border-paper-line">
-          <SettleJobButton jobId={hire.jobId} />
+          <SettleJobButton jobId={hire.jobId} network={network} />
         </div>
       )}
 
-      <p className="font-body text-[12px] text-paper-ink-faint mt-4 pt-4 border-t border-paper-line leading-relaxed">
-        Covered by Backstop&rsquo;s assurance pool, {agent.poolContribution} of every fee{" "}
-        {agent.name} earns funds it. Executed via Backstop&rsquo;s demo signer; your wallet
-        authorized this record.
-      </p>
+      {agent ? (
+        <p className="font-body text-[12px] text-paper-ink-faint mt-4 pt-4 border-t border-paper-line leading-relaxed">
+          Covered by Backstop&rsquo;s assurance pool, {agent.poolContribution} of every fee{" "}
+          {agent.name} earns funds it. Executed via Backstop&rsquo;s demo signer; your wallet
+          authorized this record.
+        </p>
+      ) : (
+        <p className="font-body text-[12px] text-paper-ink-faint mt-4 pt-4 border-t border-paper-line leading-relaxed">
+          Discovered via the live ERC-8004 registry, not part of Backstop&rsquo;s underwritten
+          roster: no assurance band, no pool coverage. Your wallet authorized this record; the job
+          itself is between you and this agent&rsquo;s operator directly.
+        </p>
+      )}
     </div>
   );
 }

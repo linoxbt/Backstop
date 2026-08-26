@@ -3,6 +3,14 @@
 import { verifyMessage } from "viem";
 import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { messageIsFresh } from "./hireAuthMessage";
+import { AGENTS } from "@/lib/agents";
+
+/** Backstop's own curated roster only — used to keep roster-wide volume
+ * stats (the marketplace chart, the pool payout ratio) scoped to agents
+ * that can actually receive a rebate, so a hire against an arbitrary
+ * ERC-8004-discovered agent (see DiscoveredAgentHire.tsx) never silently
+ * inflates a number that implies pool coverage it doesn't have. */
+const CATALOG_AGENT_IDS = new Set(AGENTS.map((a) => a.id));
 
 /**
  * Real, wallet-scoped hire records — not illustrative. The wallet that
@@ -30,6 +38,14 @@ export interface RecordHireInput {
   mode: "live" | "simulated";
   message: string;
   signature: `0x${string}`;
+  /**
+   * A name snapshot for agents outside Backstop's own catalog (an
+   * ERC-8004-discovered hire, see DiscoveredAgentHire.tsx) — the catalog
+   * has no entry to look this up from later, so it's captured at hire
+   * time. Left unset for a catalog-agent hire, where getAgent(agentId)
+   * already resolves a live name.
+   */
+  agentName?: string;
 }
 
 export async function recordHire(input: RecordHireInput): Promise<{ ok: boolean; error?: string }> {
@@ -59,6 +75,7 @@ export async function recordHire(input: RecordHireInput): Promise<{ ok: boolean;
     mode: input.mode,
     auth_message: input.message,
     auth_signature: input.signature,
+    agent_name: input.agentName ?? null,
   });
   if (error) {
     // 23505 = unique_violation. hires_auth_signature_key (see
@@ -76,6 +93,8 @@ export async function recordHire(input: RecordHireInput): Promise<{ ok: boolean;
 export interface HireRecord {
   id: string;
   agentId: string;
+  /** Name snapshot for a discovered (non-catalog) agent — see RecordHireInput. */
+  agentName: string | null;
   budgetHuman: string;
   jobId: string | null;
   txHash: string | null;
@@ -107,7 +126,7 @@ export async function getHiresForWallet(walletAddress: string): Promise<HireReco
   const { data, error } = await supabase
     .from("hires")
     .select(
-      "id, agent_id, budget_human, job_id, tx_hash, mode, created_at, rebates(tx_hash, amount_raw, status)",
+      "id, agent_id, agent_name, budget_human, job_id, tx_hash, mode, created_at, rebates(tx_hash, amount_raw, status)",
     )
     // Plain equality against the normalized-lowercase column (see
     // supabase/migrations/*_normalize_wallet_address_case.sql) — this is
@@ -122,6 +141,7 @@ export async function getHiresForWallet(walletAddress: string): Promise<HireReco
     return {
       id: r.id,
       agentId: r.agent_id,
+      agentName: r.agent_name,
       budgetHuman: r.budget_human,
       jobId: r.job_id,
       txHash: r.tx_hash,
@@ -274,6 +294,11 @@ export async function getRealHireStatsForAllAgents(): Promise<AgentVolumeEntry[]
 
   const byAgent = new Map<string, { count: number; volume: number }>();
   for (const row of data) {
+    // A hire against an ERC-8004-discovered agent (outside Backstop's own
+    // roster) has no assurance band and can never be rebated — folding its
+    // volume into these roster-wide totals would silently deflate the real
+    // payout ratio shown on /pool and the landing page. See CATALOG_AGENT_IDS.
+    if (!CATALOG_AGENT_IDS.has(row.agent_id)) continue;
     const current = byAgent.get(row.agent_id) ?? { count: 0, volume: 0 };
     current.count += 1;
     current.volume += parseBudgetDisplay(row.budget_human);

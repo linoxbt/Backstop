@@ -1,4 +1,5 @@
 import "server-only";
+import { BSC_MAINNET_CHAIN_ID, BSC_TESTNET_CHAIN_ID } from "@bnbagent/sdk/networks";
 
 /**
  * Read-only client for 8004scan's public agent index
@@ -12,10 +13,16 @@ import "server-only";
  * code). Never throws — a network or API failure returns `null` so callers
  * can fall back to an honest "unknown" state rather than crashing or
  * fabricating a result.
+ *
+ * Confirmed live on both real BNB Chain networks (not just testnet):
+ * chain_id=97 (BSC Testnet, 1,896+ registered agents) and chain_id=56
+ * (BSC Mainnet, 284,000+ registered agents), same shared registry contract
+ * family, same API shape either way.
  */
 
 const SCAN_API_URL = "https://www.8004scan.io/api/v1";
-const BSC_TESTNET_CHAIN_ID = 97;
+
+export { BSC_MAINNET_CHAIN_ID, BSC_TESTNET_CHAIN_ID };
 
 export interface Erc8004Registration {
   agentId: string;
@@ -96,9 +103,18 @@ export async function lookupAgentByOwner(
   };
 }
 
+export type BnbNetwork = "bsc-testnet" | "bsc-mainnet";
+
+export function networkForChainId(chainId: number): BnbNetwork {
+  return chainId === BSC_MAINNET_CHAIN_ID ? "bsc-mainnet" : "bsc-testnet";
+}
+
 export interface DiscoveredAgent {
   agentId: string;
   tokenId: string;
+  chainId: number;
+  network: BnbNetwork;
+  /** The real onchain address a hire's ERC-8183 job would be funded to. */
   ownerAddress: string;
   ownerLabel: string | null;
   name: string;
@@ -117,19 +133,22 @@ export interface DiscoveredAgentsPage {
 }
 
 /**
- * Every real agent registered on ERC-8004 on BSC Testnet — not filtered to
- * Backstop's own curated roster. This is the actual "discover any agent on
- * BNB Chain" surface the hackathon's own framing implies: an agent operator
- * registers permissionlessly on the standard registry, with no relationship
- * to Backstop required, and shows up here automatically. Distinct from
- * Backstop's own assurance-backed catalog (src/lib/agents.ts) — there's no
- * fee relationship, band data, or hire flow for these, only real identity
- * and reputation, which is exactly what this function returns and nothing
- * more. Confirmed live: 1,896+ real agents registered on testnet alone.
+ * Every real agent registered on ERC-8004 on the given chain — not filtered
+ * to Backstop's own curated roster. This is the actual "discover any agent
+ * on BNB Chain" surface the hackathon's own framing implies: an agent
+ * operator registers permissionlessly on the standard registry, with no
+ * relationship to Backstop required, and shows up here automatically.
+ * Distinct from Backstop's own assurance-backed catalog (src/lib/agents.ts)
+ * — there's no fee relationship or band data for these, only real identity
+ * and reputation. Confirmed live on both networks: 1,896+ real agents on
+ * BSC Testnet, 284,000+ on BSC Mainnet.
  */
-export async function listRegisteredAgents(limit = 12): Promise<DiscoveredAgentsPage> {
+export async function listRegisteredAgents(
+  limit = 12,
+  chainId: number = BSC_TESTNET_CHAIN_ID,
+): Promise<DiscoveredAgentsPage> {
   const res = await fetchScanApi("/agents", {
-    chain_id: String(BSC_TESTNET_CHAIN_ID),
+    chain_id: String(chainId),
     limit: String(limit),
   });
   if (!res) return { agents: [], total: 0 };
@@ -140,6 +159,8 @@ export async function listRegisteredAgents(limit = 12): Promise<DiscoveredAgents
     agents: data.items.map((item) => ({
       agentId: item.agent_id,
       tokenId: item.token_id,
+      chainId,
+      network: networkForChainId(chainId),
       ownerAddress: item.owner_address,
       ownerLabel: item.owner_ens ?? item.owner_username ?? null,
       name: item.name,

@@ -12,7 +12,7 @@ import { AgentVolumeChart } from "@/components/AgentVolumeChart";
 import { DiscoveredAgents } from "@/components/DiscoveredAgents";
 import { AGENTS, isCategory } from "@/lib/agents";
 import { getRealHireStatsForAllAgents } from "@/lib/chain/hires";
-import { listRegisteredAgents } from "@/lib/erc8004";
+import { listRegisteredAgents, BSC_TESTNET_CHAIN_ID, BSC_MAINNET_CHAIN_ID } from "@/lib/erc8004";
 
 // listRegisteredAgents hits the live ERC-8004 registry on every load (its
 // own fetch already sets a 300s revalidate, so this doesn't mean a fresh
@@ -29,9 +29,10 @@ export default async function MarketplacePage({
   const params = await searchParams;
   const initialCategory = isCategory(params.category) ? params.category : "all";
   const initialQuery = params.q ?? "";
-  const [volumeByAgent, discovered] = await Promise.all([
+  const [volumeByAgent, discoveredTestnet, discoveredMainnet] = await Promise.all([
     getRealHireStatsForAllAgents(),
-    listRegisteredAgents(12),
+    listRegisteredAgents(12, BSC_TESTNET_CHAIN_ID),
+    listRegisteredAgents(12, BSC_MAINNET_CHAIN_ID),
   ]);
   const totalCyclesCompleted = AGENTS.reduce((sum, a) => sum + a.cyclesCompleted, 0);
 
@@ -78,10 +79,10 @@ export default async function MarketplacePage({
           </h2>
           <p className="font-body text-paper-ink-soft max-w-2xl mb-8">
             Real identities from the ERC-8004 registry, not Backstop&rsquo;s own roster above. No
-            fee relationship, no assurance band, no hire flow here, just who&rsquo;s really out
-            there and their onchain reputation.
+            fee relationship or assurance band from Backstop for these, but every card here can
+            still open a real, direct ERC-8183 hire against the agent&rsquo;s own onchain address.
           </p>
-          <DiscoveredAgents page={discovered} />
+          <DiscoveredAgents testnet={discoveredTestnet} mainnet={discoveredMainnet} />
         </div>
 
         <HowItWorksMarquee />

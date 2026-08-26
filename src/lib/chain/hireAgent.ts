@@ -12,6 +12,13 @@ import { parseBudgetToRaw } from "@/lib/budget";
 // back to the in-memory limiter otherwise.
 const HIRE_COOLDOWN_SECONDS = 15;
 
+/** Either preset the SDK's ERC8183Client accepts. */
+export type BnbNetwork = "bsc-testnet" | "bsc-mainnet";
+
+function explorerBase(network: BnbNetwork): string {
+  return network === "bsc-mainnet" ? "https://bscscan.com" : "https://testnet.bscscan.com";
+}
+
 export interface HireResult {
   ok: boolean;
   /**
@@ -28,8 +35,13 @@ export interface HireResult {
 }
 
 /**
- * Hire an agent through the real ERC-8183 flow on BSC Testnet:
- * createJob -> registerJob -> fund -> getJob.
+ * Hire an agent through the real ERC-8183 flow: createJob -> registerJob ->
+ * fund -> getJob, on either `bsc-testnet` (the default, and the only network
+ * Backstop's own catalog agents are verified against) or `bsc-mainnet` (for
+ * hiring an arbitrary agent discovered from the live ERC-8004 registry —
+ * see DiscoveredAgentHire.tsx). Per the SDK's own docs, bsc-testnet writes
+ * are gas-sponsored; bsc-mainnet writes self-pay real gas from the hirer
+ * wallet, same as any other mainnet transaction.
  *
  * Requires PRIVATE_KEY + WALLET_PASSWORD (the hirer's wallet) and a real
  * on-chain provider address, either on the agent itself or via
@@ -40,6 +52,7 @@ export interface HireResult {
 export async function hireAgentOnChain(
   agentProviderAddress: string | undefined,
   budgetHuman: string,
+  network: BnbNetwork = "bsc-testnet",
 ): Promise<HireResult> {
   const providerAddress = agentProviderAddress ?? process.env.DEMO_PROVIDER_ADDRESS;
   const privateKey = process.env.PRIVATE_KEY;
@@ -102,7 +115,7 @@ export async function hireAgentOnChain(
     });
     const client = await ERC8183Client.create({
       walletProvider: wallet,
-      network: "bsc-testnet",
+      network,
     });
 
     const decimals = await client.tokenDecimals();
@@ -138,7 +151,7 @@ export async function hireAgentOnChain(
       jobId: created.jobId.toString(),
       status: JobStatus[job.status],
       txHash,
-      explorerUrl: txHash ? `https://testnet.bscscan.com/tx/${txHash}` : undefined,
+      explorerUrl: txHash ? `${explorerBase(network)}/tx/${txHash}` : undefined,
     };
   } catch (err) {
     return {
@@ -173,7 +186,10 @@ export interface SettleResult {
  * still inside its dispute window) — that's not a bug to hide, it's the
  * real contract enforcing the real rule.
  */
-export async function settleJobOnChain(jobId: string): Promise<SettleResult> {
+export async function settleJobOnChain(
+  jobId: string,
+  network: BnbNetwork = "bsc-testnet",
+): Promise<SettleResult> {
   const privateKey = process.env.PRIVATE_KEY;
   const walletPassword = process.env.WALLET_PASSWORD;
 
@@ -207,7 +223,7 @@ export async function settleJobOnChain(jobId: string): Promise<SettleResult> {
 
   try {
     const wallet = new EVMWalletProvider({ password: walletPassword, privateKey: privateKey || undefined });
-    const client = await ERC8183Client.create({ walletProvider: wallet, network: "bsc-testnet" });
+    const client = await ERC8183Client.create({ walletProvider: wallet, network });
 
     const settled = await client.settle(parsedJobId);
     const job = await client.getJob(parsedJobId);
@@ -219,7 +235,7 @@ export async function settleJobOnChain(jobId: string): Promise<SettleResult> {
       status: JobStatus[job.status],
       txHash: settled.transactionHash,
       explorerUrl: settled.transactionHash
-        ? `https://testnet.bscscan.com/tx/${settled.transactionHash}`
+        ? `${explorerBase(network)}/tx/${settled.transactionHash}`
         : undefined,
     };
   } catch (err) {

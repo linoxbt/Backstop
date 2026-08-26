@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { settleJobOnChain, type SettleResult } from "@/lib/chain/hireAgent";
+import { settleJobOnChain, type SettleResult, type BnbNetwork } from "@/lib/chain/hireAgent";
 
 /**
  * Real, permissionless on-chain settlement for one specific ERC-8183 job —
@@ -11,7 +11,13 @@ import { settleJobOnChain, type SettleResult } from "@/lib/chain/hireAgent";
  * hire in My Agents) — never a standalone illustrative demo, since a real
  * settle needs a real job id to act on.
  */
-export function SettleJobButton({ jobId }: { jobId: string }) {
+export function SettleJobButton({
+  jobId,
+  network = "bsc-testnet",
+}: {
+  jobId: string;
+  network?: BnbNetwork;
+}) {
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<SettleResult | null>(null);
 
@@ -22,7 +28,7 @@ export function SettleJobButton({ jobId }: { jobId: string }) {
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
-            const r = await settleJobOnChain(jobId);
+            const r = await settleJobOnChain(jobId, network);
             setResult(r);
           })
         }

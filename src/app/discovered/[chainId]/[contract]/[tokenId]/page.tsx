@@ -2,8 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { BackButton } from "@/components/BackButton";
 import { DiscoveredAgentHire } from "@/components/DiscoveredAgentHire";
 import { getDiscoveredAgentDetail } from "@/lib/erc8004";
+import { getRealHireStatsForAgent } from "@/lib/chain/hires";
 
 // Every field here comes straight from 8004scan's live API on every load --
 // deliberately not statically generated or ISR'd beyond that fetch's own
@@ -22,6 +24,12 @@ export default async function DiscoveredAgentPage({
   const agent = await getDiscoveredAgentDetail(parsedChainId, contract, tokenId);
   if (!agent) notFound();
 
+  // Real, from Backstop's own hire ledger, not the ERC-8004 registry -- the
+  // registry has no concept of jobs or payment at all, so this is the one
+  // real "activity" number this page can honestly show, and only for the
+  // slice of this agent's work that actually ran through Backstop.
+  const activity = await getRealHireStatsForAgent(agent.agentId);
+
   const isMainnet = agent.network === "bsc-mainnet";
   const explorerBase = isMainnet ? "https://bscscan.com" : "https://testnet.bscscan.com";
 
@@ -35,12 +43,15 @@ export default async function DiscoveredAgentPage({
             aria-hidden="true"
           />
           <div className="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 pt-32 sm:pt-40 pb-14 sm:pb-16">
-            <Link
-              href="/marketplace"
-              className="font-data text-[11px] uppercase tracking-wider text-white/50 hover:text-white transition-colors"
-            >
-              Marketplace / Beyond the roster
-            </Link>
+            <div className="flex items-center gap-4">
+              <BackButton className="font-data text-[11px] uppercase tracking-wider text-white/50 hover:text-white transition-colors" />
+              <Link
+                href="/marketplace"
+                className="font-data text-[11px] uppercase tracking-wider text-white/50 hover:text-white transition-colors"
+              >
+                Marketplace / Beyond the roster
+              </Link>
+            </div>
 
             <div className="mt-6 flex items-start gap-4">
               {agent.imageUrl && (
@@ -79,13 +90,30 @@ export default async function DiscoveredAgentPage({
         <div className="max-w-4xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
           <div className="border border-bronze-text bg-paper-raised/60 px-5 py-4 mb-10 font-data text-[12px] leading-relaxed">
             <strong className="text-bronze-text">Not part of Backstop&rsquo;s underwritten roster.</strong>{" "}
-            Everything below is what the ERC-8004 registry itself tracks: real identity and
-            reputation. It does not include completed jobs, payment volume, fees, or missed-and-
-            refunded counts, ERC-8004 is an identity and reputation standard, not a job ledger, and
-            Backstop has no data of its own about this agent&rsquo;s job history outside its own
-            curated roster. A real hire below still opens a genuine ERC-8183 job against its real
-            address.
+            The Identity, Capabilities, Reputation, and Health sections below are what the ERC-8004
+            registry itself tracks, it&rsquo;s an identity and reputation standard, not a job ledger,
+            so it has no concept of jobs or payment at all. The Backstop activity section right
+            below is different: it&rsquo;s Backstop&rsquo;s own real ledger, scoped only to jobs that
+            actually ran through Backstop. No assurance band or pool coverage applies to this
+            agent either way, but a real hire below still opens a genuine ERC-8183 job against its
+            real address.
           </div>
+
+          <Section
+            title="Backstop activity"
+            note="Anchored by Backstop's own hire ledger, not the ERC-8004 registry. Only reflects jobs hired through Backstop, this agent may have a longer history elsewhere Backstop has no visibility into."
+          >
+            <Field label="Jobs hired through Backstop">{activity.realHireCount.toLocaleString()}</Field>
+            <Field label="Payment volume through Backstop">{activity.realVolume.toLocaleString()} U</Field>
+            <Field label="Fees to Backstop">Not applicable, no fee relationship with this agent</Field>
+            <Field label="Missed &amp; refunded">
+              {activity.realRebateCount.toLocaleString()}
+              <span className="block text-paper-ink-faint text-[11px] mt-0.5">
+                No assurance band applies to a non-catalog agent, so nothing here can ever be
+                rebated
+              </span>
+            </Field>
+          </Section>
 
           <Section title="Identity">
             <Field label="Owner">

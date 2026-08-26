@@ -155,11 +155,8 @@ export function DiscoveredAgents({
                   <th className="hidden lg:table-cell py-2 pr-4 text-left font-data text-[11px] uppercase tracking-wider text-paper-ink-faint">
                     Protocols
                   </th>
-                  <th className="py-2 pr-4 text-right font-data text-[11px] uppercase tracking-wider text-paper-ink-faint">
-                    Score
-                  </th>
                   <th className="py-2 text-right font-data text-[11px] uppercase tracking-wider text-paper-ink-faint">
-                    Action
+                    Score
                   </th>
                 </tr>
               </thead>
@@ -220,7 +217,7 @@ function DiscoveredAgentRow({ agent, index }: { agent: DiscoveredAgent; index: n
           {String(index + 1).padStart(3, "0")}
         </td>
         <td className="py-3 pr-4 max-w-xs">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link
               href={detailHref(agent)}
               className="font-display text-base truncate hover:text-bronze-text transition-colors"
@@ -232,6 +229,13 @@ function DiscoveredAgentRow({ agent, index }: { agent: DiscoveredAgent; index: n
                 ✓
               </span>
             )}
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              className="font-data text-[10px] uppercase tracking-wider px-2.5 py-1 border border-paper-line hover:border-bronze-text hover:text-bronze-text transition-colors shrink-0"
+            >
+              {expanded ? "Close" : "Hire →"}
+            </button>
           </div>
           {agent.description && (
             <p className="text-[11px] text-paper-ink-soft leading-relaxed truncate">{agent.description}</p>
@@ -250,23 +254,14 @@ function DiscoveredAgentRow({ agent, index }: { agent: DiscoveredAgent; index: n
             {agent.x402Supported && <span className="px-1.5 py-0.5 border border-paper-line">x402</span>}
           </div>
         </td>
-        <td className="py-3 pr-4 font-data text-[12px] text-paper-ink-soft tabnum text-right whitespace-nowrap">
+        <td className="py-3 font-data text-[12px] text-paper-ink-soft tabnum text-right whitespace-nowrap">
           {agent.totalScore > 0 ? `★ ${agent.totalScore.toFixed(1)}` : "N/A"}
-        </td>
-        <td className="py-3 text-right whitespace-nowrap">
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="font-data text-[11px] uppercase tracking-wider px-3 py-1.5 border border-paper-line hover:border-bronze-text hover:text-bronze-text transition-colors"
-          >
-            {expanded ? "Close" : "Hire →"}
-          </button>
         </td>
       </tr>
       {expanded && (
         <tr className="border-b border-paper-line bg-paper-raised/20">
           <td />
-          <td colSpan={4} className="py-4 pr-4">
+          <td colSpan={3} className="py-4 pr-4">
             <DiscoveredAgentHire agent={agent} />
           </td>
           <td />

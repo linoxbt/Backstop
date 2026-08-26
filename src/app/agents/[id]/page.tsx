@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { BackButton } from "@/components/BackButton";
 import { AssuranceBandInteractive } from "@/components/AssuranceBandInteractive";
 import { HireFlow } from "@/components/HireFlow";
 import { GettingStarted } from "@/components/GettingStarted";
@@ -69,13 +70,16 @@ export default async function AgentPage({
             aria-hidden="true"
           />
           <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 pt-32 sm:pt-40 pb-14 sm:pb-16">
-            <Link
-              href={`/marketplace?category=${agent.category}`}
-              className="font-data text-[11px] uppercase tracking-wider text-white/50 hover:text-white transition-colors"
-            >
-              Marketplace / {category.label} /{" "}
-              <span className="text-white/70">{agent.name}</span>
-            </Link>
+            <div className="flex items-center gap-4">
+              <BackButton className="font-data text-[11px] uppercase tracking-wider text-white/50 hover:text-white transition-colors" />
+              <Link
+                href={`/marketplace?category=${agent.category}`}
+                className="font-data text-[11px] uppercase tracking-wider text-white/50 hover:text-white transition-colors"
+              >
+                Marketplace / {category.label} /{" "}
+                <span className="text-white/70">{agent.name}</span>
+              </Link>
+            </div>
 
             <div className="mt-6">
               <span className="font-data text-xs uppercase tracking-wider text-bronze-bright">

@@ -148,3 +148,85 @@ export async function hireAgentOnChain(
     };
   }
 }
+
+export interface SettleResult {
+  ok: boolean;
+  mode: "live" | "simulated";
+  jobId?: string;
+  status?: string;
+  txHash?: string;
+  explorerUrl?: string;
+  error?: string;
+}
+
+/**
+ * Settle a real ERC-8183 job — `ERC8183Client.settle(jobId)` is
+ * "permissionless" (the SDK's own description): it pulls the policy's
+ * verdict and applies it on-chain, and can be called by any wallet once the
+ * job is past its dispute window (silence approves under the deployed
+ * OptimisticPolicy). Reuses the same hirer-side wallet as hireAgentOnChain
+ * only because that's the funded wallet this app already has for gas — the
+ * call itself doesn't require being the original hirer.
+ *
+ * Will genuinely revert (and surface the real chain error) if the job isn't
+ * actually in a settleable state yet (still FUNDED, not yet SUBMITTED, or
+ * still inside its dispute window) — that's not a bug to hide, it's the
+ * real contract enforcing the real rule.
+ */
+export async function settleJobOnChain(jobId: string): Promise<SettleResult> {
+  const privateKey = process.env.PRIVATE_KEY;
+  const walletPassword = process.env.WALLET_PASSWORD;
+
+  const requestHeaders = await headers();
+  const callerKey =
+    requestHeaders.get("x-nf-client-connection-ip") ||
+    requestHeaders.get("x-forwarded-for")?.split(",")[0].trim() ||
+    "unknown";
+  const rateLimit = await checkRateLimitPersistent(`settle:${callerKey}`, HIRE_COOLDOWN_SECONDS);
+  if (!rateLimit.allowed) {
+    return {
+      ok: false,
+      mode: "simulated",
+      error: `Too many settle attempts — wait ${rateLimit.retryAfterSeconds}s and try again.`,
+    };
+  }
+
+  if (!privateKey && !EVMWalletProvider.keystoreExists()) {
+    return { ok: false, mode: "simulated", error: "No settlement wallet configured — set PRIVATE_KEY and WALLET_PASSWORD." };
+  }
+  if (!walletPassword) {
+    return { ok: false, mode: "simulated", error: "WALLET_PASSWORD is required to unlock the wallet keystore." };
+  }
+
+  let parsedJobId: bigint;
+  try {
+    parsedJobId = BigInt(jobId);
+  } catch {
+    return { ok: false, mode: "simulated", error: "Invalid job id." };
+  }
+
+  try {
+    const wallet = new EVMWalletProvider({ password: walletPassword, privateKey: privateKey || undefined });
+    const client = await ERC8183Client.create({ walletProvider: wallet, network: "bsc-testnet" });
+
+    const settled = await client.settle(parsedJobId);
+    const job = await client.getJob(parsedJobId);
+
+    return {
+      ok: true,
+      mode: "live",
+      jobId,
+      status: JobStatus[job.status],
+      txHash: settled.transactionHash,
+      explorerUrl: settled.transactionHash
+        ? `https://testnet.bscscan.com/tx/${settled.transactionHash}`
+        : undefined,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      mode: "live",
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}

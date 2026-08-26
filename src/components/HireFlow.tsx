@@ -6,6 +6,7 @@ import type { Agent } from "@/lib/types";
 import { hireAgentOnChain, type HireResult } from "@/lib/chain/hireAgent";
 import { buildHireAuthMessage } from "@/lib/chain/hireAuthMessage";
 import { recordHire } from "@/lib/chain/hires";
+import { SettleJobButton } from "./SettleJobButton";
 
 type Stage = "idle" | "pending" | "done";
 type TrackStatus = "idle" | "signing" | "recorded" | "skipped" | "error";
@@ -141,6 +142,15 @@ export function HireFlow({ agent }: { agent: Agent }) {
                 </a>
               )}
               <TrackingStatus status={trackStatus} error={trackError} />
+              {result.jobId && (
+                <div className="pt-3 mt-1 border-t border-paper-line">
+                  <p className="font-data text-[11px] text-paper-ink-faint mb-2">
+                    Once past its dispute window, this job can be settled by any wallet —
+                    permissionless, per the ERC-8183 policy.
+                  </p>
+                  <SettleJobButton jobId={result.jobId} />
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-[13px] text-stamp leading-relaxed">{result.error}</p>

@@ -60,4 +60,18 @@ export interface Agent {
    * stepper when this is missing.
    */
   providerAddress?: `0x${string}`;
+  /**
+   * Real access surfaces this agent's own project actually exposes, read
+   * directly from its `studio.toml` (`protocols = [...]`) under
+   * `agents/<name>/app/agent/` — not aspirational. Every one of the 5 real
+   * agent scaffolds currently sets `protocols = ["A2A"]` only: no MCP
+   * (`/mcp` streamable-HTTP), no x402 (`/x402` seller route), even though
+   * both are supported runtime options `bag` could enable. Omitted entirely
+   * for illustrative agents (no real project to read this from).
+   */
+  endpoints?: {
+    a2a: boolean;
+    mcp: boolean;
+    x402: boolean;
+  };
 }

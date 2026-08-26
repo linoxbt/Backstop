@@ -8,7 +8,9 @@ import { MiniStats } from "@/components/MiniStats";
 import { Territories } from "@/components/Territories";
 import { HowItWorksMarquee } from "@/components/HowItWorksMarquee";
 import { GuaranteeSteps } from "@/components/GuaranteeSteps";
+import { AgentVolumeChart } from "@/components/AgentVolumeChart";
 import { AGENTS, isCategory } from "@/lib/agents";
+import { getRealHireStatsForAllAgents } from "@/lib/chain/hires";
 
 export default async function MarketplacePage({
   searchParams,
@@ -18,6 +20,8 @@ export default async function MarketplacePage({
   const params = await searchParams;
   const initialCategory = isCategory(params.category) ? params.category : "all";
   const initialQuery = params.q ?? "";
+  const volumeByAgent = await getRealHireStatsForAllAgents();
+  const totalCyclesCompleted = AGENTS.reduce((sum, a) => sum + a.cyclesCompleted, 0);
 
   return (
     <>
@@ -45,8 +49,18 @@ export default async function MarketplacePage({
           <Territories />
         </div>
 
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16">
           <AgentTable agents={AGENTS} initialCategory={initialCategory} initialQuery={initialQuery} />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
+          <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
+            Across the catalog
+          </span>
+          <h2 className="font-display text-2xl sm:text-3xl mt-2 mb-8">
+            Real volume, real hires, real refunds.
+          </h2>
+          <AgentVolumeChart volumeByAgent={volumeByAgent} totalCyclesCompleted={totalCyclesCompleted} />
         </div>
 
         <HowItWorksMarquee />

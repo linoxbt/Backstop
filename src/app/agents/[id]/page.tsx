@@ -8,10 +8,12 @@ import { GettingStarted } from "@/components/GettingStarted";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { SimilarAgents } from "@/components/SimilarAgents";
 import { PoolTelemetry } from "@/components/PoolTelemetry";
+import { AgentStats } from "@/components/AgentStats";
 import { AGENTS, getAgent, categoryMeta } from "@/lib/agents";
 import { lookupAgentByOwner } from "@/lib/erc8004";
 import { getLivePoolState, TESTNET_TOKENS } from "@/lib/pancakeswap";
 import { getRecentPoolSnapshots, computePoolDrift } from "@/lib/chain/poolSnapshots";
+import { getRealHireStatsForAgent } from "@/lib/chain/hires";
 
 export function generateStaticParams() {
   return AGENTS.map((a) => ({ id: a.id }));
@@ -39,13 +41,14 @@ export default async function AgentPage({
   const tracksPancakeV3 =
     Boolean(agent.providerAddress) &&
     agent.protocols.includes("PancakeSwap v3");
-  const [registration, pool] = await Promise.all([
+  const [registration, pool, hireStats] = await Promise.all([
     agent.providerAddress
       ? lookupAgentByOwner(agent.providerAddress)
       : Promise.resolve(null),
     tracksPancakeV3
       ? getLivePoolState(TESTNET_TOKENS.WBNB, TESTNET_TOKENS.USDT)
       : Promise.resolve(null),
+    getRealHireStatsForAgent(agent.id),
   ]);
   // A real snapshot history for this exact pool (recorded every 30 minutes
   // by the auto-rebate cron — see src/lib/chain/poolSnapshots.ts) — fetched
@@ -183,6 +186,8 @@ export default async function AgentPage({
 
           <div className="grid lg:grid-cols-[1fr_360px] gap-10 lg:gap-14">
             <div className="space-y-14">
+              <AgentStats agent={agent} stats={hireStats} />
+
               <div>
                 <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text block mb-3">
                   The assurance band

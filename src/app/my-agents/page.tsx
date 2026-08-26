@@ -10,6 +10,7 @@ import { getHiresForWallet, type HireRecord } from "@/lib/chain/hires";
 import { getAgent } from "@/lib/agents";
 import { formatUnits } from "viem";
 import { projectId } from "@/lib/wallet/config";
+import { SettleJobButton } from "@/components/SettleJobButton";
 
 export default function MyAgentsPage() {
   const { address, isConnected } = useAccount();
@@ -170,6 +171,12 @@ function HireCard({ hire }: { hire: HireRecord }) {
           </a>
         )}
       </div>
+
+      {hire.mode === "live" && hire.jobId && (
+        <div className="mt-4 pt-4 border-t border-paper-line">
+          <SettleJobButton jobId={hire.jobId} />
+        </div>
+      )}
 
       <p className="font-body text-[12px] text-paper-ink-faint mt-4 pt-4 border-t border-paper-line leading-relaxed">
         Covered by Backstop&rsquo;s assurance pool — {agent.poolContribution} of every fee{" "}

@@ -236,3 +236,90 @@ export async function releaseRebateClaim(claimId: string): Promise<void> {
   if (!supabaseAdmin) return;
   await supabaseAdmin.from("rebates").delete().eq("id", claimId).eq("status", "pending");
 }
+
+export interface AgentHireStats {
+  /** Real rows in `hires` for this agent, mode "live" only. */
+  realHireCount: number;
+  /** Sum of those hires' budget_human, parsed as plain numbers (display only — not raw on-chain units). */
+  realVolume: number;
+  /** Real rows in `rebates` (status "paid") tied to one of this agent's hires. */
+  realRebateCount: number;
+  /** Sum of those rebates' amount_raw, in whole payment-token units (18 decimals). */
+  realRefunded: number;
+}
+
+const EMPTY_STATS: AgentHireStats = { realHireCount: 0, realVolume: 0, realRebateCount: 0, realRefunded: 0 };
+
+function parseBudgetDisplay(budgetHuman: string): number {
+  const n = Number(budgetHuman.replace(/,/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
+export interface AgentVolumeEntry {
+  agentId: string;
+  realHireCount: number;
+  realVolume: number;
+}
+
+/**
+ * Real hire volume/count per agent, in one batched query — for the
+ * marketplace-wide chart, rather than N per-agent round-trips. Same
+ * honest-empty shape as every other read here: [] when Supabase isn't
+ * configured, never an error.
+ */
+export async function getRealHireStatsForAllAgents(): Promise<AgentVolumeEntry[]> {
+  if (!supabase) return [];
+  const { data } = await supabase.from("hires").select("agent_id, budget_human").eq("mode", "live");
+  if (!data) return [];
+
+  const byAgent = new Map<string, { count: number; volume: number }>();
+  for (const row of data) {
+    const current = byAgent.get(row.agent_id) ?? { count: 0, volume: 0 };
+    current.count += 1;
+    current.volume += parseBudgetDisplay(row.budget_human);
+    byAgent.set(row.agent_id, current);
+  }
+  return [...byAgent.entries()].map(([agentId, v]) => ({
+    agentId,
+    realHireCount: v.count,
+    realVolume: v.volume,
+  }));
+}
+
+/**
+ * Real, per-agent hire/rebate aggregates — no static/illustrative numbers
+ * mixed in. Returns all-zero (not an error) when Supabase isn't configured
+ * or the agent has no real hires yet, same honest-degradation shape as
+ * every other read in this module.
+ */
+export async function getRealHireStatsForAgent(agentId: string): Promise<AgentHireStats> {
+  if (!supabase) return EMPTY_STATS;
+
+  const { data: hireRows } = await supabase
+    .from("hires")
+    .select("id, budget_human")
+    .eq("agent_id", agentId)
+    .eq("mode", "live");
+  const hires = hireRows ?? [];
+  const realHireCount = hires.length;
+  const realVolume = hires.reduce((sum, h) => sum + parseBudgetDisplay(h.budget_human), 0);
+
+  if (hires.length === 0) {
+    return { realHireCount: 0, realVolume: 0, realRebateCount: 0, realRefunded: 0 };
+  }
+
+  const { data: rebateRows } = await supabase
+    .from("rebates")
+    .select("amount_raw, hire_id")
+    .eq("agent_id", agentId)
+    .eq("status", "paid")
+    .in(
+      "hire_id",
+      hires.map((h) => h.id),
+    );
+  const rebates = rebateRows ?? [];
+  const realRebateCount = rebates.length;
+  const realRefunded = rebates.reduce((sum, r) => sum + Number(r.amount_raw) / 1e18, 0);
+
+  return { realHireCount, realVolume, realRebateCount, realRefunded };
+}

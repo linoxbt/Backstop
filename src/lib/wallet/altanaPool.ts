@@ -63,7 +63,7 @@ export async function payRebate(
     return {
       ok: false,
       mode: "unconfigured",
-      error: "ALTANA_SESSION not set — run scripts/provision-altana-pool.ts first.",
+      error: "ALTANA_SESSION not set. Run scripts/provision-altana-pool.ts first.",
     };
   }
 
@@ -137,6 +137,34 @@ function unwrapBigint(value: unknown): bigint | null {
     }
   }
   return null;
+}
+
+export interface PoolBalance {
+  raw: string;
+  formatted: string;
+  symbol: string;
+}
+
+/**
+ * Real, live ERC-20 balance of the pool's session wallet, on the same
+ * payment token every hire/rebate in this app uses. Genuinely touches the
+ * chain (unlike getPoolSessionInfo, which only decodes the local env var) —
+ * this is what actually backs a real "reserve" figure on /pool instead of
+ * the static, illustrative POOL.tvl in src/lib/pool.ts.
+ */
+export async function getPoolBalance(walletAddress: Address): Promise<PoolBalance | null> {
+  try {
+    const client = createPublicClient({ chain: bscTestnet, transport: http() });
+    const token = paymentTokenAddress();
+    const [raw, decimals, symbol] = await Promise.all([
+      client.readContract({ address: token, abi: erc20Abi, functionName: "balanceOf", args: [walletAddress] }),
+      client.readContract({ address: token, abi: erc20Abi, functionName: "decimals" }),
+      client.readContract({ address: token, abi: erc20Abi, functionName: "symbol" }),
+    ]);
+    return { raw: raw.toString(), formatted: formatUnits(raw, decimals), symbol };
+  } catch {
+    return null;
+  }
 }
 
 /** Read-only session summary for the /pool page — never touches the chain. */

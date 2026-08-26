@@ -60,7 +60,7 @@ export async function hireAgentOnChain(
     return {
       ok: false,
       mode: "simulated",
-      error: `Too many hire attempts — wait ${rateLimit.retryAfterSeconds}s and try again.`,
+      error: `Too many hire attempts. Wait ${rateLimit.retryAfterSeconds}s and try again.`,
     };
   }
 
@@ -69,14 +69,14 @@ export async function hireAgentOnChain(
       ok: false,
       mode: "simulated",
       error:
-        "This agent has no live on-chain provider address yet — set providerAddress on it, or DEMO_PROVIDER_ADDRESS for a wiring smoke test.",
+        "This agent has no live onchain provider address yet. Set providerAddress on it, or DEMO_PROVIDER_ADDRESS for a wiring smoke test.",
     };
   }
   if (!privateKey && !EVMWalletProvider.keystoreExists()) {
     return {
       ok: false,
       mode: "simulated",
-      error: "No hirer wallet configured — set PRIVATE_KEY and WALLET_PASSWORD.",
+      error: "No hirer wallet configured. Set PRIVATE_KEY and WALLET_PASSWORD.",
     };
   }
   if (!walletPassword) {
@@ -117,7 +117,7 @@ export async function hireAgentOnChain(
     const created = await client.createJob({
       provider: providerAddress,
       expiredAt,
-      description: "Backstop hire — funded via marketplace",
+      description: "Backstop hire, funded via marketplace",
     });
     if (created.jobId === null) {
       throw new Error("createJob did not return a jobId");
@@ -187,12 +187,12 @@ export async function settleJobOnChain(jobId: string): Promise<SettleResult> {
     return {
       ok: false,
       mode: "simulated",
-      error: `Too many settle attempts — wait ${rateLimit.retryAfterSeconds}s and try again.`,
+      error: `Too many settle attempts. Wait ${rateLimit.retryAfterSeconds}s and try again.`,
     };
   }
 
   if (!privateKey && !EVMWalletProvider.keystoreExists()) {
-    return { ok: false, mode: "simulated", error: "No settlement wallet configured — set PRIVATE_KEY and WALLET_PASSWORD." };
+    return { ok: false, mode: "simulated", error: "No settlement wallet configured. Set PRIVATE_KEY and WALLET_PASSWORD." };
   }
   if (!walletPassword) {
     return { ok: false, mode: "simulated", error: "WALLET_PASSWORD is required to unlock the wallet keystore." };

@@ -62,7 +62,7 @@ export function Territories() {
                 <span className="block text-paper-ink-faint text-[9px] uppercase tracking-wider">
                   Top agent
                 </span>
-                <span className="truncate block">{top?.name ?? "—"}</span>
+                <span className="truncate block">{top?.name ?? "N/A"}</span>
               </div>
             </div>
           </Link>

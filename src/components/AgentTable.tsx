@@ -20,7 +20,7 @@ type NetworkFilter = "all" | Agent["network"];
 // real per-hire `rebates` row, not this static field.
 const STATUS_META: Record<Agent["band"]["status"], { label: string; className: string }> = {
   within: { label: "On track", className: "text-verdigris" },
-  breach: { label: "Breach — rebate due", className: "text-stamp" },
+  breach: { label: "Breach, rebate due", className: "text-stamp" },
   pending: { label: "Pending", className: "text-paper-ink-faint" },
 };
 
@@ -204,7 +204,7 @@ export function AgentTable({
           onChange={(v) => setStatus(v as StatusFilter)}
           options={[
             { value: "all", label: "Any status" },
-            { value: "breach", label: "Breach — rebate due" },
+            { value: "breach", label: "Breach, rebate due" },
             { value: "within", label: "On track" },
             { value: "pending", label: "Pending" },
           ]}
@@ -277,7 +277,7 @@ export function AgentTable({
                         <span className="font-display text-base">{agent.name}</span>
                       </Link>
                       {agent.providerAddress && (
-                        <span className="text-verdigris text-[11px]" title="Real on-chain identity">
+                        <span className="text-verdigris text-[11px]" title="Real onchain identity">
                           ✓
                         </span>
                       )}
@@ -386,7 +386,7 @@ function AgentPreview({ agent, onClose }: { agent: Agent; onClose: () => void })
             The proof
           </span>
           <p className={`font-data text-sm uppercase tracking-wider ${meta.className} mb-1`}>
-            {meta.label} — {band.cycleLabel}
+            {meta.label}, {band.cycleLabel}
           </p>
           {band.realized !== null ? (
             <p className="font-body text-sm text-paper-ink-soft">
@@ -406,7 +406,7 @@ function AgentPreview({ agent, onClose }: { agent: Agent; onClose: () => void })
             Backstop
           </span>
           <p className="font-body text-sm text-paper-ink-soft">
-            Covered by the assurance pool — {agent.poolContribution} of every fee this agent earns
+            Covered by the assurance pool, {agent.poolContribution} of every fee this agent earns
             funds it.
           </p>
         </div>

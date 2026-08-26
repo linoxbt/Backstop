@@ -36,7 +36,7 @@ export function SettleJobButton({ jobId }: { jobId: string }) {
         >
           {result.ok ? (
             <>
-              Settled — job status {result.status}.{" "}
+              Settled. Job status {result.status}.{" "}
               {result.explorerUrl && (
                 <a href={result.explorerUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">
                   View transaction on BscScan →

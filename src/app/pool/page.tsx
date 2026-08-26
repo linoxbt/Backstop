@@ -1,12 +1,14 @@
+import Link from "next/link";
 import { formatUnits } from "viem";
 import { AGENTS, CATEGORIES } from "@/lib/agents";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { POOL, REBATE_LOG } from "@/lib/pool";
-import { getPoolSessionInfo } from "@/lib/wallet/altanaPool";
+import { getPoolSessionInfo, getPoolBalance } from "@/lib/wallet/altanaPool";
 import { checkRebalancerBreach } from "@/lib/chain/rebalanceBreach";
 import { checkAgentBandBreaches } from "@/lib/chain/bandBreach";
-import { getRecentRebates } from "@/lib/chain/rebates";
+import { getRecentRebates, getTotalRebateStats } from "@/lib/chain/rebates";
+import { getRealHireStatsForAllAgents } from "@/lib/chain/hires";
 
 // This page's own copy claims "This page runs the identical check on every
 // load" and shows a live "● Pool is live" badge — without this, Next's
@@ -21,12 +23,25 @@ export const dynamic = "force-dynamic";
 const SHADE = ["bg-paper-ink", "bg-bronze-text", "bg-verdigris", "bg-paper-ink-soft"];
 
 export default async function PoolPage() {
-  const [session, liquidityCheck, bandBreachCheck, realRebates] = await Promise.all([
-    getPoolSessionInfo(),
-    checkRebalancerBreach(),
-    Promise.resolve(checkAgentBandBreaches()),
-    getRecentRebates(),
-  ]);
+  const [session, liquidityCheck, bandBreachCheck, realRebates, rebateTotals, volumeByAgent] =
+    await Promise.all([
+      getPoolSessionInfo(),
+      checkRebalancerBreach(),
+      Promise.resolve(checkAgentBandBreaches()),
+      getRecentRebates(),
+      getTotalRebateStats(),
+      getRealHireStatsForAllAgents(),
+    ]);
+  // The pool balance read needs the session's real wallet address, which
+  // only exists once getPoolSessionInfo() above has resolved — can't join
+  // this into the same Promise.all.
+  const poolBalance =
+    session.configured && session.walletAddress
+      ? await getPoolBalance(session.walletAddress as `0x${string}`)
+      : null;
+  const totalRealVolume = volumeByAgent.reduce((sum, v) => sum + v.realVolume, 0);
+  const realPayoutRatio = totalRealVolume > 0 ? (rebateTotals.totalAmount / totalRealVolume) * 100 : null;
+
   const totalHirers = AGENTS.reduce((sum, a) => sum + a.hirers, 0);
   const cleanEntries = AGENTS.filter((a) => a.band.status === "within");
 
@@ -44,28 +59,31 @@ export default async function PoolPage() {
               The reserve
             </span>
             <div className="font-forum text-white text-5xl sm:text-6xl mt-4 mb-2 tabnum">
-              {POOL.tvl}
+              {poolBalance ? `${Number(poolBalance.formatted).toLocaleString()} ${poolBalance.symbol}` : POOL.tvl}
             </div>
-            <p className="font-body text-white/60 mb-10">
+            <p className="font-body text-white/60 mb-2">
               protecting agent jobs across {AGENTS.length} agents, {CATEGORIES.length} categories
+            </p>
+            <p className="font-data text-[11px] text-white/30 uppercase tracking-wider mb-10">
+              {poolBalance ? "Real balance, session wallet" : "Illustrative figure, no live session configured"}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-10 max-w-xl mx-auto text-left">
               <Stat
                 label="Payout ratio"
-                value={POOL.payoutRatio}
-                note={POOL.payoutRatioNote}
+                value={realPayoutRatio !== null ? `${realPayoutRatio.toFixed(1)}%` : POOL.payoutRatio}
+                note={realPayoutRatio !== null ? "real, against real hire volume" : `${POOL.payoutRatioNote} (illustrative)`}
                 dark
               />
               <Stat
                 label="Solvency buffer"
                 value={POOL.solvencyBuffer}
-                note={POOL.solvencyBufferNote}
+                note={`${POOL.solvencyBufferNote} (illustrative)`}
                 dark
               />
               <Stat
                 label="Rebates paid"
-                value={POOL.totalRebatesPaid}
-                note={`${POOL.totalRebatesCount} payouts to date`}
+                value={`${rebateTotals.totalAmount.toLocaleString()} U`}
+                note={`${rebateTotals.count} real payouts to date`}
                 dark
               />
             </div>
@@ -78,7 +96,7 @@ export default async function PoolPage() {
           </span>
           <h2 className="font-display text-3xl mb-6">Protection by category</h2>
           <p className="font-body text-paper-ink-soft max-w-2xl mb-6">
-            Weighted by hirers per category — where the pool&rsquo;s obligation is actually
+            Weighted by hirers per category, where the pool&rsquo;s obligation is actually
             concentrated, not an invented dollar split.
           </p>
           <div className="flex h-3 w-full overflow-hidden border border-paper-line mb-3">
@@ -116,7 +134,7 @@ export default async function PoolPage() {
         <section className="max-w-4xl mx-auto px-5 sm:px-8 py-16 sm:py-20 border-t border-paper-line">
           <div className="flex items-center gap-3 mb-3">
             <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
-              Clause 0 — Session authority
+              Clause 0, Session authority
             </span>
             <span
               className={`font-data text-[10px] uppercase tracking-wider px-2 py-0.5 border ${
@@ -136,13 +154,13 @@ export default async function PoolPage() {
             {session.configured ? (
               <>
                 <Field label="Call allowlist" value={(session.callAllowlist ?? []).join(", ")} mono />
-                <Field label="Spend cap" value={session.spendCap ?? "—"} mono />
+                <Field label="Spend cap" value={session.spendCap ?? "N/A"} mono />
                 <Field
                   label="Expiry"
-                  value={session.expiry ? new Date(session.expiry * 1000).toISOString() : "—"}
+                  value={session.expiry ? new Date(session.expiry * 1000).toISOString() : "N/A"}
                 />
                 <Field label="Registered in" value="Altana Keystore" />
-                <Field label="Session wallet" value={session.walletAddress ?? "—"} mono />
+                <Field label="Session wallet" value={session.walletAddress ?? "N/A"} mono />
               </>
             ) : (
               <>
@@ -155,22 +173,32 @@ export default async function PoolPage() {
             )}
           </div>
           {session.configured && session.walletAddress ? (
-            <a
-              href={`https://testnet.bscscan.com/address/${session.walletAddress}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-block font-data text-xs uppercase tracking-wider border border-paper-ink px-4 py-2.5 hover:bg-paper-ink hover:text-paper transition-colors"
-            >
-              View session wallet on BscScan Testnet →
-            </a>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={`https://testnet.altana.network/account/${session.walletAddress}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-block font-data text-xs uppercase tracking-wider border border-paper-ink px-4 py-2.5 hover:bg-paper-ink hover:text-paper transition-colors"
+              >
+                View wallet onchain on Altana Explorer →
+              </a>
+              <a
+                href={`https://testnet.bscscan.com/address/${session.walletAddress}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-block font-data text-xs uppercase tracking-wider border border-paper-line text-paper-ink-soft px-4 py-2.5 hover:border-paper-ink hover:text-paper-ink transition-colors"
+              >
+                View on BscScan Testnet →
+              </a>
+            </div>
           ) : (
             <button
               type="button"
               disabled
-              title="No live session configured — this is illustrative data, not a real on-chain wallet to inspect"
+              title="No live session configured. This is illustrative data, not a real onchain wallet to inspect"
               className="font-data text-xs uppercase tracking-wider border border-paper-line text-paper-ink-faint px-4 py-2.5 cursor-not-allowed"
             >
-              View session wallet on-chain →
+              View wallet onchain on Altana Explorer →
             </button>
           )}
         </section>
@@ -178,7 +206,7 @@ export default async function PoolPage() {
         <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-20 border-t border-paper-line pt-16 sm:pt-20">
           <div className="flex items-center gap-3 mb-3">
             <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
-              Clause 0(b) — Liquidity check
+              Clause 0(b), Liquidity check
             </span>
             <span
               className={`font-data text-[10px] uppercase tracking-wider px-2 py-0.5 border ${
@@ -192,7 +220,7 @@ export default async function PoolPage() {
           </div>
           <h2 className="font-display text-3xl mb-4">Meridian Rebalancer&rsquo;s pool, checked live</h2>
           <p className="font-body text-paper-ink-soft max-w-2xl mb-4">
-            A read-only, honest signal — whether a PancakeSwap v3 WBNB/USDT pool with real
+            A read-only, honest signal: whether a PancakeSwap v3 WBNB/USDT pool with real
             liquidity currently exists at all. This is informational only: it doesn&rsquo;t decide
             who gets paid (see Clause 0(c) below for that).
           </p>
@@ -202,7 +230,7 @@ export default async function PoolPage() {
         <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-20 border-t border-paper-line pt-16 sm:pt-20">
           <div className="flex items-center gap-3 mb-3">
             <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
-              Clause 0(c) — Band breach payouts
+              Clause 0(c), Band breach payouts
             </span>
             <span
               className={`font-data text-[10px] uppercase tracking-wider px-2 py-0.5 border ${
@@ -214,9 +242,9 @@ export default async function PoolPage() {
           </div>
           <h2 className="font-display text-3xl mb-4">What actually pays a rebate</h2>
           <p className="font-body text-paper-ink-soft max-w-2xl mb-4">
-            Every 30 minutes, an unattended job checks every real, on-chain agent&rsquo;s assurance
-            band and pays a real rebate — from the session above, to the actual hirer&rsquo;s
-            wallet — for every real hire against a breached agent that hasn&rsquo;t been rebated
+            Every 30 minutes, an unattended job checks every real, onchain agent&rsquo;s assurance
+            band and pays a real rebate, from the session above, to the actual hirer&rsquo;s
+            wallet, for every real hire against a breached agent that hasn&rsquo;t been rebated
             yet. This page runs the identical check on every load.
           </p>
           <p className="font-data text-xs text-paper-ink-faint max-w-2xl">{bandBreachCheck.reason}</p>
@@ -224,14 +252,18 @@ export default async function PoolPage() {
 
         <section className="max-w-4xl mx-auto px-5 sm:px-8 pb-20 sm:pb-28 border-t border-paper-line pt-16 sm:pt-20">
           <span className="font-data text-xs uppercase tracking-wider text-bronze-text block mb-3">
-            Clause 1 — Ledger
+            Clause 1, Ledger
           </span>
           <h2 className="font-display text-3xl mb-8">Backstop in action</h2>
+          <p className="font-data text-[11px] text-paper-ink-faint mb-4">
+            Every entry below opens a full detail page.
+          </p>
           <div className="border-t border-paper-line">
             {realRebates.map((r) => (
-              <div
+              <Link
                 key={r.id}
-                className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-2 py-5 border-b border-paper-line"
+                href={`/pool/rebates/${r.id}`}
+                className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-2 py-5 border-b border-paper-line hover:bg-paper-raised/40 transition-colors"
               >
                 <div className="flex gap-3">
                   <span className="text-stamp shrink-0" aria-hidden="true">
@@ -253,22 +285,18 @@ export default async function PoolPage() {
                     {new Date(r.paidAt).toLocaleString()}
                   </div>
                   {r.txHash && (
-                    <a
-                      href={`https://testnet.bscscan.com/tx/${r.txHash}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-data text-[11px] text-bronze-text underline underline-offset-2"
-                    >
+                    <span className="font-data text-[11px] text-bronze-text underline underline-offset-2">
                       {r.txHash.slice(0, 10)}…
-                    </a>
+                    </span>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
             {REBATE_LOG.map((r) => (
-              <div
+              <Link
                 key={r.id}
-                className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-2 py-5 border-b border-paper-line"
+                href={`/pool/rebates/${r.id}`}
+                className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-2 py-5 border-b border-paper-line hover:bg-paper-raised/40 transition-colors"
               >
                 <div className="flex gap-3">
                   <span className="text-stamp shrink-0" aria-hidden="true">
@@ -295,12 +323,13 @@ export default async function PoolPage() {
                   <div className="font-data text-[11px] text-paper-ink-faint tabnum">{r.time}</div>
                   <div className="font-data text-[11px] text-paper-ink-faint">{r.txHash}</div>
                 </div>
-              </div>
+              </Link>
             ))}
             {cleanEntries.map((a) => (
-              <div
+              <Link
                 key={a.id}
-                className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-2 py-5 border-b border-paper-line"
+                href={`/agents/${a.id}`}
+                className="grid sm:grid-cols-[1fr_auto] gap-x-6 gap-y-2 py-5 border-b border-paper-line hover:bg-paper-raised/40 transition-colors"
               >
                 <div className="flex gap-3">
                   <span className="text-verdigris shrink-0" aria-hidden="true">
@@ -315,7 +344,7 @@ export default async function PoolPage() {
                     </div>
                     <p className="font-body text-sm text-paper-ink-soft">
                       Realized {a.band.realized}
-                      {a.band.symbol} {a.band.unit} — inside the promised band, no rebate needed
+                      {a.band.symbol} {a.band.unit}, inside the promised band, no rebate needed
                     </p>
                   </div>
                 </div>
@@ -323,7 +352,7 @@ export default async function PoolPage() {
                   <div className="font-data text-sm tabnum text-paper-ink-faint">no payout</div>
                   <div className="font-data text-[11px] text-paper-ink-faint tabnum">{a.band.cycleLabel}</div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>

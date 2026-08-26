@@ -8,8 +8,29 @@ import { GuaranteeReveal } from "@/components/landing/GuaranteeReveal";
 import { AgentRail } from "@/components/landing/AgentRail";
 import { CategoryShowcase } from "@/components/landing/CategoryShowcase";
 import { POOL } from "@/lib/pool";
+import { getTotalRebateStats } from "@/lib/chain/rebates";
+import { getRealHireStatsForAllAgents } from "@/lib/chain/hires";
+import { getPoolSessionInfo, getPoolBalance } from "@/lib/wallet/altanaPool";
 
-export default function Home() {
+// The closing stat bar below used to show POOL.tvl/payoutRatio/totalRebatesCount
+// unconditionally, as if they were live facts rather than the static,
+// illustrative figures in src/lib/pool.ts. Force-dynamic (matching /pool and
+// /agents/[id]) plus the real reads below is what actually makes it honest.
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [rebateTotals, volumeByAgent, session] = await Promise.all([
+    getTotalRebateStats(),
+    getRealHireStatsForAllAgents(),
+    getPoolSessionInfo(),
+  ]);
+  const poolBalance =
+    session.configured && session.walletAddress
+      ? await getPoolBalance(session.walletAddress as `0x${string}`)
+      : null;
+  const totalRealVolume = volumeByAgent.reduce((sum, v) => sum + v.realVolume, 0);
+  const realPayoutRatio = totalRealVolume > 0 ? (rebateTotals.totalAmount / totalRealVolume) * 100 : null;
+
   return (
     <>
       <SplashIntro />
@@ -28,7 +49,7 @@ export default function Home() {
                   The guarantee
                 </span>
                 <h2 className="font-forum text-white text-2xl sm:text-3xl max-w-xs">
-                  Three steps, enforced on-chain.
+                  Three steps, enforced onchain.
                 </h2>
               </div>
               <GuaranteeSteps tone="dark" />
@@ -38,11 +59,17 @@ export default function Home() {
 
         <section className="border-t border-paper-line">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 flex flex-wrap gap-x-8 gap-y-2 font-data text-[12px] text-paper-ink-faint tabnum">
-            <span>{POOL.tvl} in reserve</span>
+            <span>
+              {poolBalance ? `${Number(poolBalance.formatted).toLocaleString()} ${poolBalance.symbol}` : POOL.tvl} in
+              reserve{!poolBalance && " (illustrative)"}
+            </span>
             <span>·</span>
-            <span>{POOL.payoutRatio} paid out, trailing 90d</span>
+            <span>
+              {realPayoutRatio !== null ? `${realPayoutRatio.toFixed(1)}%` : POOL.payoutRatio} paid out
+              {realPayoutRatio !== null ? ", real" : ", trailing 90d (illustrative)"}
+            </span>
             <span>·</span>
-            <span>{POOL.totalRebatesCount} rebates issued</span>
+            <span>{rebateTotals.count} real rebates issued</span>
           </div>
         </section>
 

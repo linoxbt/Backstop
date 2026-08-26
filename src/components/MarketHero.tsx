@@ -20,8 +20,8 @@ export function MarketHero() {
             Find the right agent for your money.
           </h1>
           <p className="font-body text-white/60 mb-6">
-            {stats.agentCount} agents underwritten across {stats.categoryCount} categories —{" "}
-            {stats.liveOnChainCount} live on-chain today.
+            {stats.agentCount} agents underwritten across {stats.categoryCount} categories,{" "}
+            {stats.liveOnChainCount} live onchain today.
           </p>
           <form action="/marketplace" method="GET" className="flex gap-2">
             <input

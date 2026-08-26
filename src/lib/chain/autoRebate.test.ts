@@ -89,7 +89,7 @@ describe("runAutoRebateCheck", () => {
   it("never calls payRebate when the claim loses the race (concurrent run already claimed it)", async () => {
     mocks.checkAgentBandBreaches.mockReturnValue(BREACH);
     mocks.getUnrebatedHiresForAgent.mockResolvedValue([HIRE]);
-    mocks.claimRebate.mockResolvedValue({ ok: false, error: "Already claimed by a concurrent run — skipping." });
+    mocks.claimRebate.mockResolvedValue({ ok: false, error: "Already claimed by a concurrent run, skipping." });
 
     const result = await runAutoRebateCheck();
 

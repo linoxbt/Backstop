@@ -42,8 +42,8 @@ export default function MyAgentsPage() {
             </span>
             <h1 className="font-forum text-white text-4xl sm:text-5xl mt-2 mb-4">My Agents</h1>
             <p className="font-body text-white/60 max-w-xl">
-              Real hire records, signed by your wallet — not a fabricated live feed. Each entry
-              links to the actual on-chain transaction where one exists.
+              Real hire records, signed by your wallet, not a fabricated live feed. Each entry
+              links to the actual onchain transaction where one exists.
             </p>
           </div>
         </section>
@@ -110,7 +110,7 @@ function HireCard({ hire }: { hire: HireRecord }) {
   // Derived from this specific hire's real `rebates` row, never from the
   // agent's static/illustrative band.status — a real rebate claim requires
   // a real payout tied to *this* hire, not just this agent's demo data.
-  const statusLabel = hire.rebatePaid ? "Rebate paid" : "Hired — cycle in progress";
+  const statusLabel = hire.rebatePaid ? "Rebate paid" : "Hired, cycle in progress";
   const statusClassName = hire.rebatePaid ? "text-stamp" : "text-paper-ink-faint";
 
   return (
@@ -138,7 +138,7 @@ function HireCard({ hire }: { hire: HireRecord }) {
           <span className="block text-paper-ink-faint text-[10px] uppercase tracking-wider mb-1">
             Job
           </span>
-          <span className="tabnum">{hire.jobId ? `#${hire.jobId}` : "—"}</span>
+          <span className="tabnum">{hire.jobId ? `#${hire.jobId}` : "N/A"}</span>
         </div>
         <div>
           <span className="block text-paper-ink-faint text-[10px] uppercase tracking-wider mb-1">
@@ -179,7 +179,7 @@ function HireCard({ hire }: { hire: HireRecord }) {
       )}
 
       <p className="font-body text-[12px] text-paper-ink-faint mt-4 pt-4 border-t border-paper-line leading-relaxed">
-        Covered by Backstop&rsquo;s assurance pool — {agent.poolContribution} of every fee{" "}
+        Covered by Backstop&rsquo;s assurance pool, {agent.poolContribution} of every fee{" "}
         {agent.name} earns funds it. Executed via Backstop&rsquo;s demo signer; your wallet
         authorized this record.
       </p>

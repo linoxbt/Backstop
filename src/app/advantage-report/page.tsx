@@ -74,7 +74,7 @@ export default function AdvantageReportPage() {
         </p>
 
         <div className="border border-bronze-text bg-paper-raised/60 px-5 py-4 mb-12 font-data text-[12px]">
-          <strong className="text-bronze-text">Template — not yet populated.</strong> Bracketed
+          <strong className="text-bronze-text">Template, not yet populated.</strong> Bracketed
           fields need real measured runs before submission, not invented numbers.
         </div>
 
@@ -89,14 +89,14 @@ export default function AdvantageReportPage() {
               <h2 className="font-display text-xl mb-6 max-w-2xl">{row.task}</h2>
               <div className="grid sm:grid-cols-2 gap-6">
                 <ReportColumn
-                  heading={`With agent — ${row.withAgent.agent}`}
+                  heading={`With agent: ${row.withAgent.agent}`}
                   time={row.withAgent.time}
                   cost={row.withAgent.cost}
                   quality={row.withAgent.quality}
                   accent
                 />
                 <ReportColumn
-                  heading="Without agent — manual"
+                  heading="Without agent: manual"
                   time={row.withoutAgent.time}
                   cost={row.withoutAgent.cost}
                   quality={row.withoutAgent.quality}

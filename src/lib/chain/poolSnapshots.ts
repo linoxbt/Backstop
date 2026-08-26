@@ -25,7 +25,7 @@ export interface PoolSnapshotRow {
 /** Insert one real snapshot. Called only from the authenticated cron path. */
 export async function recordPoolSnapshot(pool: PoolState): Promise<{ ok: boolean; error?: string }> {
   if (!supabaseAdmin) {
-    return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY unset — snapshot not recorded." };
+    return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY unset, snapshot not recorded." };
   }
   const { error } = await supabaseAdmin.from("pool_snapshots").insert({
     pool_address: pool.poolAddress,

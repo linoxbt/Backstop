@@ -30,7 +30,7 @@ export function AssuranceBandInteractive({
           <Legend band={band} />
         </div>
         <p className="mt-6 pt-6 border-t border-paper-line text-[13px] text-paper-ink-soft leading-relaxed max-w-md">
-          No cycle has settled yet — the promised band above is what this agent is underwritten
+          No cycle has settled yet. The promised band above is what this agent is underwritten
           against from its first hire. Once a cycle closes, its realized outcome lands here
           against the same manifest.
         </p>
@@ -91,7 +91,7 @@ export function AssuranceBandInteractive({
               style={triggered ? { animationDelay: "0.85s" } : undefined}
             >
               Realized {band.realized}
-              {band.symbol} {band.unit} landed inside the promised band. No rebate necessary —
+              {band.symbol} {band.unit} landed inside the promised band. No rebate necessary,
               the manifest closes clean.
             </p>
           )}

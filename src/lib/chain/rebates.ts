@@ -19,6 +19,58 @@ export interface RealRebateEntry {
   paidAt: string;
 }
 
+export interface RebateTotals {
+  count: number;
+  totalAmount: number;
+}
+
+/** Every real, paid rebate, summed. Used to back /pool's headline stats with real numbers instead of the static POOL figures. */
+export async function getTotalRebateStats(): Promise<RebateTotals> {
+  if (!supabase) return { count: 0, totalAmount: 0 };
+  const { data, error } = await supabase.from("rebates").select("amount_raw").eq("status", "paid");
+  if (error || !data) return { count: 0, totalAmount: 0 };
+  return {
+    count: data.length,
+    totalAmount: data.reduce((sum, r) => sum + Number(r.amount_raw) / 1e18, 0),
+  };
+}
+
+export interface RealRebateDetail extends RealRebateEntry {
+  hireId: string;
+  hirerWallet: string;
+  hireBudgetHuman: string;
+  hireTxHash: string | null;
+}
+
+type HireEmbed = { wallet_address: string; budget_human: string; tx_hash: string | null };
+
+/** Full detail for one real rebate, joined with its underlying hire, for the ledger's detail page. */
+export async function getRebateById(id: string): Promise<RealRebateDetail | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("rebates")
+    .select("id, agent_id, amount_raw, tx_hash, reason, paid_at, hire_id, hires(wallet_address, budget_human, tx_hash)")
+    .eq("id", id)
+    .eq("status", "paid")
+    .maybeSingle();
+  if (error || !data) return null;
+  const hireEmbed = data.hires as HireEmbed | HireEmbed[] | null;
+  const hire = Array.isArray(hireEmbed) ? hireEmbed[0] : hireEmbed;
+  return {
+    id: data.id,
+    agentId: data.agent_id,
+    agentName: getAgent(data.agent_id)?.name ?? data.agent_id,
+    amountRaw: data.amount_raw,
+    txHash: data.tx_hash,
+    reason: data.reason,
+    paidAt: data.paid_at,
+    hireId: data.hire_id,
+    hirerWallet: hire?.wallet_address ?? "",
+    hireBudgetHuman: hire?.budget_human ?? "",
+    hireTxHash: hire?.tx_hash ?? null,
+  };
+}
+
 export async function getRecentRebates(limit = 10): Promise<RealRebateEntry[]> {
   if (!supabase) return [];
   const { data, error } = await supabase

@@ -31,8 +31,8 @@ export function Footer() {
               <span className="font-display text-xl text-white">Backstop</span>
             </div>
             <p className="font-body text-sm text-white/50 max-w-xs leading-relaxed">
-              Hire autonomous rebalancing, grid trading, yield and health-factor agents on BSC —
-              every hire measured against a verified performance band, backed by an on-chain
+              Hire autonomous rebalancing, grid trading, yield and health-factor agents on BSC.
+              Every hire is measured against a verified performance band, backed by an onchain
               assurance pool that pays out automatically when an agent misses.
             </p>
           </div>
@@ -90,7 +90,7 @@ export function Footer() {
             Every hire, measured against a promise. Every miss, paid back.
           </p>
           <p className="font-data text-[11px] text-white/30">
-            © Backstop — BNB Agent Studio Marketplace · BSC Testnet
+            © Backstop · BNB Agent Studio Marketplace · BSC Testnet
           </p>
         </div>
       </div>

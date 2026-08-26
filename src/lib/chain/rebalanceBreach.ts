@@ -28,13 +28,13 @@ export function evaluatePancakeLiquidityBreach(pool: PoolState | null): BreachCh
     return {
       breached: true,
       reason:
-        "No live PancakeSwap v3 WBNB/USDT pool found with liquidity in any fee tier — the promised range-management can't be happening right now.",
+        "No live PancakeSwap v3 WBNB/USDT pool found with liquidity in any fee tier. The promised range-management can't be happening right now.",
       pool: null,
     };
   }
   return {
     breached: false,
-    reason: `Live pool found (fee tier ${(pool.feeTier / 10000).toFixed(2)}%, tick ${pool.tick}) with real liquidity — range-management conditions are met.`,
+    reason: `Live pool found (fee tier ${(pool.feeTier / 10000).toFixed(2)}%, tick ${pool.tick}) with real liquidity. Range-management conditions are met.`,
     pool,
   };
 }

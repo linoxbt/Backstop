@@ -12,8 +12,8 @@ type Stage = "idle" | "pending" | "done";
 type TrackStatus = "idle" | "signing" | "recorded" | "skipped" | "error";
 
 const SIM_STAGES = [
-  { key: "open", label: "Job opened — terms committed" },
-  { key: "funded", label: "Funded — manifest hash locked on-chain" },
+  { key: "open", label: "Job opened, terms committed" },
+  { key: "funded", label: "Funded, manifest hash locked onchain" },
 ];
 
 export function HireFlow({ agent }: { agent: Agent }) {
@@ -76,7 +76,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
           }
         } catch {
           setTrackStatus("error");
-          setTrackError("Signature was declined — this hire won't appear in My Agents.");
+          setTrackError("Signature was declined. This hire won't appear in My Agents.");
         }
       }
     });
@@ -145,7 +145,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
               {result.jobId && (
                 <div className="pt-3 mt-1 border-t border-paper-line">
                   <p className="font-data text-[11px] text-paper-ink-faint mb-2">
-                    Once past its dispute window, this job can be settled by any wallet —
+                    Once past its dispute window, this job can be settled by any wallet,
                     permissionless, per the ERC-8183 policy.
                   </p>
                   <SettleJobButton jobId={result.jobId} />
@@ -187,7 +187,7 @@ export function HireFlow({ agent }: { agent: Agent }) {
                 {agent.manifestHash}
               </p>
               <p className="font-data text-[11px] text-paper-ink-faint border-t border-paper-line pt-3">
-                Simulated — {result.error}
+                Simulated. {result.error}
               </p>
             </div>
           )}

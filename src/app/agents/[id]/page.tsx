@@ -134,7 +134,7 @@ export default async function AgentPage({
               ) : (
                 <dd
                   className="text-paper-ink-faint"
-                  title="No live on-chain wallet — illustrative listing"
+                  title="No live onchain wallet, illustrative listing"
                 >
                   Illustrative
                 </dd>

@@ -35,6 +35,10 @@ export default async function MarketplacePage({
           <CatalogOverview />
         </div>
 
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16">
+          <AgentVolumeChart volumeByAgent={volumeByAgent} totalCyclesCompleted={totalCyclesCompleted} />
+        </div>
+
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-10">
           <MiniStats />
         </div>
@@ -49,18 +53,8 @@ export default async function MarketplacePage({
           <Territories />
         </div>
 
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16">
-          <AgentTable agents={AGENTS} initialCategory={initialCategory} initialQuery={initialQuery} />
-        </div>
-
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
-          <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
-            Across the catalog
-          </span>
-          <h2 className="font-display text-2xl sm:text-3xl mt-2 mb-8">
-            Real volume, real hires, real refunds.
-          </h2>
-          <AgentVolumeChart volumeByAgent={volumeByAgent} totalCyclesCompleted={totalCyclesCompleted} />
+          <AgentTable agents={AGENTS} initialCategory={initialCategory} initialQuery={initialQuery} />
         </div>
 
         <HowItWorksMarquee />

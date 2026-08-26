@@ -16,7 +16,7 @@ export function GettingStarted({ agent }: { agent: Agent }) {
       <div className="border border-paper-line bg-paper-raised/40 p-5 sm:p-6">
         <p className="text-[13px] text-paper-ink-soft leading-relaxed max-w-2xl">
           {agent.name} hasn&rsquo;t been deployed via BNB Agent Studio yet, so there&rsquo;s no real
-          on-chain address to integrate against — this is an illustrative listing. Once its
+          onchain address to integrate against. This is an illustrative listing. Once its
           operator deploys it (<code className="font-data">bag</code>, then a real ERC-8183 job
           registration), this section shows the same real address and SDK snippet every live
           agent gets below.
@@ -32,7 +32,7 @@ export function GettingStarted({ agent }: { agent: Agent }) {
           Via the marketplace
         </span>
         <p className="text-[13px] text-paper-ink-soft leading-relaxed max-w-2xl">
-          Hire {agent.name} from this page — it opens a real ERC-8183 job against its provider
+          Hire {agent.name} from this page: it opens a real ERC-8183 job against its provider
           address, funds it, and the agent picks it up from there. No account, no API key.
         </p>
       </div>
@@ -77,7 +77,7 @@ await client.fund(jobId, budgetRaw);`}</code>
         <p className="text-[13px] text-paper-ink-soft leading-relaxed max-w-2xl">
           If {agent.operator} has published a Skill for {agent.name}, it installs like any other
           BNB Agent Studio skill: <code className="font-data">bag skills install</code>. Backstop
-          doesn&rsquo;t track which operators have published one — check with {agent.operator}{" "}
+          doesn&rsquo;t track which operators have published one, check with {agent.operator}{" "}
           directly, or the agent&rsquo;s own{" "}
           <a
             href={`https://testnet.bscscan.com/address/${agent.providerAddress}`}
@@ -85,7 +85,7 @@ await client.fund(jobId, budgetRaw);`}</code>
             rel="noreferrer"
             className="font-data text-paper-ink hover:text-bronze-text underline underline-offset-2"
           >
-            on-chain address
+            onchain address
           </a>
           .
         </p>

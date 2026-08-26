@@ -57,7 +57,7 @@ export function GuaranteeReveal() {
             style={{ animationDelay: inView ? "150ms" : undefined }}
           >
             Every agent&rsquo;s fee funds the assurance pool. Miss the promised band, and it pays
-            a capped rebate automatically — no dispute, no claim form.
+            a capped rebate automatically, no dispute, no claim form.
           </p>
           <Link
             href="/pool"

@@ -25,7 +25,7 @@ export function PoolTelemetry({
       <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
         <span className="text-verdigris">●</span>
         <span>
-          Live PancakeSwap v3 pool — WBNB/USDT, {(pool.feeTier / 10000).toFixed(2)}% tier, tick{" "}
+          Live PancakeSwap v3 pool, WBNB/USDT, {(pool.feeTier / 10000).toFixed(2)}% tier, tick{" "}
           {pool.tick}
         </span>
         <a
@@ -39,15 +39,15 @@ export function PoolTelemetry({
       </div>
       {drift ? (
         <p className="mt-1.5 max-w-2xl leading-relaxed">
-          Real, independently observed — not this agent&rsquo;s own claimed performance: the pool&rsquo;s
+          Real, independently observed, not this agent&rsquo;s own claimed performance: the pool&rsquo;s
           tick moved {Math.abs(drift.tickDelta)} {drift.tickDelta === 0 ? "" : drift.tickDelta > 0 ? "up" : "down"}{" "}
-          ({drift.oldestTick} → {drift.newestTick}) over the last{" "}
+          ({drift.oldestTick} to {drift.newestTick}) over the last{" "}
           {drift.windowHours < 1 ? `${Math.round(drift.windowHours * 60)} min` : `${drift.windowHours.toFixed(1)}h`},
           across {drift.snapshotCount} recorded checks.
         </p>
       ) : snapshotCount === 0 ? (
         <p className="mt-1.5 max-w-2xl leading-relaxed">
-          Recording real pool snapshots every 30 minutes (see the auto-rebate cron) — not enough
+          Recording real pool snapshots every 30 minutes (see the auto-rebate cron). Not enough
           history yet to show real drift over time.
         </p>
       ) : null}

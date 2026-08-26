@@ -38,7 +38,7 @@ export async function recordHire(input: RecordHireInput): Promise<{ ok: boolean;
   }
 
   if (!messageIsFresh(input.message)) {
-    return { ok: false, error: "This authorization has expired — sign a fresh hire request and try again." };
+    return { ok: false, error: "This authorization has expired. Sign a fresh hire request and try again." };
   }
 
   const valid = await verifyMessage({
@@ -47,7 +47,7 @@ export async function recordHire(input: RecordHireInput): Promise<{ ok: boolean;
     signature: input.signature,
   }).catch(() => false);
   if (!valid) {
-    return { ok: false, error: "Signature didn't match the connected wallet — hire not recorded." };
+    return { ok: false, error: "Signature didn't match the connected wallet. Hire not recorded." };
   }
 
   const { error } = await supabaseAdmin.from("hires").insert({
@@ -203,7 +203,7 @@ export async function claimRebate(input: ClaimRebateInput): Promise<ClaimRebateR
     .single();
   if (error) {
     if (error.code === "23505") {
-      return { ok: false, error: "Already claimed by a concurrent run — skipping." };
+      return { ok: false, error: "Already claimed by a concurrent run, skipping." };
     }
     return { ok: false, error: error.message };
   }

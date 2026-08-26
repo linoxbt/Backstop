@@ -1,7 +1,7 @@
 const STEPS = [
-  "Hire funds an ERC-8183 job — the promised band commits on-chain.",
-  "Cycle settles — the agent's manifest hash is verified, not self-reported.",
-  "Miss the band → the pool pays a capped rebate. Automatically.",
+  "Hire funds an ERC-8183 job. The promised band commits onchain.",
+  "Cycle settles. The agent's manifest hash is verified, not self-reported.",
+  "Miss the band, and the pool pays a capped rebate. Automatically.",
 ];
 
 export function GuaranteeSteps({ tone = "light" }: { tone?: "light" | "dark" }) {

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Seal, DarkSeal } from "./Logo";
 import { ConnectWalletButton } from "./ConnectWalletButton";
 import { NavMenu } from "./NavMenu";
@@ -26,8 +25,6 @@ import { useHeaderTone } from "@/lib/useHeaderTone";
  * giving desktop visitors one consistent place to find every destination.
  */
 export function Header() {
-  const pathname = usePathname();
-  const enteredMarketplace = pathname !== "/";
   const tone = useHeaderTone();
   const dark = tone === "dark";
 
@@ -50,20 +47,7 @@ export function Header() {
         </Link>
 
         <nav className="flex items-center gap-4 sm:gap-6 font-ui text-[13px] tracking-wide shrink-0">
-          {enteredMarketplace ? (
-            <ConnectWalletButton dark={dark} />
-          ) : (
-            <Link
-              href="/marketplace"
-              className={`hidden sm:inline-block font-data text-xs uppercase tracking-wider rounded-lg px-4 py-2 transition-colors ${
-                dark
-                  ? "bg-bronze-bright text-[var(--color-momento-bg)] hover:bg-bronze-text"
-                  : "bg-paper-ink text-paper hover:bg-bronze-text"
-              }`}
-            >
-              Enter the marketplace
-            </Link>
-          )}
+          <ConnectWalletButton dark={dark} />
           <NavMenu dark={dark} />
         </nav>
       </div>

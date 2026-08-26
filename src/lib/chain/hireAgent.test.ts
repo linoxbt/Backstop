@@ -39,12 +39,12 @@ beforeEach(() => {
 });
 
 describe("hireAgentOnChain — gating (never fakes a live result)", () => {
-  it("falls back to simulated when the agent has no on-chain provider address and no DEMO_PROVIDER_ADDRESS", async () => {
+  it("falls back to simulated when the agent has no onchain provider address and no DEMO_PROVIDER_ADDRESS", async () => {
     const result = await hireAgentOnChain(undefined, "2,500");
     expect(result).toEqual({
       ok: false,
       mode: "simulated",
-      error: expect.stringContaining("no live on-chain provider address"),
+      error: expect.stringContaining("no live onchain provider address"),
     });
     expect(mocks.createClient).not.toHaveBeenCalled();
   });

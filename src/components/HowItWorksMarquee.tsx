@@ -1,4 +1,4 @@
-const PHRASES = ["DISCOVER", "HIRE", "BAND COMMITS ON-CHAIN", "MISS IT, GET PAID BACK"];
+const PHRASES = ["DISCOVER", "HIRE", "BAND COMMITS ONCHAIN", "MISS IT, GET PAID BACK"];
 
 /**
  * A continuous ticker banner, Agentic Market's closing "GET RESULTS ->

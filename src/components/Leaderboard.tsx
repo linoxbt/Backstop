@@ -9,7 +9,7 @@ export function Leaderboard() {
     <div className="border border-paper-line bg-paper-raised/50">
       <div className="px-4 py-3 border-b border-paper-line">
         <span className="font-data text-[11px] uppercase tracking-wider text-bronze-text">
-          Leaderboard — by hirers
+          Leaderboard, by hirers
         </span>
       </div>
       <ol>
@@ -29,7 +29,7 @@ export function Leaderboard() {
                   <span className="flex items-center gap-1.5">
                     <span className="font-ui text-[13px] truncate">{agent.name}</span>
                     {agent.providerAddress && (
-                      <span className="text-verdigris text-[11px]" title="Real on-chain identity">
+                      <span className="text-verdigris text-[11px]" title="Real onchain identity">
                         ✓
                       </span>
                     )}

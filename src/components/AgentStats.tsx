@@ -37,7 +37,7 @@ export function AgentStats({ agent, stats }: { agent: Agent; stats: AgentHireSta
         <Stat label="Real volume" value={`${stats.realVolume.toLocaleString()} U`} />
         <Stat
           label="Avg / hire"
-          value={avgPerHire !== null ? `${avgPerHire.toLocaleString(undefined, { maximumFractionDigits: 0 })} U` : "—"}
+          value={avgPerHire !== null ? `${avgPerHire.toLocaleString(undefined, { maximumFractionDigits: 0 })} U` : "N/A"}
         />
         <Stat
           label="Missed & refunded"
@@ -60,7 +60,7 @@ export function AgentStats({ agent, stats }: { agent: Agent; stats: AgentHireSta
           </div>
         ) : (
           <p className="text-[12px] text-paper-ink-faint">
-            Illustrative listing — no deployed agent project to read a real protocol
+            Illustrative listing: no deployed agent project to read a real protocol
             configuration from.
           </p>
         )}

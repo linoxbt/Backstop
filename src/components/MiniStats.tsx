@@ -33,7 +33,7 @@ export function MiniStats() {
         href="/pool"
         className="col-span-2 sm:col-span-4 border-t border-paper-line px-4 py-2 font-data text-[10px] uppercase tracking-wider text-paper-ink-faint hover:text-bronze-text transition-colors"
       >
-        Illustrative pool figures — see the live session on /pool →
+        Illustrative pool figures. See the live session on /pool →
       </Link>
     </div>
   );

@@ -27,7 +27,7 @@ export default function Error({
           This page hit an error.
         </h1>
         <p className="font-body text-paper-ink-soft leading-relaxed mb-2">
-          Nothing on-chain was affected — this is a rendering failure, not a lost transaction.
+          Nothing onchain was affected. This is a rendering failure, not a lost transaction.
         </p>
         {error.digest && (
           <p className="font-data text-[11px] text-paper-ink-faint mb-8">Error digest: {error.digest}</p>

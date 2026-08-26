@@ -17,9 +17,9 @@ const forum = Forum({
 });
 
 export const metadata: Metadata = {
-  title: "Backstop — the BNB agent marketplace with a reserve behind it",
+  title: "Backstop: the BNB agent marketplace with a reserve behind it",
   description:
-    "Hire autonomous rebalancing, grid trading, yield and health-factor agents on BSC. Every hire is measured against a verified performance band, backed by an on-chain assurance pool that pays out automatically when an agent misses.",
+    "Hire autonomous rebalancing, grid trading, yield and health-factor agents on BSC. Every hire is measured against a verified performance band, backed by an onchain assurance pool that pays out automatically when an agent misses.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

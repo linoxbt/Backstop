@@ -4,15 +4,15 @@ export const CATEGORIES: CategoryMeta[] = [
   {
     id: "rebalancing",
     label: "Rebalancing",
-    clause: "Form A — LP Range Management",
+    clause: "Form A, LP Range Management",
     verb: "manages LP ranges, resets positions automatically",
     blurb:
-      "LP ranges drift with price. Every agent here resets its range and writes the realized cost delta on-chain — not an APR screenshot.",
+      "LP ranges drift with price. Every agent here resets its range and writes the realized cost delta onchain, not an APR screenshot.",
   },
   {
     id: "grid-trading",
     label: "Grid Trading",
-    clause: "Form B — Grid Order Management",
+    clause: "Form B, Grid Order Management",
     verb: "places and manages automated grid orders",
     blurb:
       "Grid orders live or die on realized spread, not backtest. Every fill this cycle is in the manifest below the band.",
@@ -20,7 +20,7 @@ export const CATEGORIES: CategoryMeta[] = [
   {
     id: "yield",
     label: "Yield Optimisation",
-    clause: "Form C — Liquidity Routing",
+    clause: "Form C, Liquidity Routing",
     verb: "routes liquidity to the highest available APR",
     blurb:
       "A yield agent is judged on what it beats, not what it chased. Every APY shown here is checked against the manifest at settlement.",
@@ -28,7 +28,7 @@ export const CATEGORIES: CategoryMeta[] = [
   {
     id: "health-factor",
     label: "Health Factor Monitoring",
-    clause: "Form D — Liquidation Defense",
+    clause: "Form D, Liquidation Defense",
     verb: "protects lending positions from liquidation",
     blurb:
       "A health-factor agent only matters in the minutes before liquidation. Every band below is measured against real drawdowns, not calm markets.",
@@ -102,7 +102,7 @@ export const AGENTS: Agent[] = [
       rebate: {
         amount: "0.9% of position value",
         clause: "Clause 97(a)",
-        note: "Realized 38 bps against a 45 bps floor — the Venus leg under-yielded during a low-volatility week, so the out-of-range parking gained less than promised.",
+        note: "Realized 38 bps against a 45 bps floor. The Venus leg under-yielded during a low-volatility week, so the out-of-range parking gained less than promised.",
       },
     },
   },
@@ -112,7 +112,7 @@ export const AGENTS: Agent[] = [
     category: "rebalancing",
     tagline: "Runs tighter PancakeSwap ranges on BNB/ETH for higher fee capture.",
     description:
-      "Arclight trades range width for fee density — narrower bands on the BNB/ETH v3 pool, rebalanced roughly every 40 minutes during active hours. Built for hirers who want more of their capital earning at any given moment.",
+      "Arclight trades range width for fee density: narrower bands on the BNB/ETH v3 pool, rebalanced roughly every 40 minutes during active hours. Built for hirers who want more of their capital earning at any given moment.",
     operator: "Dromon Systems",
     agentId8004: "bnb:56 · agent #10412",
     network: "BSC Mainnet",
@@ -173,7 +173,7 @@ export const AGENTS: Agent[] = [
       rebate: {
         amount: "0.42% of position value",
         clause: "Clause 14(a)",
-        note: "Realized 4.10% fell 0.5 pt below the promised floor. The pool paid out against the same manifest hash shown at hire — no dispute filed.",
+        note: "Realized 4.10% fell 0.5 pt below the promised floor. The pool paid out against the same manifest hash shown at hire, no dispute filed.",
       },
     },
   },
@@ -247,7 +247,7 @@ export const AGENTS: Agent[] = [
     category: "grid-trading",
     tagline: "A new grid on BNB/FDUSD, listed this week.",
     description:
-      "Estuary just completed its Agent Studio verification and its first job funding. No cycle has settled yet, so there's no realized track record — only the band it's underwritten against.",
+      "Estuary just completed its Agent Studio verification and its first job funding. No cycle has settled yet, so there's no realized track record, only the band it's underwritten against.",
     operator: "Cordage Collective",
     agentId8004: "bnb:56 · agent #11142",
     network: "BSC Mainnet",
@@ -280,7 +280,7 @@ export const AGENTS: Agent[] = [
     category: "yield",
     tagline: "Routes idle stablecoins to the best verified APR across Venus and PancakeSwap.",
     description:
-      "Cistern re-checks lending and LP yields every epoch and moves capital to whichever verified venue is paying the most, net of the gas cost of moving — never chasing an unverified or momentary spike.",
+      "Cistern re-checks lending and LP yields every epoch and moves capital to whichever verified venue is paying the most, net of the gas cost of moving. Never chasing an unverified or momentary spike.",
     operator: "Reservoir Systems",
     agentId8004: "bnb:56 · agent #12203",
     network: "BSC Testnet",
@@ -308,7 +308,7 @@ export const AGENTS: Agent[] = [
       rebate: {
         amount: "1.10% deposit credit",
         clause: "Clause 4(c)",
-        note: "Realized 6.60% APY against a 7.8% floor — a Venus rate drop mid-epoch outpaced the routing agent's rebalance window.",
+        note: "Realized 6.60% APY against a 7.8% floor. A Venus rate drop mid-epoch outpaced the routing agent's rebalance window.",
       },
     },
   },
@@ -410,7 +410,7 @@ export const AGENTS: Agent[] = [
       rebate: {
         amount: "0.31 BNB",
         clause: "Clause 6(b)",
-        note: "HF dropped to 1.22 against a 1.35 floor during a fast margin move — the de-lever stage triggered late. Pool paid out before the position was four blocks old.",
+        note: "HF dropped to 1.22 against a 1.35 floor during a fast margin move. The de-lever stage triggered late. Pool paid out before the position was four blocks old.",
       },
     },
   },
@@ -451,7 +451,7 @@ export const AGENTS: Agent[] = [
     category: "health-factor",
     tagline: "HF defense tuned for leveraged Aave v3 positions on BSC.",
     description:
-      "Bastion is built for hirers running closer to the edge on purpose — tighter monitoring cadence, smaller de-lever steps, aimed at Aave v3 borrowers who want to stay leveraged as long as it's safe to.",
+      "Bastion is built for hirers running closer to the edge on purpose: tighter monitoring cadence, smaller de-lever steps, aimed at Aave v3 borrowers who want to stay leveraged as long as it's safe to.",
     operator: "Dromon Systems",
     agentId8004: "bnb:56 · agent #13210",
     network: "BSC Mainnet",

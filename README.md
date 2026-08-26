@@ -1,167 +1,278 @@
 # Backstop
 
-An agent marketplace for BNB Chain's **Smart Money Era** hackathon — rebalancing, grid
-trading, yield and health-factor agents, each hired against a verified **assurance band**
-and backed by a shared on-chain assurance pool that pays out automatically when an agent
-misses what it promised.
+**The BNB agent marketplace with a reserve behind it.**
 
-## Design direction
+Backstop is a submission for BNB Chain's **Smart Money Era** hackathon (Main Track:
+*Build the BNB Agent Studio Marketplace*). It's a marketplace for hiring autonomous
+rebalancing, grid trading, yield, and health-factor agents on BSC. Every hire is
+measured against a verified **assurance band**, and backed by a shared onchain
+assurance pool that pays a rebate automatically when an agent misses what it promised.
 
-Two art directions from the pitch phase, combined:
+**Live:** [get-backstop.netlify.app](https://get-backstop.netlify.app)
+**Repo:** [github.com/linoxbt/Backstop](https://github.com/linoxbt/Backstop)
 
-- **The Vault** governs structure — stone/steel/bronze palette, the "chambers around a
-  reserve" logic for how the four categories relate to the assurance pool.
-- **The Ledger** governs proof — inside each agent's page, the assurance band reads as a
-  document (ruled lines, tabular numerals), and the one moment that gets fast, decisive
-  motion is a rebate: a red ink stamp, not a slow mechanism. Red (`--color-stamp`) is
-  reserved for exactly that one meaning across the whole product.
+---
 
-Fonts, as actually shipped (`src/app/layout.tsx`, `src/app/globals.css`): **Space
-Grotesk** (display), **Outfit** (body/UI chrome), **DM Mono** (data/ledger numerals),
-plus **Forum** — a serif reserved for the landing page's dark "Momento" hero sections
-only (`MomentoHero.tsx`, `GuaranteeReveal.tsx`), never used elsewhere. Tokens live in
-`src/app/globals.css`.
+## Table of contents
 
-## Structure
+1. [The problem, and how Backstop answers it](#the-problem-and-how-backstop-answers-it)
+2. [The four categories](#the-four-categories)
+3. [How an agent actually gets into this app](#how-an-agent-actually-gets-into-this-app)
+4. [The guarantee: how a hire is backed](#the-guarantee-how-a-hire-is-backed)
+5. [What's real, what's illustrative, an honest inventory](#whats-real-whats-illustrative-an-honest-inventory)
+6. [Architecture](#architecture)
+7. [Getting started](#getting-started)
+8. [Environment variables](#environment-variables)
+9. [Testing](#testing)
+10. [Deployment](#deployment)
+11. [Project structure](#project-structure)
+12. [Hackathon tracks this targets](#hackathon-tracks-this-targets)
+13. [Roadmap](#roadmap)
+
+For a much deeper technical walkthrough (every file, every data flow, verified against
+the actual source), see [`DOCUMENTATION.md`](./DOCUMENTATION.md).
+
+---
+
+## The problem, and how Backstop answers it
+
+Autonomous agents that manage money (rebalancing a PancakeSwap position, watching a
+Venus health factor, routing idle stablecoins to yield) are only as trustworthy as the
+claims their operators make about them. There's no standard way to know, before hiring
+one, whether it actually does what it says, and no recourse if it doesn't.
+
+Backstop answers this two ways:
+
+- **Discovery.** Anyone can find out what agents actually exist on BNB Chain, not a
+  hand-picked list, but the real, live ERC-8004 identity registry (see
+  [§3](#how-an-agent-actually-gets-into-this-app)).
+- **A guarantee, not just a listing.** For the agents Backstop actually underwrites, a
+  hire is measured against a promised performance band, and a shared assurance pool,
+  funded by a cut of every agent's fees, pays a capped rebate automatically the moment
+  a real breach is detected. No dispute process, no claim form.
+
+## The four categories
+
+| Category | What it does |
+|---|---|
+| **Rebalancing** | Resets LP ranges before price drifts out of the fee-earning band |
+| **Grid Trading** | Places and re-places grid orders sized to realized volatility |
+| **Yield Optimisation** | Routes idle capital to the highest verified APR, net of gas |
+| **Health Factor Monitoring** | De-levers a lending position before it gets close to liquidation |
+
+The Main Track's own judging criteria call for treating all four as equally deep, not
+one as primary. Backstop's real (onchain) agents span all four, not one category with
+the rest as filler.
+
+## How an agent actually gets into this app
+
+This is worth being precise about, because it's easy to assume the wrong model. **There
+is no "list your agent with Backstop" step.** Backstop surfaces agents two different
+ways, and they answer two different questions:
+
+1. **Backstop's own curated roster** (`src/lib/agents.ts`): agents Backstop has an
+   actual relationship with: a real fee model, a promised assurance band, a real hire
+   flow, and (for the ones with a real onchain `providerAddress`) a real ERC-8183 job on
+   BSC Testnet when you hire them. Getting into this roster today is a manual, 3-step
+   process described in full on [`/docs`](https://get-backstop.netlify.app/docs#listing):
+   deploy via BNB Agent Studio, register an ERC-8004 identity, send Backstop the real
+   address. There's no self-serve form yet.
+2. **Every agent registered on the real ERC-8004 identity registry** (the marketplace's
+   "Beyond the roster" section, `src/lib/erc8004.ts`'s `listRegisteredAgents()`).
+   Registration on ERC-8004 is permissionless and has nothing to do with Backstop at
+   all. Any operator who registers becomes discoverable here automatically, with real
+   name, description, owner, verification status, and onchain reputation, sourced live
+   from [8004scan](https://8004scan.io)'s public API. As of this writing there are
+   **1,896+ real agents** registered on BSC Testnet alone. Backstop makes no promise
+   about these agents (no assurance band, no fee relationship, no hire flow) because it
+   genuinely has no data of its own about them beyond what the registry publishes.
+
+The first is "agents Backstop personally underwrites." The second is "every agent that
+actually exists on the chain, whether or not Backstop has ever heard of it," which is
+the more literal reading of "build a marketplace where it's easy to find agents on BNB
+Chain."
+
+## The guarantee: how a hire is backed
+
+Three steps, enforced onchain:
+
+1. **Hire funds a real ERC-8183 job.** `createJob → registerJob → setBudget → fund` runs
+   against the live ERC-8183 Router contract on BSC Testnet via the real `@bnbagent/sdk`.
+   The promised band commits at this point, not after the fact.
+2. **The cycle settles.** `ERC8183Client.settle(jobId)` is permissionless: once a job
+   clears its dispute window, any wallet can call it to pull the policy's verdict and
+   apply it onchain. Backstop's own UI offers this immediately after a live hire, and
+   again from any past hire in [My Agents](https://get-backstop.netlify.app/my-agents).
+3. **Miss the band, and the pool pays a capped rebate, automatically.** Every 30
+   minutes, an unattended job (`.github/workflows/rebalance-breach-check.yml`) checks
+   every real agent's actual assurance-band status and pays a real rebate, from the
+   assurance pool's Altana session, to the wallet of every real hire against a breached
+   agent that hasn't been rebated yet. Idempotency is a database `unique` constraint
+   claimed *before* any transfer happens, not a timer. Safe even if two cron
+   invocations somehow overlap.
+
+## What's real, what's illustrative, an honest inventory
+
+Every feature below is one of these, and the app itself always says which:
+
+| Feature | Status |
+|---|---|
+| ERC-8183 hire flow (`createJob`→`fund`) | **Real.** Needs `PRIVATE_KEY`/`WALLET_PASSWORD` configured, else falls back to a labeled simulated stepper |
+| ERC-8183 job settlement | **Real.** `ERC8183Client.settle()`, same wallet requirement |
+| Wallet-signed hire records ("My Agents") | **Real.** `viem.verifyMessage`, replay-protected, stored in Postgres |
+| Automatic rebate payout | **Real.** Needs `ALTANA_SESSION` provisioned, else the pool session shows "Illustrative" |
+| ERC-8004 identity lookup (per agent) | **Real.** Public 8004scan API, no key required |
+| ERC-8004 agent discovery ("Beyond the roster") | **Real.** Live registry query, 1,896+ real agents on testnet |
+| PancakeSwap v3 pool liveness + telemetry | **Real.** Live onchain reads, snapshotted every 30 min |
+| Pool reserve balance, payout ratio, rebates paid | **Real when a session/data exists, explicitly labeled "illustrative" otherwise** |
+| Cross-instance rate limiting | **Real.** Postgres-backed, falls back to in-memory when unconfigured |
+| `AssuranceBand.realized`/`status` per agent | **Illustrative.** Hand-authored, not a live measurement of agent execution (the one honesty gap that also affects the auto-rebate trigger's payout *decision*, even though the payout *mechanism* is real) |
+| 8 of 13 catalog agents | **Illustrative.** No real onchain `providerAddress` |
+| Agent Advantage Report | **Template.** Bracketed placeholders, not invented numbers. See [`scripts/run-advantage-task.ts`](#testing) |
+
+Check `GET /api/health` on any deployment for a one-request, boolean-only status of
+every piece of live wiring that can silently degrade. It reveals presence only, never
+secret values.
+
+## Architecture
+
+- **Framework:** Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS v4
+- **Chain:** BSC Testnet (chain id 97), via `viem` and the real `@bnbagent/sdk`
+  (ERC-8183 job escrow, `@bnbagent/sdk/wallets` for the Altana session)
+- **Identity:** ERC-8004, read via [8004scan](https://8004scan.io)'s public API
+- **Database:** Supabase (Postgres): `hires`, `rebates`, `rate_limits`, `pool_snapshots`
+  tables, RLS-enforced (public read, service-role-only write)
+- **Wallet connect:** Reown AppKit / wagmi
+- **Hosting:** Netlify (`@netlify/plugin-nextjs`)
+- **Automation:** GitHub Actions, a 30-minute cron hitting an authenticated endpoint
+  that checks band breaches, pays real rebates, and records real pool telemetry
+
+See [`DOCUMENTATION.md`](./DOCUMENTATION.md) for a complete, file-by-file breakdown.
+
+## Getting started
+
+```bash
+npm install
+npm run dev      # http://localhost:3000
+```
+
+The app runs with zero configuration. Every live feature above gracefully degrades to
+an honestly-labeled illustrative/simulated state without any env vars set. To turn
+pieces on, copy `.env.example` to `.env.local` and see [Environment variables](#environment-variables).
+
+```bash
+npm run build    # production build (also runs the TypeScript check)
+npm run lint     # eslint
+npm run test     # vitest
+```
+
+## Environment variables
+
+Full, commented reference lives in [`.env.example`](./.env.example). Summary:
+
+| Variable | Unlocks |
+|---|---|
+| `PRIVATE_KEY`, `WALLET_PASSWORD` | The real ERC-8183 hire and settle flow |
+| `DEMO_PROVIDER_ADDRESS` | A wiring smoke test for agents with no real `providerAddress` yet |
+| `NEXT_PUBLIC_REOWN_PROJECT_ID` | Wallet connect (free at [dashboard.reown.com](https://dashboard.reown.com)) |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Reading real hire/rebate/pool-telemetry data |
+| `SUPABASE_SERVICE_ROLE_KEY` | *Writing* real hire/rebate/pool-telemetry data, and cross-instance rate limiting |
+| `ALTANA_ADMIN_PRIVATE_KEY`, `ALTANA_SESSION` | The real automatic rebate payout (see `scripts/provision-altana-pool.ts`) |
+| `CRON_SECRET` | The authenticated auto-rebate/pool-telemetry cron endpoint |
+| `EIGHT004SCAN_API_KEY` | Optional. The free 8004scan Pro-tier rate-limit upgrade; the app works fully without it |
+
+## Testing
+
+```bash
+npm run test
+```
+
+Vitest covers the pure logic layer directly: budget parsing, band math, rate limiting,
+band-breach/liquidity-breach evaluation, pool-drift derivation, hire-message freshness,
+and the auto-rebate claim/pay/finalize orchestration (including its double-payout-race
+protection, mocked end-to-end).
+
+For the TermiX Advantage Report specifically, `scripts/run-advantage-task.ts` runs one
+real, timed hire against a real agent and prints a ready-to-paste row:
+
+```bash
+npx tsx scripts/run-advantage-task.ts meridian-rebalancer 2500
+```
+
+## Deployment
+
+Deployed on Netlify from this repo's `main` branch. `netlify.toml` configures
+`@netlify/plugin-nextjs`; no additional build steps are required. Supabase migrations
+under [`supabase/migrations/`](./supabase/migrations) are applied in filename order and
+must be run against any new Supabase project before wiring its keys in (they include a
+real RLS-hardening fix partway through the history; applying them out of order or
+skipping ahead leaves a real forgery gap open).
+
+## Project structure
 
 ```
 src/
   app/
-    page.tsx                  landing page — dark hero, wayfinding diagram, 4 categories
-    marketplace/page.tsx       full sortable/filterable agent table
-    agents/[id]/page.tsx       agent dossier — assurance band, hire flow
-    pool/page.tsx              assurance pool — reserve stats, session key, rebate ledger
-    my-agents/page.tsx         real, wallet-signed hire records + rebate status
-    advantage-report/page.tsx  TermiX Agent Advantage Report template
-    api/cron/rebalance-check/  authenticated endpoint the auto-rebate cron job hits
-  components/                  AssuranceBand, HireFlow, WayfindingDiagram, etc.
+    page.tsx                    landing page, real pool stats, real category showcase
+    marketplace/page.tsx        curated roster + real ERC-8004 registry discovery
+    agents/[id]/page.tsx        agent dossier: identity, pool telemetry, hire + settle
+    pool/page.tsx               assurance pool: real reserve, session, rebate ledger
+    my-agents/page.tsx          real, wallet-signed hire records + rebate status
+    pool/rebates/[id]/page.tsx  full detail page for any real or illustrative ledger entry
+    advantage-report/page.tsx   TermiX Agent Advantage Report template
+    docs/page.tsx                reference docs, including "how an agent gets listed"
+    api/health/                 boolean-only config status for every live-wiring piece
+    api/cron/rebalance-check/   authenticated endpoint the auto-rebate cron job hits
+  components/                   HireFlow, SettleJobButton, AgentStats, DiscoveredAgents, etc.
   lib/
-    types.ts                   Agent / AssuranceBand / CategoryMeta types
-    agents.ts                  13-agent data set (5 real, 8 illustrative)
-    pool.ts                    illustrative assurance pool stats + rebate log
-    budget.ts                  exact decimal budget parsing (no float precision loss)
-    rateLimit.ts               in-memory + Postgres-backed rate limiting
-    supabase.ts                publishable (read) + service-role (write) Supabase clients
-    chain/hireAgent.ts         real ERC-8183 hire server action (@bnbagent/sdk)
-    chain/hires.ts             wallet-signed hire records + rebate linkage (Supabase)
-    chain/hireAuthMessage.ts   the message a hirer's wallet signs to authorize a record
-    chain/bandBreach.ts        the real payout trigger — which real agents missed their band
-    chain/rebalanceBreach.ts   an honest, separate PancakeSwap-liquidity signal (informational)
-    chain/autoRebate.ts        pays a real, per-hire rebate for every breached agent's hires
-    chain/rebates.ts           reads the real rebate ledger for /pool
-    chain/poolSnapshots.ts     real PancakeSwap pool telemetry, snapshotted every 30 min
-scripts/run-advantage-task.ts one real, timed hire — for the TermiX Advantage Report's "3 real tasks"
-agents/                        5 independent BNB Agent Studio seller-agent projects
-.github/workflows/             the 30-minute scheduled auto-rebate cron trigger
-.env.example                   env vars for the live chain wiring above
+    types.ts                    Agent / AssuranceBand / CategoryMeta types
+    agents.ts                   13-agent curated data set (5 real, 8 illustrative)
+    pool.ts                     illustrative fallback pool figures
+    erc8004.ts                  real ERC-8004 identity lookup and registry discovery
+    pancakeswap.ts               real PancakeSwap v3 pool state reads, cached
+    budget.ts                   exact decimal budget parsing (no float precision loss)
+    rateLimit.ts                in-memory + Postgres-backed rate limiting
+    supabase.ts                 publishable (read) + service-role (write) Supabase clients
+    chain/hireAgent.ts          real ERC-8183 hire and settle server actions
+    chain/hires.ts              wallet-signed hire records, real per-agent hire stats
+    chain/bandBreach.ts         the real payout trigger: which real agents missed their band
+    chain/rebalanceBreach.ts    an honest, separate PancakeSwap-liquidity signal
+    chain/autoRebate.ts         claim-before-pay rebate payout, race-safe
+    chain/rebates.ts            real rebate ledger reads for /pool
+    chain/poolSnapshots.ts      real PancakeSwap pool telemetry, snapshotted every 30 min
+    wallet/altanaPool.ts        the assurance pool's real Altana session and balance
+scripts/
+  run-advantage-task.ts         one real, timed hire, for the TermiX report
+  provision-altana-pool.ts      one-time: grant and register the pool's Altana session
+agents/                         5 independent BNB Agent Studio seller-agent projects
+supabase/migrations/            hires/rebates/rate_limits/pool_snapshots schema, applied in order
+.github/workflows/               the 30-minute scheduled auto-rebate + telemetry cron trigger
 ```
 
-## Live chain wiring
+## Hackathon tracks this targets
 
-The hire flow is wired against the real `@bnbagent/sdk` (npm, published by the
-`bnb-chain` org) and the ERC-8183 contracts it already has deployed on BSC Testnet —
-there's nothing to deploy on our side. `src/lib/chain/hireAgent.ts` is a server action
-that runs the actual `createJob → registerJob → fund → getJob` sequence from the SDK's
-own `typescript/README.md`.
+- **Main Track**: the marketplace itself. Discovery (curated + live ERC-8004 registry),
+  understanding (real per-agent stats, identity, pool telemetry), activation (real hire
+  and settle flow) across all four categories equally.
+- **Best Built with Altana**: the assurance pool's payout session is a real Altana
+  session key (`transfer` only, spend-capped, expiring), separate from the admin key
+  that granted it.
+- **TermiX Challenge**: see the [Agent Advantage Report](https://get-backstop.netlify.app/advantage-report)
+  and `scripts/run-advantage-task.ts`.
+- **PancakeSwap Challenge**: real, live PancakeSwap v3 pool liveness/telemetry checks
+  feed both the auto-rebate trigger's informational liquidity signal and the pool-drift
+  data shown on real agents' dossier pages.
 
-It's gated, not faked: `HireFlow` always calls the real server action first. Without a
-funded wallet and a real provider address it returns `{ mode: "simulated", error }` and
-the UI falls back to the illustrative stepper that was already here, with that reason
-printed at the bottom — so it's never ambiguous which one you're looking at. Given
-credentials and a real agent, it returns `{ mode: "live", jobId, status, explorerUrl }`
-from an actual BSC Testnet transaction.
+## Roadmap
 
-**To turn it on**, copy `.env.example` to `.env.local` and set:
-
-- `PRIVATE_KEY` + `WALLET_PASSWORD` — the hirer's wallet. Fund it with testnet BNB (gas)
-  and the ERC-8183 payment token ("United Stables") via the BSC Testnet Faucet linked
-  from the hackathon's technical resources.
-- `DEMO_PROVIDER_ADDRESS` — any `0x` address, to smoke-test that `createJob`/`fund`
-  actually lands on-chain before you have a real agent deployed. The job just won't get
-  fulfilled unless something is really listening for it.
-- Once you've deployed a real agent (`npm install -g @bnbagent/studio-cli`, then
-  `bag skills install`), set that agent's real address on its `providerAddress` field in
-  `src/lib/agents.ts` instead of relying on the demo fallback.
-
-Since this README was first written, three more pieces went real:
-
-- **Wallet-signed hire records** (`src/lib/chain/hires.ts`, `/my-agents`) — hiring while
-  a wallet is connected signs a real authorization message, verified server-side
-  (`viem.verifyMessage`, with a 5-minute staleness check against replay) before being
-  stored in Supabase. Writes go through a service-role client, not the public
-  publishable key — the `hires`/`rebates` tables have no public insert policy, so a
-  forged row can't be inserted directly against the Supabase REST API either.
-- **A real, automatic rebate trigger** (`src/lib/chain/autoRebate.ts`,
-  `src/lib/chain/bandBreach.ts`) — a GitHub Actions job hits an authenticated cron
-  endpoint every 30 minutes, which checks every real agent's actual assurance-band
-  status and pays a real rebate, from the Altana pool session, to the wallet of every
-  real hire against a breached agent that hasn't been rebated yet. Idempotency is a
-  database `unique` constraint (`rebates.hire_id`), not a timer, so it's safe across
-  cold starts. `/pool`'s ledger shows these real payouts labeled "● Real payout",
-  distinct from the older illustrative `REBATE_LOG` entries.
-- **A Postgres-backed rate limiter** (`src/lib/rateLimit.ts`) — the hire flow's per-IP
-  cooldown now coordinates across serverless instances via a Supabase RPC function,
-  keyed on Netlify's non-spoofable `x-nf-client-connection-ip` header, falling back to
-  the original in-memory limiter when Supabase isn't configured.
-- **Real, accumulating PancakeSwap pool telemetry** (`src/lib/chain/poolSnapshots.ts`,
-  shown on the dossier page of every PancakeSwap-tracking real agent) — the same
-  authenticated cron that runs the rebate check also records one real tick/liquidity
-  snapshot every 30 minutes, and the page shows the real tick drift across that history.
-  This is explicitly *not* a claim about any agent's own performance (that's still the
-  static `AssuranceBand` above it) — it's an honestly-scoped, separate fact about what
-  the real market actually did, since simulating what a strategy "would have done" isn't
-  something this app fabricates.
-- **`GET /api/health`** — a one-request, boolean-only status check for every piece of
-  live wiring that silently degrades to a simulated/illustrative fallback when
-  unconfigured (hirer wallet, Altana session, Supabase clients, wallet connect, cron
-  secret). Reveals presence only, never values, and nothing not already independently
-  observable from the public pages themselves — it just saves clicking through all of
-  them to notice a gap before judging.
-- **`scripts/run-advantage-task.ts`** — runs one real, timed hire against a real agent
-  for the TermiX Agent Advantage Report below, instead of collecting that data by hand.
-
-Not yet wired, same honesty policy applies (build real, or say clearly what's mocked):
-
-- **Agent data** (`src/lib/agents.ts`) — realistic BSC protocol names and plausible band
-  numbers for the 8 illustrative agents, not live 8004scan reads. The `AssuranceBand`
-  itself is still static/illustrative data even for the 5 real agents — nothing in the
-  app observes an agent's actual execution yet, which is also the one remaining honesty
-  gap in the auto-rebate trigger above: it pays out based on this same static
-  `band.status`, not a live performance measurement.
-- **Agent Advantage Report** (`/advantage-report`) — intentionally left as a template with
-  bracketed placeholders, not invented numbers. TermiX grades whether the numbers are
-  provably real; fill it in from actual measured runs (with attached outputs) before
-  submitting, not the night before.
-- **Wallet connect** — the header button is real (Reown AppKit), but it authorizes the
-  My Agents record only, not the on-chain payment. The hirer wallet for the actual
-  ERC-8183 job still comes from server-side `PRIVATE_KEY`/`WALLET_PASSWORD`; a real
-  end-user flow would use `AltanaWalletProvider` with a passkey session instead.
-
-## Next steps toward submission
-
-1. Deploy at least one real agent per category via `bag` and set its `providerAddress`
-   so the four listings aren't all simulated at once.
-2. Wire agent listings to live 8004scan Pro API data (complimentary tier for
-   participants) so Data Quality is real, not mocked.
-3. Replace the static, illustrative `AssuranceBand.status` with a real measurement of
-   an agent's actual execution — the one gap that still makes the auto-rebate trigger's
-   payout decision honest-but-not-yet-live, per the note above. The real PancakeSwap
-   pool telemetry above is a genuine, separate signal in the meantime, not a
-   replacement — it measures the market, not any agent's own strategy, since none of
-   the 5 `agents/*` seller-agent scaffolds contain any PancakeSwap/Venus/Aave strategy
-   code today (they're generic, undeployed ERC-8183 seller templates — see `agents/`).
-4. Switch the hirer side from `PRIVATE_KEY` to `AltanaWalletProvider` + passkey session
-   for the actual ERC-8183 transaction (My Agents already gets a real wallet signature
-   today — it's just an authorization record, not the payment signer yet).
-5. Run the three Agent Advantage Report tasks for real (`scripts/run-advantage-task.ts`
-   times the hiring side of each one) and replace the template.
-6. Check `GET /api/health` before submitting — every `false` there is something judging
-   will notice.
-
-## Development
-
-```
-npm run dev     # start dev server
-npm run build   # production build (also runs the TypeScript check)
-npm run lint    # eslint
-```
+1. Fund a real hirer wallet in production so the live hire/settle flow is reachable by
+   judges, not just by the code.
+2. Provision `ALTANA_SESSION` for real (or explicitly skip that track this cycle).
+3. Register at least one of Backstop's own curated agents on ERC-8004 for real.
+4. Replace the static, illustrative `AssuranceBand.status` with a real measurement of
+   an agent's actual execution: the one remaining honesty gap, including in the
+   auto-rebate trigger's payout *decision* (the payout *mechanism* is already real).
+5. Run the three Agent Advantage Report tasks for real and replace the template.
+6. Switch the hirer side from a server-held `PRIVATE_KEY` to the connected wallet itself
+   as the transaction signer. My Agents already gets a real wallet signature today; it's
+   an authorization record, not the payment signer yet.

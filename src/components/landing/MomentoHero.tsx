@@ -28,7 +28,7 @@ export function MomentoHero() {
         className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(120%_90%_at_50%_0%,_var(--color-momento-blue)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] opacity-90"
         aria-hidden="true"
       />
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-start pt-28 sm:pt-32 md:pt-[9vw] px-6 text-center">
         <span
           className={`font-ui text-[11px] md:text-[0.85vw] uppercase tracking-[0.36em] text-white/40 mb-6 transition-opacity duration-700 ${
             revealed ? "opacity-100" : "opacity-0"
@@ -63,15 +63,6 @@ export function MomentoHero() {
             Read the docs
           </Link>
         </div>
-      </div>
-      <div
-        className={`relative z-10 pb-10 md:pb-[2vw] text-center transition-opacity duration-700 delay-700 ${
-          revealed ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        <span className="font-data text-[10px] md:text-[0.75vw] uppercase tracking-[0.3em] text-white/30">
-          Scroll
-        </span>
       </div>
     </section>
   );

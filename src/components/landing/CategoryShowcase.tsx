@@ -86,7 +86,7 @@ export function CategoryShowcase() {
               className="font-display text-[24vw] leading-none whitespace-nowrap text-transparent opacity-50"
               style={{ WebkitTextStroke: "1px var(--color-momento-line)" }}
             >
-              ASSURANCE
+              BACKSTOP
             </span>
           </div>
 

@@ -73,9 +73,48 @@ export default function AdvantageReportPage() {
           Same task. With an agent, and without. Time, cost, quality.
         </p>
 
+        <div className="max-w-2xl mb-10 space-y-4 font-body text-[15px] text-paper-ink-soft leading-relaxed">
+          <p>
+            This page exists to answer one question directly, rather than let a marketplace
+            listing imply it: does hiring one of Backstop&rsquo;s agents actually beat doing the
+            same job by hand? The TermiX Challenge asks for exactly that comparison, run for real,
+            not asserted, so each row below is the same real task run twice: once handed to a real
+            Backstop agent, once done manually, on the same market conditions, measured on the
+            same three axes.
+          </p>
+          <ul className="space-y-1.5 pl-1">
+            <li>
+              <strong className="text-paper-ink">Time.</strong> Hands-on minutes a person actually
+              spends. An autonomous agent&rsquo;s time is 0 by construction, that is the entire
+              value proposition, so the honest question is how much of a person&rsquo;s attention
+              the manual path costs instead.
+            </li>
+            <li>
+              <strong className="text-paper-ink">Cost.</strong> What the agent actually charges
+              (its real fee model, taken straight from its catalog entry) against what the manual
+              path actually costs in gas and, where relevant, a penalty for reacting too slowly.
+            </li>
+            <li>
+              <strong className="text-paper-ink">Quality.</strong> The same domain-specific number
+              either way, bps saved against a static range, lowest health factor reached, realized
+              APY, so the comparison is never just cheaper and slower, but also whether the result
+              itself is actually as good or better.
+            </li>
+          </ul>
+          <p>
+            The one task already run for real is Meridian Rebalancer&rsquo;s: it is Backstop&rsquo;s
+            only agent with a real, live ERC-8183 job history to draw a &ldquo;with agent&rdquo;
+            column from today. The two below it are staged with the same real fee model and a
+            realistic manual baseline, and are marked as a template because the manual side of
+            each still needs a real, timed, human run before submission, not an invented number.
+          </p>
+        </div>
+
         <div className="border border-bronze-text bg-paper-raised/60 px-5 py-4 mb-12 font-data text-[12px]">
-          <strong className="text-bronze-text">Template, not yet populated.</strong> Bracketed
-          fields need real measured runs before submission, not invented numbers.
+          <strong className="text-bronze-text">Template, not yet fully populated.</strong> Bracketed
+          fields need real measured runs before submission, not invented numbers.{" "}
+          <code className="font-data">scripts/run-advantage-task.ts</code> runs one real, timed
+          hire against a real agent and prints a row shaped to drop straight into this table.
         </div>
 
         <div className="space-y-10">

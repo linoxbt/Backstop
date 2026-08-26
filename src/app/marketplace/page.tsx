@@ -9,8 +9,17 @@ import { Territories } from "@/components/Territories";
 import { HowItWorksMarquee } from "@/components/HowItWorksMarquee";
 import { GuaranteeSteps } from "@/components/GuaranteeSteps";
 import { AgentVolumeChart } from "@/components/AgentVolumeChart";
+import { DiscoveredAgents } from "@/components/DiscoveredAgents";
 import { AGENTS, isCategory } from "@/lib/agents";
 import { getRealHireStatsForAllAgents } from "@/lib/chain/hires";
+import { listRegisteredAgents } from "@/lib/erc8004";
+
+// listRegisteredAgents hits the live ERC-8004 registry on every load (its
+// own fetch already sets a 300s revalidate, so this doesn't mean a fresh
+// network round-trip on every single request) -- the whole point of that
+// section is that it's the real, current registry, not a snapshot frozen
+// at build time.
+export const dynamic = "force-dynamic";
 
 export default async function MarketplacePage({
   searchParams,
@@ -20,7 +29,10 @@ export default async function MarketplacePage({
   const params = await searchParams;
   const initialCategory = isCategory(params.category) ? params.category : "all";
   const initialQuery = params.q ?? "";
-  const volumeByAgent = await getRealHireStatsForAllAgents();
+  const [volumeByAgent, discovered] = await Promise.all([
+    getRealHireStatsForAllAgents(),
+    listRegisteredAgents(12),
+  ]);
   const totalCyclesCompleted = AGENTS.reduce((sum, a) => sum + a.cyclesCompleted, 0);
 
   return (
@@ -55,6 +67,21 @@ export default async function MarketplacePage({
 
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
           <AgentTable agents={AGENTS} initialCategory={initialCategory} initialQuery={initialQuery} />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24 border-t border-paper-line pt-16">
+          <span className="font-data text-xs uppercase tracking-wider text-bronze-text">
+            Beyond the roster
+          </span>
+          <h2 className="font-display text-2xl sm:text-3xl mt-2 mb-2">
+            Every agent registered on BNB Chain.
+          </h2>
+          <p className="font-body text-paper-ink-soft max-w-2xl mb-8">
+            Real identities from the ERC-8004 registry, not Backstop&rsquo;s own roster above. No
+            fee relationship, no assurance band, no hire flow here, just who&rsquo;s really out
+            there and their onchain reputation.
+          </p>
+          <DiscoveredAgents page={discovered} />
         </div>
 
         <HowItWorksMarquee />

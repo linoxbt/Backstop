@@ -7,9 +7,11 @@ import { HireFlow } from "@/components/HireFlow";
 import { GettingStarted } from "@/components/GettingStarted";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { SimilarAgents } from "@/components/SimilarAgents";
+import { PoolTelemetry } from "@/components/PoolTelemetry";
 import { AGENTS, getAgent, categoryMeta } from "@/lib/agents";
 import { lookupAgentByOwner } from "@/lib/erc8004";
 import { getLivePoolState, TESTNET_TOKENS } from "@/lib/pancakeswap";
+import { getRecentPoolSnapshots, computePoolDrift } from "@/lib/chain/poolSnapshots";
 
 export function generateStaticParams() {
   return AGENTS.map((a) => ({ id: a.id }));
@@ -45,6 +47,11 @@ export default async function AgentPage({
       ? getLivePoolState(TESTNET_TOKENS.WBNB, TESTNET_TOKENS.USDT)
       : Promise.resolve(null),
   ]);
+  // A real snapshot history for this exact pool (recorded every 30 minutes
+  // by the auto-rebate cron — see src/lib/chain/poolSnapshots.ts) — fetched
+  // only once we know there's a live pool to have a history for.
+  const snapshots = pool ? await getRecentPoolSnapshots(pool.poolAddress) : [];
+  const drift = computePoolDrift(snapshots);
 
   return (
     <>
@@ -172,23 +179,7 @@ export default async function AgentPage({
             )}
           </dl>
 
-          {pool && (
-            <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 -mt-8 mb-12 font-data text-[12px] text-paper-ink-faint">
-              <span className="text-verdigris">●</span>
-              <span>
-                Live PancakeSwap v3 pool — WBNB/USDT,{" "}
-                {(pool.feeTier / 10000).toFixed(2)}% tier, tick {pool.tick}
-              </span>
-              <a
-                href={`https://testnet.bscscan.com/address/${pool.poolAddress}`}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-bronze-text transition-colors"
-              >
-                {pool.poolAddress.slice(0, 8)}…{pool.poolAddress.slice(-6)} ↗
-              </a>
-            </div>
-          )}
+          {pool && <PoolTelemetry pool={pool} drift={drift} snapshotCount={snapshots.length} />}
 
           <div className="grid lg:grid-cols-[1fr_360px] gap-10 lg:gap-14">
             <div className="space-y-14">

@@ -49,6 +49,8 @@ src/
     chain/rebalanceBreach.ts   an honest, separate PancakeSwap-liquidity signal (informational)
     chain/autoRebate.ts        pays a real, per-hire rebate for every breached agent's hires
     chain/rebates.ts           reads the real rebate ledger for /pool
+    chain/poolSnapshots.ts     real PancakeSwap pool telemetry, snapshotted every 30 min
+scripts/run-advantage-task.ts one real, timed hire — for the TermiX Advantage Report's "3 real tasks"
 agents/                        5 independent BNB Agent Studio seller-agent projects
 .github/workflows/             the 30-minute scheduled auto-rebate cron trigger
 .env.example                   env vars for the live chain wiring above
@@ -101,6 +103,22 @@ Since this README was first written, three more pieces went real:
   cooldown now coordinates across serverless instances via a Supabase RPC function,
   keyed on Netlify's non-spoofable `x-nf-client-connection-ip` header, falling back to
   the original in-memory limiter when Supabase isn't configured.
+- **Real, accumulating PancakeSwap pool telemetry** (`src/lib/chain/poolSnapshots.ts`,
+  shown on the dossier page of every PancakeSwap-tracking real agent) — the same
+  authenticated cron that runs the rebate check also records one real tick/liquidity
+  snapshot every 30 minutes, and the page shows the real tick drift across that history.
+  This is explicitly *not* a claim about any agent's own performance (that's still the
+  static `AssuranceBand` above it) — it's an honestly-scoped, separate fact about what
+  the real market actually did, since simulating what a strategy "would have done" isn't
+  something this app fabricates.
+- **`GET /api/health`** — a one-request, boolean-only status check for every piece of
+  live wiring that silently degrades to a simulated/illustrative fallback when
+  unconfigured (hirer wallet, Altana session, Supabase clients, wallet connect, cron
+  secret). Reveals presence only, never values, and nothing not already independently
+  observable from the public pages themselves — it just saves clicking through all of
+  them to notice a gap before judging.
+- **`scripts/run-advantage-task.ts`** — runs one real, timed hire against a real agent
+  for the TermiX Agent Advantage Report below, instead of collecting that data by hand.
 
 Not yet wired, same honesty policy applies (build real, or say clearly what's mocked):
 
@@ -127,11 +145,18 @@ Not yet wired, same honesty policy applies (build real, or say clearly what's mo
    participants) so Data Quality is real, not mocked.
 3. Replace the static, illustrative `AssuranceBand.status` with a real measurement of
    an agent's actual execution — the one gap that still makes the auto-rebate trigger's
-   payout decision honest-but-not-yet-live, per the note above.
+   payout decision honest-but-not-yet-live, per the note above. The real PancakeSwap
+   pool telemetry above is a genuine, separate signal in the meantime, not a
+   replacement — it measures the market, not any agent's own strategy, since none of
+   the 5 `agents/*` seller-agent scaffolds contain any PancakeSwap/Venus/Aave strategy
+   code today (they're generic, undeployed ERC-8183 seller templates — see `agents/`).
 4. Switch the hirer side from `PRIVATE_KEY` to `AltanaWalletProvider` + passkey session
    for the actual ERC-8183 transaction (My Agents already gets a real wallet signature
    today — it's just an authorization record, not the payment signer yet).
-5. Run the three Agent Advantage Report tasks for real and replace the template.
+5. Run the three Agent Advantage Report tasks for real (`scripts/run-advantage-task.ts`
+   times the hiring side of each one) and replace the template.
+6. Check `GET /api/health` before submitting — every `false` there is something judging
+   will notice.
 
 ## Development
 

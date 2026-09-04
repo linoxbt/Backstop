@@ -6,7 +6,7 @@ const PHRASES = ["DISCOVER", "HIRE", "BAND COMMITS ONCHAIN", "MISS IT, GET PAID 
  * three-step guarantee GuaranteeSteps.tsx states elsewhere), not invented
  * marketing copy. The phrase list is rendered twice back-to-back so the
  * `-50%` translate in globals.css's `.animate-marquee` loops seamlessly.
- * Sits on the dark momento register — an uppercase marquee over navy reads
+ * Sits on the dark momento register — an uppercase marquee over oxblood reads
  * as premium editorial and gives the marketplace page a second dark beat
  * before its closing guarantee section.
  */

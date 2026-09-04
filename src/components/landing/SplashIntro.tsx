@@ -53,7 +53,7 @@ export function SplashIntro() {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-8 bg-[radial-gradient(120%_90%_at_50%_0%,_var(--color-momento-blue)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] transition-opacity duration-700 ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-8 bg-[radial-gradient(120%_90%_at_50%_0%,_var(--color-momento-glow)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] transition-opacity duration-700 ${
         backdropExiting ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
       aria-hidden="true"

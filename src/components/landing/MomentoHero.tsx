@@ -25,7 +25,7 @@ export function MomentoHero() {
       className="relative w-full h-[100dvh] overflow-hidden bg-[var(--color-momento-bg)] flex flex-col"
     >
       <div
-        className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(120%_90%_at_50%_0%,_var(--color-momento-blue)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] opacity-90"
+        className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(120%_90%_at_50%_0%,_var(--color-momento-glow)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] opacity-90"
         aria-hidden="true"
       />
       <div className="relative z-10 flex-1 flex flex-col items-center justify-start pt-28 sm:pt-32 md:pt-[9vw] px-6 text-center">

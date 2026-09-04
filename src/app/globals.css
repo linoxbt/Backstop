@@ -1,34 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  /* "paper" — now the site's single register, sitewide. Backgrounds reuse
-     the same real momento-* navy values below (no separate light surface
-     anywhere in the app, by design — no white background, full stop);
-     ink is a warm off-white (never pure #fff) for legible text on that
-     navy, echoing the ledger's parchment tone rather than a stark white. */
-  --color-paper: #000214;
-  --color-paper-raised: #131a2d;
-  --color-paper-line: #1e2842;
-  --color-paper-ink: #f5f2ea;
-  --color-paper-ink-soft: #b8c2d9;
-  --color-paper-ink-faint: #7c8aa3;
+  /* "paper" — the site's single register, sitewide. Oxblood: a very dark
+     red-brown ground rather than a neutral black, so the darkness itself
+     carries colour. Backgrounds reuse the same real momento-* values below
+     (no separate light surface anywhere in the app, by design — no white
+     background, full stop); ink is a warm off-white, never pure #fff, which
+     is what keeps a deep red ground reading as leather and ledger rather
+     than as an alert. */
+  --color-paper: #11040a;
+  --color-paper-raised: #24090f;
+  --color-paper-line: #3a1119;
+  --color-paper-ink: #f7f1ec;
+  --color-paper-ink-soft: #dcc2c4;
+  --color-paper-ink-faint: #a2848a;
 
   /* dark surfaces (vault interiors, hero, footer) */
-  --color-steel: #14171a;
-  --color-steel-raised: #1d2124;
-  --color-steel-line: #34393d;
-  --color-paper-on-steel: #e8e2cf;
+  --color-steel: #170608;
+  --color-steel-raised: #24090c;
+  --color-steel-line: #3e1a1e;
+  --color-paper-on-steel: #efe3d8;
 
   /* metal accent */
-  --color-bronze: #8c6a45;
-  --color-bronze-text: #b78c52;
-  --color-bronze-bright: #d3a15c;
+  --color-bronze: #9a6a3f;
+  --color-bronze-text: #c79355;
+  --color-bronze-bright: #e3b36a;
 
   /* signal — brightened for legibility against the dark ground everywhere */
   --color-verdigris: #4ec9a3;
-  --color-verdigris-soft: #2f4a40;
-  --color-stamp: #ef5a44;
-  --color-stamp-soft: #c65a49;
+  --color-verdigris-soft: #21463c;
+  --color-stamp: #ff7a5e;
+  --color-stamp-soft: #c0503e;
 
   /* Matches the reference's own font stacks exactly (verified from its
      shipped CSS) — plain system fonts, no custom webfont, for everything
@@ -40,19 +42,16 @@
     "Courier New", monospace;
   --font-forum: var(--font-forum-serif), serif;
 
-  /* the dark register (Momento Legal reference) — sitewide now, one masthead
-     moment per page, not landing-only. All five values are pulled directly
-     from momentolegal.com's own shipped CSS, not approximated: momento-bg/
-     -bg-deep are its darkest ground steps, but on their own they read as
-     near-black, not blue — the site's actual depth comes from also using
-     its lighter navy steps (momento-surface, momento-line) and a genuinely
-     visible royal blue (momento-blue) for glows/gradient stops, which is
-     what makes the reference read as blue. */
-  --color-momento-bg: #000214;
-  --color-momento-bg-deep: #000321;
-  --color-momento-surface: #131a2d;
-  --color-momento-line: #1e2842;
-  --color-momento-blue: #10234f;
+  /* the dark register — sitewide, one masthead moment per page. The steps
+     run from a near-black with a red bias up through oxblood proper: on
+     their own the darkest two read almost as black, and the depth comes
+     from the lighter steps plus a genuinely visible oxblood (momento-glow)
+     used for glows and gradient stops. */
+  --color-momento-bg: #11040a;
+  --color-momento-bg-deep: #1a0509;
+  --color-momento-surface: #24090f;
+  --color-momento-line: #3a1119;
+  --color-momento-glow: #7a1020;
 
   /* fluid type scale for momento sections — the reference's own confirmed
      5-step scale (fixed px on mobile, fluid vw above its 767.98px cutoff),
@@ -103,7 +102,7 @@
   --color-momento-bg-deep: var(--color-momento-bg-deep);
   --color-momento-surface: var(--color-momento-surface);
   --color-momento-line: var(--color-momento-line);
-  --color-momento-blue: var(--color-momento-blue);
+  --color-momento-glow: var(--color-momento-glow);
 }
 
 * {

@@ -66,7 +66,7 @@ export default async function AgentPage({
           className="relative overflow-hidden bg-[var(--color-momento-bg)]"
         >
           <div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_80%_0%,_var(--color-momento-blue)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] opacity-80"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_80%_0%,_var(--color-momento-glow)_0%,_var(--color-momento-bg-deep)_45%,_var(--color-momento-bg)_100%)] opacity-80"
             aria-hidden="true"
           />
           <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 pt-32 sm:pt-40 pb-14 sm:pb-16">

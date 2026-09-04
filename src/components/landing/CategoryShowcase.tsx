@@ -33,7 +33,7 @@ function SequencePanel({
             sizes="220px"
             className="object-cover grayscale contrast-125"
           />
-          <div className="absolute inset-0 bg-[var(--color-momento-blue)] mix-blend-multiply opacity-60" />
+          <div className="absolute inset-0 bg-[var(--color-momento-glow)] mix-blend-multiply opacity-60" />
           <div className="absolute inset-0 bg-[var(--color-momento-bg)] opacity-20" />
         </div>
         {flagship && (
